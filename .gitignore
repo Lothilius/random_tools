@@ -95,6 +95,7 @@ xcuserdata
 *.xccheckout
 *.moved-aside
 *.xcuserstate
+*.pyc
 ### Example user template template
 ### Example user template
 
@@ -103,3 +104,4 @@ xcuserdata
 *.iml
 out
 gen
+
