@@ -1,7 +1,7 @@
 __author__ = 'Lothilius'
 
 import smtplib
-from bv_tools.bv_authenticate.Authentication import Authentication as auth
+from bv_authenticate.Authentication import Authentication as auth
 import sys
 
 

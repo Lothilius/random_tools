@@ -3,9 +3,9 @@
 
 __author__ = 'Lothilius'
 
-from bv_tools.triage_tickets.TicketList import TicketList
-from bv_tools.triage_tickets.Ticket import Ticket
-from bv_tools.send_email.OutlookConnection import OutlookConnection as outlook
+from triage_tickets.TicketList import TicketList
+from triage_tickets.Ticket import Ticket
+from send_email.OutlookConnection import OutlookConnection as outlook
 import pandas as pd
 import sys
 
