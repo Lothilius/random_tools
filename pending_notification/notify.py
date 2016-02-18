@@ -24,6 +24,7 @@ try:
     # Get list of helpdesk tickets using the holding pool list view.
     tickets = TicketList(holding_pool_id)
     tickets = TicketList.reformat_as_dataframe(tickets)
+    tickets = tickets[tickets.TECHNICIAN == '']
     reply_messages_sent = []
 
     # Cycle through each ticket
