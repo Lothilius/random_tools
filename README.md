@@ -11,3 +11,6 @@ export SFDC_PW="<value>"
 export SFDC_TOKEN="<value>"
 export SFDC_STAGING_TOKEN="<value>"
 export HDT_TOKEN="<value>"
+
+To include package in python path add the following to the bash_profile
+export PYTHONPATH=$PYTHONPATH:/path/to/the/folder/bv_tools
