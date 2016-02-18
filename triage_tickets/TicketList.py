@@ -116,6 +116,10 @@ class TicketList(object):
 
     @staticmethod
     def reformat_as_dataframe(ticket_details):
+        """ Use to reformat responses to a panda data frame.
+        :param ticket_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
+        :return: returns panda dataframe
+        """
         ticket_details = pd.DataFrame(list(ticket_details))
         ticket_details = ticket_details.rename(columns={'UDF_CHAR1': 'Department_Group', 'UDF_CHAR2': 'System'})
         ticket_details = ticket_details.applymap(TicketList.convert_time)
