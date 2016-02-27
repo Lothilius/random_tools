@@ -12,11 +12,14 @@ def wait(seconds=5):
     time.sleep(seconds)
 
 def start_form_fill(environment, first_name, last_name, email, user_name, title, manager):
+    baseurl = ''
+    username = ''
+    pw = ''
     if environment == 'prod':
-        username, pw = auth.sfdc_login('prod')
+        username, pw, token = auth.sfdc_login('prod')
         baseurl = "https://na3.salesforce.com/005?retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DUsers&setupid=ManageUsers"
     elif environment == ('st' or 'staging'):
-        username, pw = auth.sfdc_login()
+        username, pw, token = auth.sfdc_login()
         baseurl = "https://cs13.salesforce.com/005?retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DUsers&setupid=ManageUsers"
 
     browser = webdriver.Chrome('/Users/martin.valenzuela/Dropbox/Coding/BV/chromedriver')
