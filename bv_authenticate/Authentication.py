@@ -32,12 +32,14 @@ class Authentication(object):
     @staticmethod
     def sfdc_login(environment='staging'):
         if environment == 'prod':
-            username = '%s@bazaarvoice.com' % environ['SFDC_BIZAPPS']
-            password = environ['SFDC_PW']
-            token = environ['SFDC_TOKEN']
+            username = '%s@bazaarvoice.com' % environ['ME']
+            password = environ['MY_PW']
+            token = environ['MY_TOKEN']
+            sandbox = False
         else:
-            username = '%s@bazaarvoice.com.staging' % environ['SFDC_BIZAPPS']
+            username = '%s@bazaarvoice.com.staging' % environ['ME']
             password = environ['SFDC_PW']
             token = environ['SFDC_STAGING_TOKEN']
+            sandbox = True
 
-        return username, password, token
+        return username, password, token, sandbox
