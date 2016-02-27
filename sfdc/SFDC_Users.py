@@ -1,0 +1,32 @@
+__author__ = 'Lothilius'
+
+from bv_authenticate.Authentication import Authentication as auth
+from simple_salesforce import Salesforce
+from sfdc.SFDC import SFDC
+from simple_salesforce import Salesforce
+import pandas as pd
+
+class SFDC_Users(object):
+    """ Users from SFDC. When called, active internal users are retrieved from SFDC in a panda dataframe.
+    """
+    def __int__(self):
+        self.users = self.get_user_list()
+
+    def __str__(self):
+        return str(self.users)
+
+    @staticmethod
+    def get_user_list():
+        sf = SFDC.connect_to_SFDC('prod')
+        results = sf.query_all("SELECT Id, Email, Name  FROM User Where isActive=true")
+        result_list = []
+
+        for each in results['records']:
+            result_list.append([each['Id'], each['Email'], each['Name']])
+        results_panda = pd.DataFrame(result_list)
+
+        return results_panda
+
+if __name__ == '__main__':
+    the_list = SFDC_Users()
+    print the_list.users
