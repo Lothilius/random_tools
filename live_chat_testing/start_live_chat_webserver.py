@@ -6,7 +6,17 @@ app = Bottle()
 
 @app.route('/')
 def index():
-    return template('spark_button')
+    environment=''
+    return template('live_chat_button', environment=environment)
+
+
+@app.route('/<environment>')
+def other(environment=''):
+    return template('live_chat_button', environment=environment)
+
+@app.error(404)
+def error404(error):
+    return 'Nothing here, sorry'
 
 #add this at the very end:
 debug(True)
