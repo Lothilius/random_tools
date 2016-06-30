@@ -102,6 +102,7 @@ xcuserdata
 # IntelliJ project files
 .idea
 *.iml
+*.pyc
 out
 gen
 
