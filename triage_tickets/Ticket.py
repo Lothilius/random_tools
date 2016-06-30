@@ -163,5 +163,7 @@ class Ticket(object):
         return get_conversation_detail
 
 if __name__ == '__main__':
-    ticket = Ticket('11098')
-    print ticket.send_priority_reply()
+    ticket = Ticket('15438')
+    # print ticket
+    print ticket
+
