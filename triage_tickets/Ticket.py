@@ -103,6 +103,33 @@ class Ticket(object):
         get_conversation_detail = list([ticket_conversation_details])
         return get_conversation_detail
 
+    @staticmethod
+    def set_status(hdt_id, status='Resolved'):
+        """ Set status for ticket.
+        :param hdt_id: The workorder id of ticket number of the Ticket
+        :param status: String value selectable as the status for the HDT
+        :return: Dictionary of the ticket details once the status has been changed.
+        """
+        try:
+            # Change today to Epoch time
+            print hdt_id, status
+            url, querystring, headers = hdc.create_api_request()
+
+            url = url + "/" + hdt_id
+
+            querystring['OPERATION_NAME'] = "EDIT_REQUEST"
+            querystring['INPUT_DATA'] = "{operation:{" \
+                                        "Details:{" \
+                                        "STATUS:%s}}}" % status
+            # print querystring
+            helpdesk_ticket_details = hdc.fetch_from_helpdesk(url, querystring, headers)
+
+            return helpdesk_ticket_details
+        except:
+            error_result = "Unexpected error 1T: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+            print error_result
+
+
     def send_priority_reply(self):
         """ Send a hard coded reply to a ticket.
         :param requester_email: The workorder id of ticket number of the Ticket
