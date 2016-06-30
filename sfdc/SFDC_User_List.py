@@ -5,12 +5,12 @@ import numpy as np
 import Permissions
 
 
-class SfdcUser:
-    """ This module creates a SFDC user from the first and last name and Profile.
+class SFDC_User_List:
+    """ This Class helps represent a SFDC user with the first and last name, title, manager, Profile, permissions.
     """
 
     def __int__(self, first_name, last_name, email, title, manager, profile, permissions):
-        """Create an empty User Object"""
+        """Initial creation of a User Object"""
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
@@ -20,8 +20,14 @@ class SfdcUser:
         self.permissions = permissions
 
     def __str__(self):
-        return '[%s, %s, %s, %s, %s, %s, %s]' % (self.first_name, self.last_name,
-                                                 self.email, self.title, self.manager, self.profile, self.permissions)
+        return "{'First Name':'%s', " \
+               "'Last Name':'%s', " \
+               "'Email':'%s', " \
+               "'Title':'%s', " \
+               "'Manager':'%s', " \
+               "'Profile':'%s', " \
+               "'Permissions':'%s'}" \
+               % (self.first_name, self.last_name, self.email, self.title, self.manager, self.profile, self.permissions)
 
     def first_name(self):
         return self.first_name
@@ -71,7 +77,8 @@ class SfdcUser:
         self.permissions = Permissions(self.title)
 
     # Clean up the Data so that consultants are caught
-    def clean_name(self, the_name):
+    @staticmethod
+    def clean_name(the_name):
         # Remove [C]
         regex = re.compile(' \[C\]')
         the_name = regex.sub('', the_name)
@@ -79,17 +86,18 @@ class SfdcUser:
         return the_name
 
     # Create clean array
+    @staticmethod
     def create_clean(csv_info):
 
         user_list = np.array([['first', 'last']])
         name_list = csv_info[1:, 2]
 
         for each in name_list:
-            name = clean_name(each)
+            name = SFDC_User_List.clean_name(each)
             if name == '':
                 pass
             else:
-                first, last = split_name(name)
+                first, last = SFDC_User_List.split_name(name)
                 user_list = np.append(user_list, [[first, last]], 0)
 
         # Get rid of the column labels first and last
@@ -98,7 +106,7 @@ class SfdcUser:
 
         # Create email column
         for each in user_list:
-            email = create_user_email(each)
+            email = SFDC_User_List.create_user_email(each)
             emails = np.append(emails, [email], 0)
 
         # Join name array with email column
@@ -109,7 +117,3 @@ class SfdcUser:
         user_list = np.c_[user_list, csv_info[1:-1, 3]]
 
         return user_list
-
-
-class UserList():
-    pass
