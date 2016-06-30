@@ -106,3 +106,5 @@ xcuserdata
 out
 gen
 
+
+*.pyc
