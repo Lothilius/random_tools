@@ -4,6 +4,7 @@ __author__ = 'Lothilius'
 
 from HelpdeskConnection import HelpdeskConnection as hdc
 import sys
+from time import time
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -11,7 +12,8 @@ sys.setdefaultencoding('utf8')
 class Ticket(object):
     def __init__(self, hdt_id):
         self.hdt_id = hdt_id
-        self.details = self.get_ticket_details(self.hdt_id)
+        self.resolution = self.get_resolution()
+        self.details = self.get_ticket_details()
         self.conversations = ''
 
     def __getitem__(self, item):
@@ -24,19 +26,20 @@ class Ticket(object):
         """
         return str(self.details)
 
-    def get_ticket_details(self, ticket_number):
+    def get_ticket_details(self):
         """ Retrieve ticket detials for individual ticket.
         :param ticket_number: The workorder id of ticket number of the Ticket
         :return: Dictionary of the ticket details
         """
         url, querystring, headers = hdc.create_api_request()
 
-        url = url + "/" + ticket_number
+        url = url + "/" + self.hdt_id
 
         querystring['OPERATION_NAME'] = "GET_REQUEST"
         del querystring['INPUT_DATA']
         # print querystring
         helpdesk_ticket_details = hdc.fetch_from_helpdesk(url, querystring, headers)
+        helpdesk_ticket_details.update(self.resolution)
 
         return helpdesk_ticket_details
 
@@ -56,6 +59,32 @@ class Ticket(object):
 
         self.conversations = list(ticket_conversation_details)
         return self.conversations
+
+    def get_resolution(self):
+        """ Retrieve resolution for individual ticket.
+        :param ticket_number: The workorder id of ticket number of the Ticket
+        :return: Dictionary of the ticket details
+        """
+        url, querystring, headers = hdc.create_api_request()
+
+        url = url + "/" + self.hdt_id + "/resolution"
+
+        querystring['OPERATION_NAME'] = "GET_RESOLUTION"
+        del querystring['INPUT_DATA']
+        # print querystring
+        ticket_resolution_details = hdc.fetch_from_helpdesk(url, querystring, headers)
+        # If Resolution is response is empty pad with NA
+        if ticket_resolution_details == {}:
+            ticket_resolution_details['RESOLUTION'] = 'NA'
+            ticket_resolution_details['RESOLUTIONLASTUPDATEDTIME'] = 'NA'
+            ticket_resolution_details['RESOLVER'] = 'NA'
+            self.resolution = ticket_resolution_details
+        else:
+            ticket_resolution_details['RESOLUTIONLASTUPDATEDTIME'] = \
+                ticket_resolution_details.pop('LASTUPDATEDTIME')
+            self.resolution = ticket_resolution_details
+
+        return self.resolution
 
     def get_conversation_detail(self, conversation_id):
         """ Retrieve conversation detials for an individual ticket.
