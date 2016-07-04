@@ -1,17 +1,18 @@
 __author__ = 'Lothilius'
 
 from bv_authenticate.Authentication import Authentication as auth
-from sfdc.SFDC_User import SfdcUser
+from sfdc.SFDC_User_List import SFDC_User_List
 from se_helpers.actions import *
+from misc_helpers.data_manipulation import array_from_file
 
 def main():
     #TODO fix user interaction lines
     while True:
         environment = raw_input("Which environment would you like to use, (prod) or (st)aging? ")
         if environment == 'prod':
-            username, pw = auth.sfdc_login('prod')
-        elif environment == ('st' or 'staging'):
-            username, pw = auth.sfdc_login()
+            pass
+        # elif environment == ('st' or 'staging'):
+        #     pass
         else:
             print "I'm Sorry I did not understand your selection. Please try again."
 
@@ -20,7 +21,7 @@ def main():
             new_user_name = raw_input('Please enter name: ')
             new_user_title = raw_input('Please enter title: ')
             new_user_manager = raw_input('Please enter manager: ')
-            user = SfdcUser()
+            user = SFDC_User_List()
             user.add_name(new_user_name)
             user.add_title(new_user_title)
             user.add_manager(new_user_manager)
@@ -42,7 +43,7 @@ def main():
             for each in csv_info[1:]:
                 print each[2]
                 # Create User object for each user row in csv
-                user = SfdcUser()
+                user = SFDC_User_List()
                 user.add_name(each[2])
                 user.add_title(each[3])
                 user.add_manager(each[4])
@@ -56,9 +57,13 @@ def main():
             csv_info = array_from_file(full_file_path)
             # print csv_info[1, 2]
 
-            user = SfdcUser()
+            user = SFDC_User_List()
             user.add_name(csv_info[1, 2])
             print csv_info[1, 2]
 
         else:
             print "I'm Sorry I did not understand your selection. Please try again."
+
+
+if __name__ == '__main__':
+    main()
