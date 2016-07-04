@@ -6,7 +6,7 @@ __author__ = 'Lothilius'
 
 import pandas as pd
 import sys
-from datetime import date
+from datetime import datetime
 from tableausdk import *
 from tableausdk.Extract import *
 
@@ -47,10 +47,12 @@ class TDEAssembler (object):
         data_meta = pd.DataFrame(test.dtypes.reset_index())
         data_meta.rename(columns={'index': 'column_name', 0: 'data_type'}, inplace=True)
 
+        if self.extract_name == '':
+            file_name = 
         # Create the Table referance
-        deptdata = Extract("DeptData.tde")   #assign your output name
+        hdt_table = Extract()   #assign your output name
 
-        # table_definition = TableDefinition()
+        table_definition = TableDefinition()
 
         print data_meta
         print data_meta.as_matrix()[3][1]
