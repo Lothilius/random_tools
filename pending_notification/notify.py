@@ -61,14 +61,19 @@ try:
             print subject
             print error_result
             print '\n'
-            outlook.send_email('helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
+            # outlook.send_email('helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
 
     # Send a confirmation email to Martin that the tickets were reviewed and the messages were sent
     subject = 'Low priority Messages Sent: %s sent out of %s' % (len(reply_messages_sent), len(tickets.WORKORDERID))
     reply_messages_sent = '\n'.join(reply_messages_sent)
 
     outlook.send_email('martin.valenzuela@bazaarvoice.com', cc='daniel.parkhurst@bazaarvoice.com', subject=subject, body=reply_messages_sent)
-
+except AttributeError:
+    error_result = "Unexpected AttributeError: %s, %s, \n Ticket length: %s" \
+                   % (sys.exc_info()[0], sys.exc_info()[1], len(tickets))
+    subject = 'Error with pending notification'
+    print error_result
+    outlook.send_email('helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
 except:
     error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
     subject = 'Error with pending notification'
