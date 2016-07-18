@@ -17,9 +17,22 @@ class Authentication(object):
         return url, headers
 
     @staticmethod
-    def smtp_login():
+    def bv_credentials():
         username = '%s@bazaarvoice.com' % environ['USER']
         password = environ['MY_PW']
+
+        return username, password
+
+    @staticmethod
+    def tableau__credentials():
+        username = environ['USER']
+        password = environ['MY_PW']
+
+        return username, password
+
+    @staticmethod
+    def smtp_login():
+        username, password = Authentication.bv_credentials()
 
         return username, password
 
@@ -32,13 +45,17 @@ class Authentication(object):
     @staticmethod
     def sfdc_login(environment='staging'):
         if environment == 'prod':
-            username = '%s@bazaarvoice.com' % environ['ME']
-            password = environ['MY_PW']
+            username, password = Authentication.bv_credentials()
+            password = environ['MY_PW_STAGING']
+            token = environ['MY_TOKEN']
+            sandbox = False
+        elif environment == 'media':
+            username, password = Authentication.bv_credentials()
             token = environ['MY_TOKEN']
             sandbox = False
         else:
             username = '%s@bazaarvoice.com.staging' % environ['ME']
-            password = environ['SFDC_PW']
+            password = environ['MY_PW_STAGING']
             token = environ['SFDC_STAGING_TOKEN']
             sandbox = True
 
