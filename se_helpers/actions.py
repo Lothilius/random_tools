@@ -4,25 +4,146 @@ from selenium import webdriver
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.keys import Keys
 from bv_authenticate.Authentication import Authentication as auth
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import *
 import sys
 import time
+from os import environ
 
 
 def wait(seconds=5):
     time.sleep(seconds)
+
+def hover(browser, element):
+    hover_over = ActionChains(browser).move_to_element(element)
+    hover_over.perform()
+
+
+def get_se_browser():
+    """ Create a Selenium webdriver object.
+    :return: Selenium webdriver object
+    """
+    browser = webdriver.Chrome(environ['CHROME_PATH'])
+
+    return browser
+
+
+def concur_employee_deprecation(browser, employee_id='', employee_name='', termination_date=''):
+    """ This function will perform the steps of searching for a user navigating to their user record.
+    :param browser: The selenium Webdriver object.
+    :return: nothing
+    """
+    try:
+        browser.find_element_by_id('searchString').clear()
+        browser.find_element_by_id('searchString').send_keys(employee_id)
+        browser.find_element_by_id('SearchWhat').send_keys("emp")
+        browser.find_element_by_id('searchString').send_keys(Keys.ENTER)
+        wait(2)
+        browser.find_element_by_partial_link_text(employee_name).click()
+        wait(2)
+        browser.find_element_by_id('AccountTerminationDate').send_keys(termination_date)
+        browser.find_element_by_id('AccountTerminationDate').send_keys(Keys.ENTER)
+        wait(3)
+        browser.find_element_by_name('btnSave1').click()
+        wait(7)
+
+        print employee_name, "complete"
+    except UnexpectedAlertPresentException:
+        alert = browser.switch_to_alert()
+        alert.accept()
+        wait(3)
+        browser.get('https://www.concursolutions.com/companyadmin/view_users.asp')
+        wait(4)
+        concur_employee_deprecation(browser, employee_id, employee_name, termination_date)
+    except:
+         print employee_name, " Unexpected error 2:", sys.exc_info()[0]
+
+def go_to_concur_user_page():
+    """ Use as a quick way to jump to the User Administration in Concur.
+    :return: This function provides selenium initiated browsers.
+    """
+    try:
+        baseurl = ''
+        username = ''
+        pw = ''
+        username, pw = auth.bv_credentials()
+        baseurl = "https://www.concursolutions.com/companyadmin/view_users.asp"
+
+        baseurl = baseurl
+        browser = get_se_browser()
+        browser.get('https://bazaarvoice.okta.com/')
+        wait(2)
+        login_okta(browser, username, pw)
+        wait(20)
+        browser.get('https://bazaarvoice.okta.com/home/concur/0oaeqjcwmIDXNCEXMUBI/615?fromHome=true')
+        wait(1)
+        browser.get(baseurl)
+        wait(3)
+
+        return browser
+    except:
+         print "Unexpected error 2:", sys.exc_info()[0]
+
+def go_to_sfdc_page(environment='', url_ending=''):
+    """ Use as a quick way to deploy multiple windows in an environment.
+    :param environment: Label as 'prod' and '' will route to staging.
+    :param url_ending: The record id is the id that would normally go at the end of the url to get to the webpage.
+    :return: Returns nothing. This function provides selenium initiated browsers.
+    """
+    baseurl = ''
+    username = ''
+    pw = ''
+    if environment == 'prod':
+        username, pw, token, sandbox = auth.sfdc_login('prod')
+        baseurl = "https://na3.salesforce.com/"
+    elif environment == ('st' or 'staging'):
+        username, pw, token, sandbox = auth.sfdc_login()
+        baseurl = "https://cs13.salesforce.com/"
+
+    baseurl = baseurl + url_ending
+    browser = get_se_browser()
+    browser.get(baseurl)
+    wait(3)
+    login(browser, username, pw)
+
+    return browser
+
+def add_permission_sfdc(browser='', user_id=''):
+    """
+    :param browser:
+    :param user_id:
+    :return:
+    """
+    edit_profile_url_end = '?noredirect=1&isUserEntityOverride=1'
+    username = ''
+    pw = ''
+    try:
+        base_url = browser.current_url
+        url = base_url + user_id + edit_profile_url_end
+        browser.get(url)
+    except:
+        browser = get_se_browser()
+        username, pw, token, sandbox = auth.sfdc_login('')
+        base_url = 'https://na3.salesforce.com/'
+        url = base_url + user_id + edit_profile_url_end
+
+    element = browser.find_element_by_xpath("//span[contains(.,'Permission Set Assignments[1]')]")
+    hover(browser, element)
+    browser.find_element_by_xpath("//input[@name='editPermSetAssignments']").click()
+
 
 def start_form_fill(environment, first_name, last_name, email, user_name, title, manager):
     baseurl = ''
     username = ''
     pw = ''
     if environment == 'prod':
-        username, pw, token = auth.sfdc_login('prod')
+        username, pw, token, sandbox = auth.sfdc_login('prod')
         baseurl = "https://na3.salesforce.com/005?retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DUsers&setupid=ManageUsers"
     elif environment == ('st' or 'staging'):
-        username, pw, token = auth.sfdc_login()
+        username, pw, token, sandbox = auth.sfdc_login()
         baseurl = "https://cs13.salesforce.com/005?retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DUsers&setupid=ManageUsers"
 
-    browser = webdriver.Chrome('/Users/martin.valenzuela/Dropbox/Coding/BV/chromedriver')
+    browser = get_se_browser()
     browser.get(baseurl)
     browser.implicitly_wait(4)
     login(browser, username, pw)
@@ -35,10 +156,10 @@ def open_new_tab(browser, web_url):
     body.send_keys(web_url)
 
 def okta_load(first_name, last_name):
-    username, pw = okta_login()
-    baseurl = "https://bazaarvoice-admin.okta.com/admin/users"\
+    username, pw = auth.bv_credentials()
+    baseurl = "https://bazaarvoice-admin.okta.com/admin/users"
 
-    browser = webdriver.Chrome('/Users/martin.valenzuela/Dropbox/Coding/BV/chromedriver')
+    browser = get_se_browser()
     browser.get(baseurl)
     browser.implicitly_wait(4)
 
