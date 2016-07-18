@@ -2,7 +2,8 @@ __author__ = 'Lothilius'
 
 import dateutil
 import csv
-import numpy as np
+import pandas as pd
+from datetime import datetime
 
 def reformat_date_time(date_time_string):
     """
@@ -28,3 +29,35 @@ def array_from_file(filename):
     data_array = np.array(data_array)
 
     return data_array
+
+
+# Set Date columns as the datetime dtype
+def correct_date_dtype(data_frame, date_time_format=''):
+    """
+    :param data_frame: Pandas dataframe
+    :return: a pandas data frame
+    """
+    date_time_columns = ['CREATEDTIME',
+                         'DUEBYTIME',
+                         'COMPLETEDTIME',
+                         'RESOLUTIONLASTUPDATEDTIME',
+                         'RESPONDEDTIME']
+    columns = data_frame.columns
+    data_frame.fillna('0', inplace=True)
+    for each in columns.tolist():
+        if each in date_time_columns:
+            data_frame[each].replace(to_replace=['0', 'NA', '-1'], value='2000-01-01 00:00:00', inplace=True)
+            # data_frame[each].replace(to_replace='NA', value='2000-01-01 00:00:00', inplace=True)
+            data_frame[each] = pd.to_datetime(data_frame[each], format=date_time_format)
+
+    return data_frame
+
+
+
+if __name__ == '__main__':
+    now = datetime.now()
+    today = datetime.today()
+    test = pd.DataFrame(columns=['col1', 'col2', 'col3', 'CREATEDTIME'], data=[[1, 2.3, 'a', None],
+                                                                        [2, 3.3, 'b', '2016-07-06']])
+    print test
+    print correct_date_dtype(test)
