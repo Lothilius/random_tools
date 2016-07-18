@@ -5,11 +5,37 @@
     % if environment == 'prod':
         <script type='text/javascript' src='https://c.la1-c2-dfw.salesforceliveagent.com/content/g/js/36.0/deployment.js'></script>
         <script type='text/javascript'>
+            //  Set User Name for Live Agent
+            liveagent.setName('Martin Valenzuela');
+
+            //  Setup Default Cases
+            liveagent.addCustomDetail('ContactIdDetail', '0035000002KRFrRAAX');
+            liveagent.addCustomDetail('AccountIdDetail', '0015000000cmCxXAAU');
+            liveagent.addCustomDetail('CaseOrigin', 'Web');
+
+            // below is replacement code per chuck
+            liveagent.findOrCreate('Contact').map('Id', 'ContactIdDetail', true, true, false).saveToTranscript('ContactId');
+            liveagent.findOrCreate('Account').map('Id', 'AccountIdDetail', true, true, false).saveToTranscript('AccountId');
+            // end of replacement code per chuck
+
             liveagent.init('https://d.la1-c2-dfw.salesforceliveagent.com/chat', '57250000000GmvK', '00D300000000zZB');
         </script>
     % else:
         <script type='text/javascript' src='https://c.la1-c1cs-dfw.salesforceliveagent.com/content/g/js/36.0/deployment.js'></script>
         <script type='text/javascript'>
+            //  Set User Name for Live Agent
+            liveagent.setName('Martin Valenzuela');
+
+            //  Setup Default Cases
+            liveagent.addCustomDetail('ContactIdDetail', '0035000002KRFrRAAX');
+            liveagent.addCustomDetail('AccountIdDetail', '0015000000cmCxXAAU');
+            liveagent.addCustomDetail('CaseOrigin', 'Web');
+
+            // below is replacement code per chuck
+            liveagent.findOrCreate('Contact').map('Id', 'ContactIdDetail', true, true, false).saveToTranscript('ContactId');
+            liveagent.findOrCreate('Account').map('Id', 'AccountIdDetail', true, true, false).saveToTranscript('AccountId');
+            // end of replacement code per chuck
+
             liveagent.init('https://d.la1-c1cs-dfw.salesforceliveagent.com/chat', '57250000000GmvK', '00D3B000000DWR3');
         </script>
     % end
