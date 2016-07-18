@@ -1,6 +1,6 @@
 __author__ = 'Lothilius'
 
-import SFDC_User
+import SFDC_User_List
 import numpy as np
 
 
