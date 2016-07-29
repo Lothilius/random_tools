@@ -51,8 +51,8 @@ try:
 
             # If no low priority replies where found send a low priority message to ticket requester
             if present == 0:
-                ticket.send_priority_reply()
-                reply_messages_sent.append("Reply sent for %s" % ticket.hdt_id)
+                creation = ticket.send_priority_reply()
+                reply_messages_sent.append("Reply sent for %s, %s" % (ticket.hdt_id, creation))
 
             # print 'done'
         except:

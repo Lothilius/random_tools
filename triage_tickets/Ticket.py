@@ -4,6 +4,7 @@ __author__ = 'Lothilius'
 
 from HelpdeskConnection import HelpdeskConnection as hdc
 import sys
+import re
 from time import time
 
 reload(sys)
@@ -137,7 +138,11 @@ class Ticket(object):
         """
         requester_first_name = self.details['REQUESTER'].split()[0]
         requester_email = self.details['REQUESTEREMAIL']
-        subject = 'Re: [Request ID :##%s##] : ' % self.hdt_id + self.details['SUBJECT']
+
+        # Create subject without special characters.
+        subject = 'Re: [Request ID :##%s##] : %s' % \
+                  (self.hdt_id, re.sub('[^A-Za-z0-9\s]+', '', self.details['SUBJECT']))
+        print subject
         reply_message = "Hi %s -<br><br>" \
                         "Thanks for submitting a Helpdesk request. Please be aware that, due to capacity constraints on " \
                         "our team (Business Applications), we aren\\'t able to respond to low priority issues at this time. If you " \
