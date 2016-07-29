@@ -19,10 +19,9 @@ low_priority_message = """Please be aware that, due to capacity constraints on o
 try:
     # Get list of filters of list views in Helpdesk
     filters = pd.DataFrame(TicketList.get_filter_list())
-    holding_pool_id = filters[filters.VIEWNAME == 'Holding Pool - Pending Assignment'].VIEWID.iloc[0]
 
     # Get list of helpdesk tickets using the holding pool list view.
-    tickets = TicketList(holding_pool_id)
+    tickets = TicketList('Holding Pool - Pending Assignment')
     tickets = TicketList.reformat_as_dataframe(tickets)
     tickets = tickets[tickets.TECHNICIAN == '']
     reply_messages_sent = []
