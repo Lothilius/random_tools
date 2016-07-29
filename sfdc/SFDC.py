@@ -56,7 +56,7 @@ class SFDC(Status):
 
         query = "SELECT Id FROM %s " \
                 "WHERE RecordTypeId = '%s' " \
-                "'%s'%s%s" % (sf_object, type, status, sub_status, technician)
+                "%s%s%s" % (sf_object, type, status, sub_status, technician)
 
         return query
 
