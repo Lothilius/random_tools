@@ -62,18 +62,18 @@ class HelpdeskConnection(object):
             wait(2)
             HelpdeskConnection.fetch_from_helpdesk(url, querystring, headers)
 
-    @staticmethod
-    def get_view_id(view_name=''):
-        try:
-            # Get the view ID for the pending view HD
-            filters = pd.DataFrame(TicketList.get_filter_list())
-            view__id = filters[filters.VIEWNAME == 'Pending'].VIEWID.iloc[0]
-
-            return view__id
-        except ValueError:
-            view_name = raw_input('Please enter valid view name: ')
-            get_view_id(view_name)
-        except:
-            error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-            print error_result
+    # @staticmethod
+    # def get_view_id(view_name=''):
+    #     try:
+    #         # Get the view ID for the pending view HD
+    #         filters = pd.DataFrame(TicketList.get_filter_list())
+    #         view__id = filters[filters.VIEWNAME == 'Pending'].VIEWID.iloc[0]
+    #
+    #         return view__id
+    #     except ValueError:
+    #         view_name = raw_input('Please enter valid view name: ')
+    #         get_view_id(view_name)
+    #     except:
+    #         error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+    #         print error_result
 
