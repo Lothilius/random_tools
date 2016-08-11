@@ -60,3 +60,17 @@ class Authentication(object):
             sandbox = True
 
         return username, password, token, sandbox
+
+
+    @staticmethod
+    def tableau_publishing(datasource_type='HDT'):
+        server_url = 'https://tableau.bazaarvoice.com/'
+        project = 'Business Applications'
+        site_id = 'BizTech'
+        if datasource_type == 'HDT':
+            # Set values for publishing the data.
+            username, password = Authentication.tableau__credentials()
+            data_source_name = 'HDT-test'
+
+
+        return server_url, username, password, site_id, data_source_name, project
