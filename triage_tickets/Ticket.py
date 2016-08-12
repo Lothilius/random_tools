@@ -11,11 +11,13 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 class Ticket(object):
-    def __init__(self, hdt_id):
+    def __init__(self, hdt_id, with_resolution=False):
         self.hdt_id = hdt_id
-        self.resolution = self.get_resolution()
+        if with_resolution:
+            self.resolution = self.get_resolution()
         self.details = self.get_ticket_details()
         self.conversations = ''
+
 
     def __getitem__(self, item):
         details = list(dict(self.details))
@@ -40,7 +42,10 @@ class Ticket(object):
         del querystring['INPUT_DATA']
         # print querystring
         helpdesk_ticket_details = hdc.fetch_from_helpdesk(url, querystring, headers)
-        helpdesk_ticket_details.update(self.resolution)
+        try:
+            helpdesk_ticket_details.update(self.resolution)
+        except AttributeError:
+            pass
 
         return helpdesk_ticket_details
 
