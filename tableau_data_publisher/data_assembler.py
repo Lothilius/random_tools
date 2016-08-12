@@ -65,10 +65,15 @@ class TDEAssembler (object):
         ExtractAPI.initialize()
 
         with Extract(file_name) as data_extract:
-            table = None
-            table_definition = None
+            # table = None
+            # table_definition = None
 
-            if not data_extract.hasTable('Extract'):
+            # If extract Does exist add to the Extract table and file
+            if data_extract.hasTable('Extract'):
+                # Open an existing table to add more rows
+                table = data_extract.openTable('Extract')
+                table_definition = table.getTableDefinition()
+            else:
                 table_definition = TableDefinition()
                 for each in data_meta.as_matrix():
                     # Add the column info to the table definition
@@ -94,6 +99,16 @@ class TDEAssembler (object):
         """
         self.data_frame['Extract_Timestamp'] = time_of_extract
 
+    def tde_file(self):
+        """ Use this in conjuction with the data publisher in order to publish the data.
+        :return: File name and path to the tde extract file
+        """
+        # Create filename with path, name a time stamp
+        if self.extract_name == '':
+            self.extract_name = 'tableau_extract_file'
+        file_name = '%s%s_.tde' % (self.file_path, self.extract_name)
+
+        return file_name
 
     @staticmethod
     def add_to_row(row_object, column_number, value, value_type):
