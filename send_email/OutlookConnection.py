@@ -47,6 +47,16 @@ class OutlookConnection(object):
             error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
 
+    @staticmethod
+    def create_helpdesk_ticket(subject, body, cc='', bcc=''):
+        """ Use to quickly email Helpdesk
+        :param subject: The subject of the email
+        :param body: The message of the email
+        :return:
+        """
+        to = 'helpdesk@bazaarvoice.com'
+        OutlookConnection.send_email(to=to, cc=cc, bcc=bcc, subject=subject, body=body)
+
 
     @staticmethod
     def connect_mail(username, password):
