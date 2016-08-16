@@ -7,6 +7,8 @@ import re
 import datetime
 import sys
 from misc_helpers.data_manipulation import correct_date_dtype
+from pyprogressbar import Bar
+import time
 
 pd.set_option('display.width', 160)
 
@@ -93,10 +95,13 @@ class TicketList(object):
                         helpdesk_tickets, self.get_100_tickets(helpdesk_que=helpdesk_que, from_value=from_value))
             # print pd.DataFrame(helpdesk_tickets)
             ticket_details = []
+            pbar = Bar(len(helpdesk_tickets))
+            print 'Retrieving ticket detail.'
             for i, each in enumerate(helpdesk_tickets):
                 # print i
                 ticket = Ticket(each['WORKORDERID'], self.with_resolution)
                 ticket_details.append(ticket.details)
+                pbar.passed()
 
             return ticket_details
         except EOFError:

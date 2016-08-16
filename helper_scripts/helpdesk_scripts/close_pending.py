@@ -6,7 +6,7 @@ import sys
 if __name__ == '__main__':
     try:
         # Retrieve the list of tickets from the view
-        ticket_list = TicketList(helpdesk_que='Pending')
+        ticket_list = TicketList(helpdesk_que='Pending', with_resolution=True)
         ticket_list = TicketList.reformat_as_dataframe(ticket_list)
 
         # Work through the list and set the status to Resolved for each ticket.
