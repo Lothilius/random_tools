@@ -20,7 +20,7 @@ class HelpdeskConnection(object):
         :return: string of the URL, dict of the query, and a dict of the header
         """
         # Main HDT api URL
-        url = "http://sdpondemand.manageengine.com/api/json/request"
+        url = "https://sdpondemand.manageengine.com/api/json/request"
         # Query values go in this json structure
         querystring = {"scope":"sdpodapi",
                        "authtoken": auth.hdt_token(),
