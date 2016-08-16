@@ -10,6 +10,8 @@ from datetime import datetime
 from tableausdk import *
 from tableausdk.Extract import *
 import numpy as np
+from pyprogressbar import Bar
+import time
 
 
 # Define type maps
@@ -86,10 +88,14 @@ class TDEAssembler (object):
 
 
             new_row = Row(table_definition)
-            for i in range(self.data_frame.shape[0]):
-                for j, item in enumerate(data_meta['column_name'].tolist()):
-                    self.add_to_row(new_row, j, self.data_frame[item].iloc[i], data_meta['data_type'][j])
+            count = self.data_frame.shape[0]
+            pbar = Bar(count)
+            # Run through dataframe date and add data to the table object
+            for i in range(count):
+                for j, column_name in enumerate(data_meta['column_name'].tolist()):
+                    self.add_to_row(new_row, j, self.data_frame[column_name].iloc[i], data_meta['data_type'][j], column_name)
                 table.insert(new_row)
+                pbar.passed()
 
             data_extract.close()
 
@@ -110,8 +116,7 @@ class TDEAssembler (object):
 
         return file_name
 
-    @staticmethod
-    def add_to_row(row_object, column_number, value, value_type):
+    def add_to_row(self, row_object, column_number, value, value_type, column_name):
         """ Convert the value and add it to the row object given.
         :param row_object: The row object of the table
         :param column_number: The column number for the value you are adding
@@ -122,48 +127,54 @@ class TDEAssembler (object):
         value_type = str(value_type)
         try:
             if column_number != 35:
-                value = datetime.combine(value, datetime.min.time())
+                value = datetime.strptime(str(value), '%Y-%m-%d %H:%M:%S')
                 value_type = 'datetime64[ns]'
-        except:
+        except ValueError:
             try:
                 if column_number != 35:
-                    value = datetime.strptime(value, '%Y-%m-%d')
+                    value = datetime.strptime(str(value), '%Y-%m-%d')
                     value_type = 'datetime64[ns]'
-            except:
-                pass
-        if value == None or str(value) == str(np.nan):
-            value = 'NA'
-        if value == False or value == True:
-            value = str(value)
-        if value_type == 'bool':
-            row_object.setBoolean(column_number, value)
-        elif value_type == 'bytes':
-            row_object.setInteger(column_number, value)
-        elif value_type == 'int64':
-            if value == 'NA':
-                value = 0
-            row_object.setLongInteger(column_number, value)
-        elif value_type == 'float64':
-            if isinstance(value, str):
-                value = float(0.0)
-            row_object.setDouble(column_number, value)
-        elif value_type == 'datetime64[ns]':
-            # Split the datetime in to its components
-            if value == 'NA':
-                value = datetime.strptime('2000-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
-            year = value.year
-            month = value.month
-            day = value.day
-            hour = value.hour
-            min = value.minute
-            sec = value.second
-            try:
-                frac = value.microsecond / 10000
-            except:
-                frac = 0
-            row_object.setDateTime(column_number, year, month, day,	hour, min, sec, frac)
-        else:
-            row_object.setString(column_number, value)
+            except ValueError:
+                try:
+                    value = datetime.strptime(str(value), '%Y-%m-%d %H:%M:%S')
+                except:
+                    pass
+        try:
+            if value == None or str(value) == str(np.nan):
+                value = 'NA'
+            if value == False or value == True:
+                value = str(value)
+            if value_type == 'bool':
+                row_object.setBoolean(column_number, value)
+            elif value_type == 'bytes':
+                row_object.setInteger(column_number, value)
+            elif value_type == 'int64':
+                if value == 'NA':
+                    value = 0
+                row_object.setLongInteger(column_number, value)
+            elif value_type == 'float64':
+                if isinstance(value, str):
+                    value = float(0.0)
+                row_object.setDouble(column_number, value)
+            elif value_type == 'datetime64[ns]':
+                # Split the datetime in to its components
+                if value == 'NA':
+                    value = datetime.strptime('2000-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+                year = value.year
+                month = value.month
+                day = value.day
+                hour = value.hour
+                min = value.minute
+                sec = value.second
+                try:
+                    frac = value.microsecond / 10000
+                except:
+                    frac = 0
+                row_object.setDateTime(column_number, year, month, day,	hour, min, sec, frac)
+            else:
+                row_object.setString(column_number, value)
+        except:
+            self.data_frame = pd.read_pickle(path='/Users/martin.valenzuela/Downloads/The_Test')
 
 if __name__ == '__main__':
     now = datetime.now()
