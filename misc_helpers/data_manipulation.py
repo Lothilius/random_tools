@@ -41,12 +41,13 @@ def correct_date_dtype(data_frame, date_time_format=''):
                          'DUEBYTIME',
                          'COMPLETEDTIME',
                          'RESOLUTIONLASTUPDATEDTIME',
-                         'RESPONDEDTIME']
+                         'RESPONDEDTIME',
+                         'Extract_Timestamp']
     columns = data_frame.columns
     data_frame.fillna('0', inplace=True)
     for each in columns.tolist():
         if each in date_time_columns:
-            data_frame[each].replace(to_replace=['0', 'NA', '-1'], value='2000-01-01 00:00:00', inplace=True)
+            data_frame[each].replace(to_replace=['0', 'NA', '-1', '-'], value='2000-01-01 00:00:00', inplace=True)
             # data_frame[each].replace(to_replace='NA', value='2000-01-01 00:00:00', inplace=True)
             data_frame[each] = pd.to_datetime(data_frame[each], format=date_time_format)
 
