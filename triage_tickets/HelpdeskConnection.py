@@ -20,7 +20,7 @@ class HelpdeskConnection(object):
         :return: string of the URL, dict of the query, and a dict of the header
         """
         # Main HDT api URL
-        url = "http://sdpondemand.manageengine.com/api/json/request"
+        url = "https://sdpondemand.manageengine.com/api/json/request"
         # Query values go in this json structure
         querystring = {"scope":"sdpodapi",
                        "authtoken": auth.hdt_token(),
@@ -46,18 +46,34 @@ class HelpdeskConnection(object):
         wait(1)
         # Create the request and capture the response.
         response = requests.request("POST", url, headers=headers, params=querystring)
-
+        # print response
         # Load the response to the request as a json object.
         helpdesk_tickets = json.loads(response.text)
 
         # print(json.dumps(helpdesk_tickets["operation"]["Details"], indent=4))
         try:
             return helpdesk_tickets["operation"]["Details"]
-        except :
+        except KeyError:
+            return helpdesk_tickets["operation"]["result"]
+        except:
             error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
             print helpdesk_tickets["operation"]
             wait(2)
             HelpdeskConnection.fetch_from_helpdesk(url, querystring, headers)
 
+    # @staticmethod
+    # def get_view_id(view_name=''):
+    #     try:
+    #         # Get the view ID for the pending view HD
+    #         filters = pd.DataFrame(TicketList.get_filter_list())
+    #         view__id = filters[filters.VIEWNAME == 'Pending'].VIEWID.iloc[0]
+    #
+    #         return view__id
+    #     except ValueError:
+    #         view_name = raw_input('Please enter valid view name: ')
+    #         get_view_id(view_name)
+    #     except:
+    #         error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+    #         print error_result
 

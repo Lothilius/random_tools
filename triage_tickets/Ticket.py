@@ -4,15 +4,20 @@ __author__ = 'Lothilius'
 
 from HelpdeskConnection import HelpdeskConnection as hdc
 import sys
+import re
+from time import time
 
 reload(sys)
 sys.setdefaultencoding('utf8')
 
 class Ticket(object):
-    def __init__(self, hdt_id):
+    def __init__(self, hdt_id, with_resolution=False):
         self.hdt_id = hdt_id
-        self.details = self.get_ticket_details(self.hdt_id)
+        if with_resolution:
+            self.resolution = self.get_resolution()
+        self.details = self.get_ticket_details()
         self.conversations = ''
+
 
     def __getitem__(self, item):
         details = list(dict(self.details))
@@ -24,19 +29,23 @@ class Ticket(object):
         """
         return str(self.details)
 
-    def get_ticket_details(self, ticket_number):
+    def get_ticket_details(self):
         """ Retrieve ticket detials for individual ticket.
         :param ticket_number: The workorder id of ticket number of the Ticket
         :return: Dictionary of the ticket details
         """
         url, querystring, headers = hdc.create_api_request()
 
-        url = url + "/" + ticket_number
+        url = url + "/" + self.hdt_id
 
         querystring['OPERATION_NAME'] = "GET_REQUEST"
         del querystring['INPUT_DATA']
         # print querystring
         helpdesk_ticket_details = hdc.fetch_from_helpdesk(url, querystring, headers)
+        try:
+            helpdesk_ticket_details.update(self.resolution)
+        except AttributeError:
+            pass
 
         return helpdesk_ticket_details
 
@@ -57,6 +66,32 @@ class Ticket(object):
         self.conversations = list(ticket_conversation_details)
         return self.conversations
 
+    def get_resolution(self):
+        """ Retrieve resolution for individual ticket.
+        :param ticket_number: The workorder id of ticket number of the Ticket
+        :return: Dictionary of the ticket details
+        """
+        url, querystring, headers = hdc.create_api_request()
+
+        url = url + "/" + self.hdt_id + "/resolution"
+
+        querystring['OPERATION_NAME'] = "GET_RESOLUTION"
+        del querystring['INPUT_DATA']
+        # print querystring
+        ticket_resolution_details = hdc.fetch_from_helpdesk(url, querystring, headers)
+        # If Resolution is response is empty pad with NA
+        if ticket_resolution_details == {}:
+            ticket_resolution_details['RESOLUTION'] = 'NA'
+            ticket_resolution_details['RESOLUTIONLASTUPDATEDTIME'] = 'NA'
+            ticket_resolution_details['RESOLVER'] = 'NA'
+            self.resolution = ticket_resolution_details
+        else:
+            ticket_resolution_details['RESOLUTIONLASTUPDATEDTIME'] = \
+                ticket_resolution_details.pop('LASTUPDATEDTIME')
+            self.resolution = ticket_resolution_details
+
+        return self.resolution
+
     def get_conversation_detail(self, conversation_id):
         """ Retrieve conversation detials for an individual ticket.
         :param conversation_id: The workorder id of ticket number of the Ticket
@@ -74,6 +109,33 @@ class Ticket(object):
         get_conversation_detail = list([ticket_conversation_details])
         return get_conversation_detail
 
+    @staticmethod
+    def set_status(hdt_id, status='Resolved'):
+        """ Set status for ticket.
+        :param hdt_id: The workorder id of ticket number of the Ticket
+        :param status: String value selectable as the status for the HDT
+        :return: Dictionary of the ticket details once the status has been changed.
+        """
+        try:
+            # Change today to Epoch time
+            print hdt_id, status
+            url, querystring, headers = hdc.create_api_request()
+
+            url = url + "/" + hdt_id
+
+            querystring['OPERATION_NAME'] = "EDIT_REQUEST"
+            querystring['INPUT_DATA'] = "{operation:{" \
+                                        "Details:{" \
+                                        "STATUS:%s}}}" % status
+            # print querystring
+            helpdesk_ticket_details = hdc.fetch_from_helpdesk(url, querystring, headers)
+
+            return helpdesk_ticket_details
+        except:
+            error_result = "Unexpected error 1T: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+            print error_result
+
+
     def send_priority_reply(self):
         """ Send a hard coded reply to a ticket.
         :param requester_email: The workorder id of ticket number of the Ticket
@@ -81,7 +143,11 @@ class Ticket(object):
         """
         requester_first_name = self.details['REQUESTER'].split()[0]
         requester_email = self.details['REQUESTEREMAIL']
-        subject = 'Re: [Request ID :##%s##] : ' % self.hdt_id + self.details['SUBJECT']
+
+        # Create subject without special characters.
+        subject = 'Re: [Request ID :##%s##] : %s' % \
+                  (self.hdt_id, re.sub('[^A-Za-z0-9\s]+', '', self.details['SUBJECT']))
+        print subject
         reply_message = "Hi %s -<br><br>" \
                         "Thanks for submitting a Helpdesk request. Please be aware that, due to capacity constraints on " \
                         "our team (Business Applications), we aren\\'t able to respond to low priority issues at this time. If you " \
@@ -107,5 +173,7 @@ class Ticket(object):
         return get_conversation_detail
 
 if __name__ == '__main__':
-    ticket = Ticket('11098')
-    print ticket.send_priority_reply()
+    ticket = Ticket('15438')
+    # print ticket
+    print ticket
+
