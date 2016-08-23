@@ -9,7 +9,7 @@ from simple_salesforce import Salesforce
 
 
 class SFDC(Status):
-    """ Extend Status class for Helpdesk.
+    """ Extend Status class fot Salesforce.
     """
 
     def get_status(self):
@@ -27,7 +27,7 @@ class SFDC(Status):
         pass
 
     def aggregate_tickets(self, ticket_list_a, ticket_list_b):
-        """ Join to lists of helpdesk tickets.
+        """ Join to lists ot Salesforce tickets.
 
         :param ticket_list_a: list
         :param ticket_list_b: list
@@ -69,7 +69,7 @@ class SFDC(Status):
                   status='In Progress',
                   sub_status='In Development',
                   technician=''):
-        """ Get helpdesk tickets for the respective que 100 at a time.
+        """ Get Salesforce tickets for the respective que 100 at a time.
         :return: OrderedDict that contains totalsize, done, and records. Records in turn is also given as an
                 OrderedDict with the actualrecords data.
         """
@@ -79,7 +79,7 @@ class SFDC(Status):
         return result
 
     @staticmethod
-    def connect_to_SFDC(environment='staging'):
+    def connect_to_SFDC(environment='prod'):
         user_name, pw, token, sandbox = auth.sfdc_login(environment)
         sf = Salesforce(username=user_name, password=pw, security_token=token, sandbox=sandbox)
 

@@ -95,8 +95,8 @@ class TicketList(object):
                         helpdesk_tickets, self.get_100_tickets(helpdesk_que=helpdesk_que, from_value=from_value))
             # print pd.DataFrame(helpdesk_tickets)
             ticket_details = []
-            pbar = Bar(len(helpdesk_tickets))
             print 'Retrieving ticket detail.'
+            pbar = Bar(len(helpdesk_tickets))
             for i, each in enumerate(helpdesk_tickets):
                 # print i
                 ticket = Ticket(each['WORKORDERID'], self.with_resolution)
@@ -164,7 +164,7 @@ class TicketList(object):
 
 
 if __name__ == '__main__':
-    tickets = TicketList('YtoD-BizApps', with_resolution=True)
+    tickets = TicketList('Triage', with_resolution=True)
     tickets = tickets.reformat_as_dataframe(tickets)
     tickets.drop('ATTACHMENTS', axis=1, inplace=True)
     tickets.to_csv(path_or_buf='/Users/martin.valenzuela/Box Sync/Documents/Austin Office/HDT/year_to_date_7-31-2016.csv', index=False)
