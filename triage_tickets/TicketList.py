@@ -164,7 +164,7 @@ class TicketList(object):
 
 
 if __name__ == '__main__':
-    tickets = TicketList('YtoD-BizApps', with_resolution=True)
+    tickets = TicketList('Triage', with_resolution=True)
     tickets = tickets.reformat_as_dataframe(tickets)
     tickets.drop('ATTACHMENTS', axis=1, inplace=True)
     tickets.to_csv(path_or_buf='/Users/martin.valenzuela/Box Sync/Documents/Austin Office/HDT/year_to_date_7-31-2016.csv', index=False)
