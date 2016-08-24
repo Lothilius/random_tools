@@ -12,7 +12,7 @@ from send_email.OutlookConnection import OutlookConnection as outlook
 
 try:
     # Get tickets from the HDT view
-    tickets = TicketList(helpdesk_que='YtoD-BizApps')
+    tickets = TicketList(helpdesk_que='YtoD-BizApps', with_resolution=True)
     tickets = tickets.reformat_as_dataframe(tickets)
     try:
         tickets.drop('ATTACHMENTS', axis=1, inplace=True)
