@@ -21,7 +21,7 @@ try:
     tickets = correct_date_dtype(tickets, date_time_format='%Y-%m-%d %H:%M:%S')
 
     # Package in to a tde file
-    data_file = TDEAssembler(data_frame=tickets, extract_name='testing')
+    data_file = TDEAssembler(data_frame=tickets, extract_name='BizApps_HDT')
     # Set values for publishing the data.
     file_name = str(data_file)
     server_url, username, password, site_id, data_source_name, project = auth.tableau_publishing('HDT')

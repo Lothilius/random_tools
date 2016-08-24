@@ -174,7 +174,7 @@ class TDEAssembler (object):
             else:
                 row_object.setString(column_number, value)
         except:
-            self.data_frame = pd.read_pickle(path='/Users/martin.valenzuela/Downloads/The_Test')
+            self.data_frame = pd.read_pickle(path='~/The_Test')
 
 if __name__ == '__main__':
     now = datetime.now()
