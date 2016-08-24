@@ -70,7 +70,10 @@ class Authentication(object):
         if datasource_type == 'HDT':
             # Set values for publishing the data.
             username, password = Authentication.tableau__credentials()
-            data_source_name = 'HDT-test'
+            if environ['MY_ENVIRONMENT'] == 'prod':
+                data_source_name = 'Helpdesk-Tickets'
+            else:
+                data_source_name = 'HDT-test'
 
 
         return server_url, username, password, site_id, data_source_name, project

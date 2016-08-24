@@ -12,7 +12,7 @@ from send_email.OutlookConnection import OutlookConnection as outlook
 
 try:
     # Get tickets from the HDT view
-    tickets = TicketList(helpdesk_que='YtoD-BizApps')
+    tickets = TicketList(helpdesk_que='YtoD-BizApps', with_resolution=True)
     tickets = tickets.reformat_as_dataframe(tickets)
     try:
         tickets.drop('ATTACHMENTS', axis=1, inplace=True)
@@ -21,7 +21,7 @@ try:
     tickets = correct_date_dtype(tickets, date_time_format='%Y-%m-%d %H:%M:%S')
 
     # Package in to a tde file
-    data_file = TDEAssembler(data_frame=tickets, extract_name='testing')
+    data_file = TDEAssembler(data_frame=tickets, extract_name='BizApps_HDT')
     # Set values for publishing the data.
     file_name = str(data_file)
     server_url, username, password, site_id, data_source_name, project = auth.tableau_publishing('HDT')

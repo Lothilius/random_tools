@@ -11,7 +11,8 @@ from tableausdk import *
 from tableausdk.Extract import *
 import numpy as np
 from pyprogressbar import Bar
-import time
+from os.path import expanduser
+
 
 
 # Define type maps
@@ -174,7 +175,8 @@ class TDEAssembler (object):
             else:
                 row_object.setString(column_number, value)
         except:
-            self.data_frame = pd.read_pickle(path='/Users/martin.valenzuela/Downloads/The_Test')
+            home = expanduser("~")
+            self.data_frame = pd.read_pickle(path=home)
 
 if __name__ == '__main__':
     now = datetime.now()
