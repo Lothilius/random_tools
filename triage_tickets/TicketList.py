@@ -1,4 +1,5 @@
 __author__ = 'Lothilius'
+# coding: utf-8
 
 from Ticket import Ticket
 from HelpdeskConnection import HelpdeskConnection as hdc
@@ -10,8 +11,10 @@ from misc_helpers.data_manipulation import correct_date_dtype
 from pyprogressbar import Bar
 import time
 
-pd.set_option('display.width', 160)
 
+reload(sys)
+sys.setdefaultencoding('utf8')
+pd.set_option('display.width', 160)
 
 class TicketList(object):
     """ The ticket list class creates an object that gathers individual tickets that belong to a particular list view.
@@ -155,7 +158,7 @@ class TicketList(object):
         ticket_details = pd.DataFrame(list(ticket_details))
         ticket_details = ticket_details.rename(columns={'UDF_CHAR1': 'Department_Group',
                                                         'UDF_CHAR2': 'System',
-                                                        'UDF_CHAR11': 'Object'})
+                                                        'UDF_CHAR11': 'System Component'})
         ticket_details = ticket_details.applymap(TicketList.convert_time)
         # ticket_details = ticket_details.applymap(TicketList.reduce_to_year)
         ticket_details = correct_date_dtype(ticket_details, date_time_format='%Y-%m-%d %H:%M:%S')
