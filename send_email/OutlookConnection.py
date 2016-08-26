@@ -1,14 +1,19 @@
 __author__ = 'Lothilius'
+# coding: utf-8
 
 import smtplib
 from bv_authenticate.Authentication import Authentication as auth
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import sys
 
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 class OutlookConnection(object):
 
     @staticmethod
-    def send_email(to, cc='', bcc='', subject='', body=' '):
+    def send_email(to, cc='', bcc='', subject='', body=' ', html=''):
         username = ''
         password = ''
         # TODO - create user interactive section here.
@@ -40,11 +45,24 @@ class OutlookConnection(object):
 
             all_emails = [to] + [cc] + [bcc]
             email_connection = OutlookConnection.connect_mail(username, password)
-            email_connection.sendmail(username, all_emails, full_message)
+            if html != '':
+                html = html.encode("utf-8")
+                msg = MIMEMultipart('alternative')
+                msg['Subject'] = subject
+                msg['From'] = username
+                msg['To'] = to
+                part1 = MIMEText(html, 'plain')
+                part2 = MIMEText(html, 'html')
+                # the HTML message, is best and preferred.
+                msg.attach(part1)
+                msg.attach(part2)
+                email_connection.sendmail(username, all_emails, msg.as_string())
+            else:
+                email_connection.sendmail(username, all_emails, full_message)
             email_connection.close()
             print 'Message sent'
         except:
-            error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+            error_result = "Unexpected error 1OC: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
 
     @staticmethod
