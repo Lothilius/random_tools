@@ -27,6 +27,8 @@ try:
     server_url, username, password, site_id, data_source_name, project = auth.tableau_publishing('HDT')
 
     publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
+    outlook.send_email(to='martin.valenzuela@bazaarvoice.com',
+                       subject='HDT-Data update complete', body='HDT-Data update complete')
 
 except ValueError:
     error_result = "Unexpected AttributeError: %s, %s"\
