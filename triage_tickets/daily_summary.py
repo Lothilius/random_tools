@@ -17,7 +17,6 @@ pd.set_option('display.max_colwidth', -1)
 
 def triage_timeframe():
     today_date_time = datetime.today()
-    today_date_time = today_date_time + timedelta(days=1)
     today_date_time = today_date_time.replace(hour=10, minute=0, second=0, microsecond=0)
     if today_date_time.weekday() in range(1, 4):
         last_triage = today_date_time - timedelta(days=1)
