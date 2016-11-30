@@ -1,3 +1,4 @@
+# coding: utf-8
 __author__ = 'Lothilius'
 
 from triage_tickets.TicketList import TicketList
