@@ -95,73 +95,70 @@ def determine_true_closed_date(row):
         return row[0]
 
 def main():
-    # try:
-    ticket_list = get_sfdc_data()
-    # print ticket_list['records'][0]['Histories']['records']
+    try:
+        ticket_list = get_sfdc_data()
+        # print ticket_list['records'][0]['Histories']['records']
 
-    ticket_list = pd.DataFrame(ticket_list['records'])
-    ticket_list[['InProgress Date', 'CompletedDate']] = ticket_list['Histories'].map(get_history).apply(pd.Series)
-    # print ticket_list.columns
-    # print ticket_list[['InProgress Date', 'CreatedDate']]
-
-
-    # Change date columns in to proper date columns
-    ticket_list['Created Date'] = ticket_list['CreatedDate'].apply(convert_datetime_to_date)
-    ticket_list['In Progress Date'] = ticket_list['InProgress Date'].apply(convert_datetime_to_date)
-    ticket_list['Completed Date'] = ticket_list['CompletedDate'].apply(convert_datetime_to_date)
-    ticket_list['Closed Date'] = ticket_list['ClosedDate'].apply(convert_datetime_to_date)
-
-    # Compare the start column and the completed date column to determine the date to use.
-    ticket_list['True Start Date'] = ticket_list[['In Progress Date', 'Created Date']]\
-        .apply(determine_true_closed_date, axis=1)
-
-    # Compare the completed column and the completed date column to determine the date to use.
-    ticket_list['True Closed Date'] = ticket_list[['Completed Date', 'Closed Date']]\
-        .apply(determine_true_closed_date, axis=1)
-
-    # Standardize the True completed date column
-    # ticket_list['True Closed Date'] = ticket_list['TrueClosed'].apply(convert_datetime_to_date)
-
-    ticket_list.drop(['attributes'], axis=1, inplace=True)
-
-    print "<--------------Yo here ------------>"
-    print ticket_list
-
-    # Group Cases by created date and resolved date.
-    # grouped_tickets = ticket_list.groupby(['True Start Date', 'True Closed Date'], as_index=False)#, 'Project__c', 'Release_Date__c', 'Status', 'Department_Requesting__c'], as_index=False)
-    # grouped_tickets = pd.DataFrame(grouped_tickets.size(), columns=['Open Cases'])
-    # grouped_tickets = grouped_tickets.reset_index()
-    grouped_tickets = ticket_list[['True Start Date', 'True Closed Date', 'Id', 'Status', 'CreatedDate', 'Department_Requesting__c', 'Project__c', 'Release_Date__c', 'ClosedDate']]
-    grouped_tickets_columns = grouped_tickets.columns
+        ticket_list = pd.DataFrame(ticket_list['records'])
+        ticket_list[['InProgress Date', 'CompletedDate']] = ticket_list['Histories'].map(get_history).apply(pd.Series)
+        # print ticket_list.columns
+        # print ticket_list[['InProgress Date', 'CreatedDate']]
 
 
-    print "<--------------Grouped here ------------>"
-    print grouped_tickets
+        # Change date columns in to proper date columns
+        ticket_list['Created Date'] = ticket_list['CreatedDate'].apply(convert_datetime_to_date)
+        ticket_list['In Progress Date'] = ticket_list['InProgress Date'].apply(convert_datetime_to_date)
+        ticket_list['Completed Date'] = ticket_list['CompletedDate'].apply(convert_datetime_to_date)
+        ticket_list['Closed Date'] = ticket_list['ClosedDate'].apply(convert_datetime_to_date)
 
-    open_list = pd.DataFrame(columns=['True Start Date', 'Snap Shot Date', 'Id', 'Status', 'CreatedDate', 'Department_Requesting__c', 'Project__c', 'Release_Date__c', 'ClosedDate']) #, 'Project__c', 'Release_Date__c', 'Status', 'Department_Requesting__c', 'Open Cases'])
-    open_list_columns = open_list.columns.tolist()
+        # Compare the start column and the completed date column to determine the date to use.
+        ticket_list['True Start Date'] = ticket_list[['In Progress Date', 'Created Date']]\
+            .apply(determine_true_closed_date, axis=1)
 
-    pbar = Bar(len(grouped_tickets.values))
-    for each in grouped_tickets.values:
-        # try:
-        if each[0] != dt.datetime.strptime('2000-01-01', '%Y-%m-%d').date():
-            cursor = each[0]
-            open_list = open_list.append(create_history(each, cursor, open_list_columns), ignore_index=True)
-        else:
-            print each[0],  each[-1]
-        # except:
-        #     error_result = "Unexpected error 1G: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-        #     print error_result, " ", open_list_columns
-        pbar.passed()
+        # Compare the completed column and the completed date column to determine the date to use.
+        ticket_list['True Closed Date'] = ticket_list[['Completed Date', 'Closed Date']]\
+            .apply(determine_true_closed_date, axis=1)
 
-    print open_list
-    now = dt.datetime.now().strftime('%Y-%m-%d_%H_%M')
-    open_list.to_csv('/Users/martin.valenzuela/Box Sync/Documents/Austin Office/HDT/sfdc_back_log%s.csv' % now, index=False)
-    alert_the_light()
-    alert_homer()
-    # except:
-    #     error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-    #     print error_result
+        # Standardize the True completed date column
+        # ticket_list['True Closed Date'] = ticket_list['TrueClosed'].apply(convert_datetime_to_date)
+
+        ticket_list.drop(['attributes'], axis=1, inplace=True)
+
+        print "<--------------Yo here ------------>"
+        print ticket_list
+
+        # Reduce the columns used.
+        grouped_tickets = ticket_list[['True Start Date', 'True Closed Date', 'Id', 'Status', 'CreatedDate', 'Department_Requesting__c', 'Project__c', 'Release_Date__c', 'ClosedDate']]
+        grouped_tickets_columns = grouped_tickets.columns
+
+
+        print "<--------------Grouped here ------------>"
+        print grouped_tickets
+
+        open_list = pd.DataFrame(columns=['True Start Date', 'Snap Shot Date', 'Id', 'Status', 'CreatedDate', 'Department_Requesting__c', 'Project__c', 'Release_Date__c', 'ClosedDate']) #, 'Project__c', 'Release_Date__c', 'Status', 'Department_Requesting__c', 'Open Cases'])
+        open_list_columns = open_list.columns.tolist()
+
+        pbar = Bar(len(grouped_tickets.values))
+        for each in grouped_tickets.values:
+            try:
+                if each[0] != dt.datetime.strptime('2000-01-01', '%Y-%m-%d').date():
+                    cursor = each[0]
+                    open_list = open_list.append(create_history(each, cursor, open_list_columns), ignore_index=True)
+                else:
+                    print each[0],  each[-1]
+            except:
+                error_result = "Unexpected error 1G: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+                print error_result, " ", open_list_columns
+            pbar.passed()
+
+        print open_list
+        now = dt.datetime.now().strftime('%Y-%m-%d_%H_%M')
+        open_list.to_csv('/Users/martin.valenzuela/Box Sync/Documents/Austin Office/HDT/sfdc_back_log%s.csv' % now, index=False)
+        alert_the_light()
+        alert_homer()
+    except:
+        error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+        print error_result
 
 
 if __name__ == '__main__':
