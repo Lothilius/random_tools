@@ -75,3 +75,10 @@ class Authentication(object):
 
 
         return server_url, username, password, site_id, data_source_name, project
+
+    @staticmethod
+    def hue_bridge():
+        hue_ip = environ['HUE_IP']
+        hue_token = environ['HUE_TOKEN']
+
+        return hue_ip, hue_token
