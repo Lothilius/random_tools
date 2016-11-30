@@ -46,7 +46,6 @@ class Authentication(object):
     def sfdc_login(environment='staging'):
         if environment == 'prod':
             username, password = Authentication.bv_credentials()
-            password = environ['MY_PW_STAGING']
             token = environ['MY_TOKEN']
             sandbox = False
         elif environment == 'media':
@@ -58,7 +57,6 @@ class Authentication(object):
             password = environ['MY_PW_STAGING']
             token = environ['SFDC_STAGING_TOKEN']
             sandbox = True
-
         return username, password, token, sandbox
 
 
