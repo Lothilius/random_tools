@@ -7,6 +7,7 @@ import pandas as pd
 from datetime import datetime, date, timedelta
 from HTMLParser import HTMLParser
 import sys
+import os
 
 
 reload(sys)
@@ -93,7 +94,14 @@ def main():
     full_tickets = full_tickets.to_html(index=False, show_dimensions=True)
 
     html = HTMLParser()
-    body = '<html><head></head><body>' + \
+
+    # Get Style sheet for the email.
+    f = open('/Users/martin.valenzuela/Dropbox/Coding/BV/bv_tools/static/styleTags.html', 'r')
+    style = f.readlines()
+    style = ' '.join(style)
+    style = html.unescape(style)
+
+    body = '<html><head>%s</head><body>' % (style) + \
            '<h2>BizApps - Triage</h2>' + html.unescape(ticket_triage) + '<br><br>'\
            '<h2>BizApps - Technical</h2>' + html.unescape(ticket_technical) + '<br><br>'\
            '<h2>BizApps - Integrations</h2>' + html.unescape(ticket_integration) + '<br><br>'\
