@@ -25,7 +25,7 @@ def get_sfdc_data(environment='prod'):
     """
     sf = SFDC.connect_to_SFDC(environment)
     build_query = "Select Id, Status, CreatedDate, Department_Requesting__c, Project__c, Release_Date__c, ClosedDate, " \
-                  "Sub_Status__c, (select OldValue, NewValue, CreatedDate from Histories) FROM Case WHERE RecordTypeId = '01250000000Hnex' " \
+                  "Sub_Status__c, Priority, (select OldValue, NewValue, CreatedDate from Histories) FROM Case WHERE RecordTypeId = '01250000000Hnex' " \
                   "AND (Project__c = 'a8B50000000Kyq8' OR Project__c = 'a8B50000000Kyqr')"
     result = sf.query_all(build_query)
 
@@ -101,8 +101,6 @@ def main():
 
         ticket_list = pd.DataFrame(ticket_list['records'])
         ticket_list[['InProgress Date', 'CompletedDate']] = ticket_list['Histories'].map(get_history).apply(pd.Series)
-        # print ticket_list.columns
-        # print ticket_list[['InProgress Date', 'CreatedDate']]
 
 
         # Change date columns in to proper date columns
@@ -128,14 +126,14 @@ def main():
         print ticket_list
 
         # Reduce the columns used.
-        grouped_tickets = ticket_list[['True Start Date', 'True Closed Date', 'Id', 'Status', 'CreatedDate', 'Department_Requesting__c', 'Project__c', 'Release_Date__c', 'ClosedDate']]
+        grouped_tickets = ticket_list[['True Start Date', 'True Closed Date', 'Id', 'Status', 'CreatedDate', 'Department_Requesting__c', 'Project__c', 'Priority', 'ClosedDate']]
         grouped_tickets_columns = grouped_tickets.columns
 
 
         print "<--------------Grouped here ------------>"
         print grouped_tickets
 
-        open_list = pd.DataFrame(columns=['True Start Date', 'Snap Shot Date', 'Id', 'Status', 'CreatedDate', 'Department_Requesting__c', 'Project__c', 'Release_Date__c', 'ClosedDate']) #, 'Project__c', 'Release_Date__c', 'Status', 'Department_Requesting__c', 'Open Cases'])
+        open_list = pd.DataFrame(columns=['True Start Date', 'Snap Shot Date', 'Id', 'Status', 'CreatedDate', 'Department_Requesting__c', 'Project__c', 'Priority', 'True Closed Date']) #, 'Project__c', 'Release_Date__c', 'Status', 'Department_Requesting__c', 'Open Cases'])
         open_list_columns = open_list.columns.tolist()
 
         pbar = Bar(len(grouped_tickets.values))
