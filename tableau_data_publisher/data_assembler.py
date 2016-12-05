@@ -60,6 +60,8 @@ class TDEAssembler (object):
         #  Create time stamp and Apply the time of extract to the data frame and the name of the file
         self.add_timestamp(self.time_of_extract)
         file_name = self.tde_file()
+        self.data_frame.to_pickle(file_name)
+        self.data_frame.to_csv(file_name, index=False)
         data_meta = pd.DataFrame(self.data_frame.dtypes.reset_index())
         data_meta.rename(columns={'index': 'column_name', 0: 'data_type'}, inplace=True)
 
