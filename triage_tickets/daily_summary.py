@@ -86,7 +86,7 @@ def main():
                                        )[['GROUP', 'TECHNICIAN', 'PRIORITY', 'WORKORDERID', 'SUBJECT']]
 
     to = 'martin.valenzuela@bazaarvoice.com'
-    subject = 'Triage summery %s' % str(date.today())
+    subject = 'Triage summary %s' % str(date.today())
     # print tickets.iloc[0].tolist()
     ticket_triage = ticket_triage.to_html()
     ticket_technical = ticket_technical.to_html()
