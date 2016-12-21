@@ -4,6 +4,8 @@ import dateutil
 import csv
 import pandas as pd
 from datetime import datetime
+from dateutil.parser import *
+import numpy as np
 
 def reformat_date_time(date_time_string):
     """
@@ -30,6 +32,14 @@ def array_from_file(filename):
 
     return data_array
 
+def correct_datetime_format(value):
+    try:
+        # print value, type(value)
+        value = parse(value).strftime('%Y-%m-%d %H:%M:%S')
+        return value
+    except:
+        return value
+
 
 # Set Date columns as the datetime dtype
 def correct_date_dtype(data_frame, date_time_format=''):
@@ -42,14 +52,26 @@ def correct_date_dtype(data_frame, date_time_format=''):
                          'COMPLETEDTIME',
                          'RESOLUTIONLASTUPDATEDTIME',
                          'RESPONDEDTIME',
-                         'Extract_Timestamp']
+                         'Extract_Timestamp',
+                         'RESOLVEDDATE']
+    # date_time_columns = ['Created Date',
+    #                      'Completed Date',
+    #                      'Resolved Date']
     columns = data_frame.columns
-    data_frame.fillna('0', inplace=True)
-    for each in columns.tolist():
-        if each in date_time_columns:
-            data_frame[each].replace(to_replace=['0', 'NA', '-1', '-'], value='2000-01-01 00:00:00', inplace=True)
-            # data_frame[each].replace(to_replace='NA', value='2000-01-01 00:00:00', inplace=True)
-            data_frame[each] = pd.to_datetime(data_frame[each], format=date_time_format)
+    data_frame.fillna('-', inplace=True)
+    for column_name in columns.tolist():
+        if column_name in date_time_columns:
+            try:
+                data_frame[column_name] = data_frame[column_name].apply(correct_datetime_format)
+                data_frame[column_name].replace(to_replace=['0', 'NA', '-1', '-', 'Not Assigned', np.nan],
+                                                value='2000-01-01 00:00:00', inplace=True)
+                # data_frame[column_name].replace(to_replace='NA', value='2000-01-01 00:00:00', inplace=True)
+                # print data_frame.columns
+                data_frame[column_name] = pd.to_datetime(data_frame[column_name], format=date_time_format, errors='coerce')
+                # print data_frame[column_name].iloc[0], type(data_frame[column_name].iloc[0])
+                # data_frame[column_name] = data_frame[column_name].apply(lambda x: x.date())
+            except IOError:
+                pass
 
     return data_frame
 

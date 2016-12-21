@@ -1,16 +1,14 @@
 __author__ = 'Lothilius'
 
-import smtplib
 import sys
-from send_email.OutlookConnection import OutlookConnection as out_look_email
+from HTMLParser import HTMLParser
+
 import pandas as pd
+
+from helper_scripts.misc_helpers.request_input_prompt import request_user_input
+from send_email.OutlookConnection import OutlookConnection as out_look_email
 from sfdc.SFDC_Users import SFDC_Package_License as sfdc_licenses
 from sfdc.SFDC_Users import SFDC_Users as sf_users
-from HTMLParser import HTMLParser
-from misc_helpers.request_input_prompt import request_user_input
-from pyprogressbar import Bar
-
-
 
 pd.set_option('display.width', 250)
 pd.set_option('display.max_columns', 40)
