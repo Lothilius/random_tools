@@ -1,10 +1,8 @@
 __author__ = 'Lothilius'
 
-from bv_authenticate.Authentication import Authentication as auth
-from simple_salesforce import Salesforce
 from sfdc.SFDC import SFDC
-from simple_salesforce import Salesforce
 import pandas as pd
+
 
 class SFDC_Users(object):
     """ Users from SFDC. When called, active internal users are retrieved from SFDC in a panda dataframe.
