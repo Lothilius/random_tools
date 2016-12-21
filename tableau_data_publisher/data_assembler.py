@@ -57,48 +57,55 @@ class TDEAssembler (object):
         """ Gather the data information and create the Tde.
         :return:
         """
-        #  Create time stamp and Apply the time of extract to the data frame and the name of the file
-        self.add_timestamp(self.time_of_extract)
-        file_name = self.tde_file()
-        data_meta = pd.DataFrame(self.data_frame.dtypes.reset_index())
-        data_meta.rename(columns={'index': 'column_name', 0: 'data_type'}, inplace=True)
+        try:
+            #  Create time stamp and Apply the time of extract to the data frame and the name of the file
+            self.add_timestamp(self.time_of_extract)
+            file_name = self.tde_file()
+            data_meta = pd.DataFrame(self.data_frame.dtypes.reset_index())
+            data_meta.rename(columns={'index': 'column_name', 0: 'data_type'}, inplace=True)
 
-        print "Creating extract:", file_name
+            print "Creating extract:", file_name
 
-        ExtractAPI.initialize()
+            ExtractAPI.initialize()
 
-        with Extract(file_name) as data_extract:
-            # table = None
-            # table_definition = None
+            with Extract(file_name) as data_extract:
+                # table = None
+                # table_definition = None
 
-            # If extract Does exist add to the Extract table and file
-            if data_extract.hasTable('Extract'):
-                # Open an existing table to add more rows
-                table = data_extract.openTable('Extract')
-                table_definition = table.getTableDefinition()
-            else:
-                table_definition = TableDefinition()
-                for each in data_meta.as_matrix():
-                    # Add the column info to the table definition
-                    if 'date' in str(each[0]).lower():
-                        table_definition.addColumn(str(each[0]), schema_type_map['datetime64[ns]'])
-                    else:
-                        table_definition.addColumn(str(each[0]), schema_type_map[str(each[1])])
-                # Create the Table with the table definition
-                table = data_extract.addTable("Extract", table_definition)
+                # If extract Does exist add to the Extract table and file
+                if data_extract.hasTable('Extract'):
+                    # Open an existing table to add more rows
+                    table = data_extract.openTable('Extract')
+                    table_definition = table.getTableDefinition()
+                else:
+                    table_definition = TableDefinition()
+                    for each in data_meta.as_matrix():
+                        # Add the column info to the table definition
+                        if 'date' in str(each[0]).lower():
+                            table_definition.addColumn(str(each[0]), schema_type_map['datetime64[ns]'])
+                        else:
+                            table_definition.addColumn(str(each[0]), schema_type_map[str(each[1])])
+                    # Create the Table with the table definition
+                    table = data_extract.addTable("Extract", table_definition)
 
 
-            new_row = Row(table_definition)
-            count = self.data_frame.shape[0]
-            pbar = Bar(count)
-            # Run through dataframe date and add data to the table object
-            for i in range(count):
-                for j, column_name in enumerate(data_meta['column_name'].tolist()):
-                    self.add_to_row(new_row, j, self.data_frame[column_name].iloc[i], data_meta['data_type'][j], column_name)
-                table.insert(new_row)
-                pbar.passed()
+                new_row = Row(table_definition)
+                count = self.data_frame.shape[0]
+                pbar = Bar(count)
+                # Run through dataframe date and add data to the table object
+                for i in range(count):
+                    for j, column_name in enumerate(data_meta['column_name'].tolist()):
+                        self.add_to_row(new_row, j, self.data_frame[column_name].iloc[i], data_meta['data_type'][j], column_name)
+                    table.insert(new_row)
+                    pbar.passed()
 
-            data_extract.close()
+                data_extract.close()
+        except:
+            file_name = self.tde_file()
+            self.data_frame.to_pickle(file_name.replace('.tde', '_pickle'))
+            self.data_frame.to_csv(file_name.replace('.tde', '.csv'), index=False)
+            raise Exception("Error in creating tde file please consult data files. \n%s\n%s"
+                            % (file_name.replace('.tde', '_pickle'), file_name.replace('.tde', '.csv')))
 
     def add_timestamp(self, time_of_extract):
         """ Create a column stamping all the tickets with the date and time of the extract.

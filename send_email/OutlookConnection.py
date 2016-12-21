@@ -66,14 +66,14 @@ class OutlookConnection(object):
             print error_result
 
     @staticmethod
-    def create_helpdesk_ticket(subject, body, cc='', bcc=''):
+    def create_helpdesk_ticket(subject, body, cc='', bcc='', html=''):
         """ Use to quickly email Helpdesk
         :param subject: The subject of the email
         :param body: The message of the email
         :return:
         """
         to = 'helpdesk@bazaarvoice.com'
-        OutlookConnection.send_email(to=to, cc=cc, bcc=bcc, subject=subject, body=body)
+        OutlookConnection.send_email(to=to, cc=cc, bcc=bcc, subject=subject, body=body, html=html)
 
 
     @staticmethod

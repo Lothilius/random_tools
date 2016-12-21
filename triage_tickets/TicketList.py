@@ -1,16 +1,16 @@
 __author__ = 'Lothilius'
 # coding: utf-8
 
-from Ticket import Ticket
-from HelpdeskConnection import HelpdeskConnection as hdc
-import pandas as pd
-import re
 import datetime
+import re
 import sys
-from misc_helpers.data_manipulation import correct_date_dtype
-from pyprogressbar import Bar
-import time
 
+import pandas as pd
+from pyprogressbar import Bar
+
+from HelpdeskConnection import HelpdeskConnection as hdc
+from Ticket import Ticket
+from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 
 reload(sys)
 sys.setdefaultencoding('utf8')
