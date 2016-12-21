@@ -1,12 +1,12 @@
 __author__ = 'Lothilius'
 
-import pandas as pd
 import datetime as dt
+
 import numpy as np
-from misc_helpers.data_manipulation import *
-from helper_scripts.notify_helpers import *
+import pandas as pd
 from pyprogressbar import Bar
 
+from helper_scripts.notify_helpers import *
 
 pd.set_option('display.width', 280)
 pd.set_option('display.max_columns', None)
