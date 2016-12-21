@@ -1,14 +1,15 @@
 # coding: utf-8
 __author__ = 'Lothilius'
 
-from triage_tickets.TicketList import TicketList
-from tableau_data_publisher.data_assembler import TDEAssembler
-from bv_authenticate.Authentication import Authentication as auth
-from tableau_data_publisher.data_publisher import publish_data
-from misc_helpers.data_manipulation import correct_date_dtype
 import sys
-import pandas as pd
+
+from bv_authenticate.Authentication import Authentication as auth
 from send_email.OutlookConnection import OutlookConnection as outlook
+from tableau_data_publisher.data_assembler import TDEAssembler
+from tableau_data_publisher.data_publisher import publish_data
+from triage_tickets.TicketList import TicketList
+
+
 
 
 try:
