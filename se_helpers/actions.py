@@ -310,3 +310,8 @@ def create_user(browser, first_name, last_name, email, user_name, title, manager
         while admin_action != 'Yes':
             admin_action = raw_input('Are we ready to move on? ')
         # browser.close()
+
+
+
+if __name__ == '__main__':
+    go_to_concur_user_page()
