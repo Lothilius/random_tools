@@ -1,7 +1,7 @@
 # coding: utf-8
 __author__ = 'Lothilius'
 
-from sfdc.SFDCConnection import SFDCConnection
+from sfdc.SFDC_Connection import SFDC_Connection
 import pandas as pd
 import json
 import sys
@@ -9,9 +9,9 @@ import sys
 pd.set_option('display.width', 200)
 
 def refresh_object(object='Lead'):
-    sfdc_connect = SFDCConnection.connect_to_SFDC(environment='staging')
-    query = SFDCConnection.build_query(sf_object=object, type='', status='',
-                                       columns='Id, LastName, FirstName, Email, Full_Name__c')
+    sfdc_connect = SFDC_Connection.connect_to_SFDC(environment='staging')
+    query = SFDC_Connection.build_query(sf_object=object, type='', status='',
+                                        columns='Id, LastName, FirstName, Email, Full_Name__c')
     result = sfdc_connect.query_all(query)
     # print type(result['records'])
     # results = json.load(result)

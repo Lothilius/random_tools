@@ -2,7 +2,7 @@ __author__ = 'Lothilius'
 
 import requests
 import json
-from sfdc.SFDCConnection import SFDCConnection as sfdc_connect
+from sfdc.SFDC_Connection import SFDC_Connection as sfdc_connect
 import sys
 import pandas as pd
 from simple_salesforce import Salesforce
