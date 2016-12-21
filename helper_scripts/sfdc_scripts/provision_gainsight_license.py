@@ -1,9 +1,9 @@
 __author__ = 'Lothilius'
 
-from bv_authenticate.Authentication import Authentication as auth
-from sfdc.SFDC_User_List import SFDC_User_List
+from helper_scripts.misc_helpers import array_from_file
 from se_helpers.actions import *
-from misc_helpers.data_manipulation import array_from_file
+from sfdc.SFDC_User_List import SFDC_User_List
+
 
 def main():
     #TODO fix user interaction lines
