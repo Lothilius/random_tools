@@ -20,7 +20,6 @@ try:
         tickets.drop('ATTACHMENTS', axis=1, inplace=True)
     except:
         print 'No Attachments column.'
-    tickets = correct_date_dtype(tickets, date_time_format='%Y-%m-%d %H:%M:%S')
 
     # Package in to a tde file
     data_file = TDEAssembler(data_frame=tickets, extract_name='BizApps_HDT')
