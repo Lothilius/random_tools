@@ -165,7 +165,6 @@ def main():
         server_url, username, password, site_id, data_source_name, project = \
             auth.tableau_publishing(datasource_type='BizTech',
                                     data_source_name="Historical BizReq Business Demand Backlog")
-        print server_url, username, password, site_id, data_file, data_source_name, project
         publish_data(server_url, username, password, site_id, data_file, data_source_name, project, replace_data=True)
 
         alert_the_light()
