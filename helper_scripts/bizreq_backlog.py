@@ -5,6 +5,9 @@ import datetime as dt
 from sfdc.SFDC import SFDC
 from pyprogressbar import Bar
 from helper_scripts.notify_helpers import *
+from tableau_data_publisher.data_assembler import TDEAssembler
+from tableau_data_publisher.data_publisher import publish_data
+
 
 
 pd.set_option('display.width', 290)
@@ -122,18 +125,18 @@ def main():
 
         ticket_list.drop(['attributes'], axis=1, inplace=True)
 
-        print "<--------------Yo here ------------>"
-        print ticket_list
+        print "\n<--------------Yo here ------------>"
+        print ticket_list.head()
 
         # Reduce the columns used.
-        grouped_tickets = ticket_list[['True Start Date', 'True Closed Date', 'Id', 'Status', 'CreatedDate', 'Department_Requesting__c', 'Project__c', 'Priority', 'ClosedDate']]
+        grouped_tickets = ticket_list[['True Start Date', 'True Closed Date', 'Id', 'Status', 'Created Date', 'Department_Requesting__c', 'Project__c', 'Priority', 'Closed Date']]
         grouped_tickets_columns = grouped_tickets.columns
 
 
-        print "<--------------Grouped here ------------>"
-        print grouped_tickets
+        print "\n<--------------Grouped here ------------>"
+        print grouped_tickets.head()
 
-        open_list = pd.DataFrame(columns=['True Start Date', 'Snap Shot Date', 'Id', 'Status', 'CreatedDate', 'Department_Requesting__c', 'Project__c', 'Priority', 'True Closed Date']) #, 'Project__c', 'Release_Date__c', 'Status', 'Department_Requesting__c', 'Open Cases'])
+        open_list = pd.DataFrame(columns=['True Start Date', 'Snap Shot Date', 'Id', 'Status', 'Created Date', 'Department_Requesting__c', 'Project__c', 'Priority', 'True Closed Date']) #, 'Project__c', 'Release_Date__c', 'Status', 'Department_Requesting__c', 'Open Cases'])
         open_list_columns = open_list.columns.tolist()
 
         pbar = Bar(len(grouped_tickets.values))
@@ -151,9 +154,22 @@ def main():
 
         print open_list
         now = dt.datetime.now().strftime('%Y-%m-%d_%H_%M')
-        open_list.to_csv('/Users/martin.valenzuela/Box Sync/Documents/Austin Office/HDT/sfdc_back_log%s.csv' % now, index=False)
+        extract_name = 'sfdc_back_log%s.csv' % now
+        file_path_name = '/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Data/'
+        open_list.to_csv(file_path_name + extract_name, index=False)
+
+        # Package in to a tde file
+        data_file = TDEAssembler(data_frame=open_list, extract_name='BizApps_BizReqs', file_path=file_path_name)
+
+        # Set values for publishing the data.
+        server_url, username, password, site_id, data_source_name, project = \
+            auth.tableau_publishing(datasource_type='BizTech',
+                                    data_source_name="Historical BizReq Business Demand Backlog")
+        print server_url, username, password, site_id, data_file, data_source_name, project
+        publish_data(server_url, username, password, site_id, data_file, data_source_name, project, replace_data=True)
+
         alert_the_light()
-        alert_homer()
+        # alert_homer()
     except:
         error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
         print error_result
