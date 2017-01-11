@@ -153,19 +153,16 @@ def main():
             pbar.passed()
 
         print open_list
-        now = dt.datetime.now().strftime('%Y-%m-%d_%H_%M')
-        extract_name = 'sfdc_back_log%s.csv' % now
-        file_path_name = '/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Data/'
-        open_list.to_csv(file_path_name + extract_name, index=False)
 
         # Package in to a tde file
-        data_file = TDEAssembler(data_frame=open_list, extract_name='BizApps_BizReqs', file_path=file_path_name)
+        data_file = TDEAssembler(data_frame=open_list, extract_name='BizApps_BizReqs')
+        file_name = str(data_file)
 
         # Set values for publishing the data.
         server_url, username, password, site_id, data_source_name, project = \
             auth.tableau_publishing(datasource_type='BizTech',
                                     data_source_name="Historical BizReq Business Demand Backlog")
-        publish_data(server_url, username, password, site_id, data_file, data_source_name, project, replace_data=True)
+        publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
 
         alert_the_light()
         # alert_homer()
