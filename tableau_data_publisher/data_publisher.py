@@ -36,7 +36,7 @@ def publish_data(server_url, username, password, site_id, file_name,
         # Connect to the server
         serverConnection.connect(server_url, username, password, site_id);
 
-        # Publish order-py.tde to the server under the default project with name Order-py
+        # Publish file_name to the server under the default project with name data_source_name
         serverConnection.publishExtract(file_name, project, data_source_name, replace_data);
 
         # Disconnect from the server
