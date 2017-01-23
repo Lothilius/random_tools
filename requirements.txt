@@ -1,7 +1,8 @@
+lxml
 bottle
 bs4
 pyprogressbar
 requests
 selenium
 pandas
-
+phue
