@@ -9,7 +9,7 @@ from tableau_data_publisher.data_assembler import TDEAssembler
 from tableau_data_publisher.data_publisher import publish_data
 from triage_tickets.TicketList import TicketList
 from time import time
-
+from os import remove
 
 def main():
     try:
@@ -32,11 +32,12 @@ def main():
         publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
         # outlook.send_email(to='martin.valenzuela@bazaarvoice.com',
         # subject='HDT-Hourly update complete', body='HDT-Hourly update complete')
+        remove(file_name)
 
     except ValueError:
         error_result = "Unexpected AttributeError: %s, %s"\
                        % (sys.exc_info()[0], sys.exc_info()[1])
-        subject = 'Error with Tableau refresh script'
+        subject = 'Error with Hourly Tableau refresh script'
         print error_result
         outlook.send_email('helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
 
