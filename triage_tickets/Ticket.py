@@ -8,14 +8,17 @@ from time import time
 
 reload(sys)
 sys.setdefaultencoding('utf8')
+# pd.set_option('display.width', 340)
+# pd.set_option('display.max_columns', 50)
 
 class Ticket(object):
-    def __init__(self, hdt_id, with_resolution=False):
+    def __init__(self, hdt_id, with_resolution=False, with_conversations=False):
         self.hdt_id = hdt_id
         if with_resolution:
             self.resolution = self.get_resolution()
         self.details = self.get_ticket_details()
-        self.conversations = ''
+        if with_conversations:
+            self.conversations = self.get_conversations()
 
 
     def __getitem__(self, item):
@@ -172,7 +175,7 @@ class Ticket(object):
         return get_conversation_detail
 
 if __name__ == '__main__':
-    ticket = Ticket('15438')
+    ticket = Ticket('15438', with_conversations=True)
     # print ticket
     print ticket
 
