@@ -11,18 +11,21 @@ from pyprogressbar import Bar
 from HelpdeskConnection import HelpdeskConnection as hdc
 from Ticket import Ticket
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
+from time import time
 
 reload(sys)
 sys.setdefaultencoding('utf8')
-pd.set_option('display.width', 160)
+pd.set_option('display.width', 340)
+pd.set_option('display.max_columns', 50)
 
 class TicketList(object):
     """ The ticket list class creates an object that gathers individual tickets that belong to a particular list view.
         The list view will need to be specified from the list of view available to the person running the quarry to
         gather the tickets.
     """
-    def __init__(self, helpdesk_que='Triage', with_resolution=False):
+    def __init__(self, helpdesk_que='Triage', with_resolution=False, with_conversations=False):
         self.with_resolution = with_resolution
+        self.with_conversations = with_conversations
         view_id = self.get_view_id(helpdesk_que)
         self.tickets = list(self.get_all_tickets(view_id))
 
@@ -102,7 +105,7 @@ class TicketList(object):
             pbar = Bar(len(helpdesk_tickets))
             for i, each in enumerate(helpdesk_tickets):
                 # print i
-                ticket = Ticket(each['WORKORDERID'], self.with_resolution)
+                ticket = Ticket(each['WORKORDERID'], self.with_resolution, self.with_conversations)
                 ticket_details.append(ticket.details)
                 pbar.passed()
 
@@ -167,8 +170,10 @@ class TicketList(object):
 
 
 if __name__ == '__main__':
-    tickets = TicketList('Triage', with_resolution=True)
+    start = time()
+    tickets = TicketList('Hourly-Open-Tickets-do-not-edit', with_conversations=True)
     tickets = tickets.reformat_as_dataframe(tickets)
     tickets.drop('ATTACHMENTS', axis=1, inplace=True)
-    # tickets.to_csv(path_or_buf='/Users/martin.valenzuela/Box Sync/Documents/Austin Office/HDT/year_to_date_7-31-2016.csv', index=False)
-    print tickets.columns
+    end = time()
+    print (end - start) / 60
+    print tickets

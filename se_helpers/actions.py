@@ -1,6 +1,7 @@
 __author__ = 'Lothilius'
 
 from selenium import webdriver
+from selenium.webdriver import *
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.keys import Keys
 from bv_authenticate.Authentication import Authentication as auth
@@ -28,10 +29,12 @@ def get_se_browser():
     return browser
 
 
-def concur_employee_deprecation(browser, employee_id='', employee_name='', termination_date=''):
-    """ This function will perform the steps of searching for a user navigating to their user record.
-    :param browser: The selenium Webdriver object.
-    :return: nothing
+def concur_go_to_employee(browser, employee_id='', employee_name=''):
+    """ Go to the Employee record in Concur.
+    :param browser:
+    :param employee_id:
+    :param employee_name:
+    :return:
     """
     try:
         browser.find_element_by_id('searchString').clear()
@@ -41,6 +44,18 @@ def concur_employee_deprecation(browser, employee_id='', employee_name='', termi
         wait(2)
         browser.find_element_by_partial_link_text(employee_name).click()
         wait(2)
+    except:
+        print employee_name, " Unexpected error going to employee record:", sys.exc_info()[0]
+
+def concur_employee_deprecation(browser, employee_id='', employee_name='', termination_date=''):
+    """ This function will perform the steps of searching for a user navigating to their user record.
+    :param browser: The selenium Webdriver object.
+    :return: nothing
+    """
+    try:
+        # Go to the employee record.
+        concur_go_to_employee(browser, employee_id, employee_name)
+
         browser.find_element_by_id('AccountTerminationDate').send_keys(termination_date)
         browser.find_element_by_id('AccountTerminationDate').send_keys(Keys.ENTER)
         wait(3)
@@ -57,6 +72,55 @@ def concur_employee_deprecation(browser, employee_id='', employee_name='', termi
         concur_employee_deprecation(browser, employee_id, employee_name, termination_date)
     except:
          print employee_name, " Unexpected error 2:", sys.exc_info()[0]
+
+
+def switch_to_pop_up(browser, main_window_handle):
+    pop_up_window_handle = None
+    while not pop_up_window_handle:
+        for handle in browser.window_handles:
+            if handle != main_window_handle:
+                pop_up_window_handle = handle
+                break
+        browser.switch_to.window(pop_up_window_handle)
+
+
+def concur_change_expense_approver(browser, employee_id='', employee_name='', approver=''):
+    """ This function will perform the steps of searching for a user navigating to their user record.
+    :param browser: The selenium Webdriver object.
+    :return: nothing
+    """
+    try:
+        main_window_handle = None
+        while not main_window_handle:
+            main_window_handle = browser.current_window_handle
+        # Go to the employee record.
+        concur_go_to_employee(browser, employee_id, employee_name)
+
+        browser.find_element_by_xpath("//a[@href='javascript:openApprovers();']").click()
+        wait(3)
+        switch_to_pop_up(browser, main_window_handle)
+        wait(3)
+        browser.find_element_by_id('newexpenseapproverName').clear()
+        wait(1)
+        browser.find_element_by_id('newexpenseapproverName').send_keys(approver)
+        wait(2)
+        browser.find_element_by_id('saveApproversChangesBtn').click()
+        wait(2)
+        browser.close()
+        browser.switch_to.window(main_window_handle)
+        wait(3)
+        browser.find_element_by_name('btnSave1').click()
+
+        print employee_name, "complete"
+    except UnexpectedAlertPresentException:
+        alert = browser.switch_to_alert()
+        alert.accept()
+        wait(3)
+        browser.get('https://www.concursolutions.com/companyadmin/view_users.asp')
+        wait(4)
+        concur_change_expense_approver(browser, employee_id, employee_name)
+    except:
+         print employee_name, " Unexpected error in concur_change_expense_approver:", sys.exc_info()[0]
 
 def go_to_concur_user_page():
     """ Use as a quick way to jump to the User Administration in Concur.
@@ -82,7 +146,7 @@ def go_to_concur_user_page():
 
         return browser
     except:
-         print "Unexpected error 2:", sys.exc_info()[0]
+         print "Unexpected error login:", sys.exc_info()[0]
 
 def go_to_sfdc_page(environment='', url_ending=''):
     """ Use as a quick way to deploy multiple windows in an environment.
@@ -202,10 +266,10 @@ def login_okta(browser, username, pw):
     browser.find_element_by_name("username").send_keys(username)
 
     #Write PW in Password TextBox
-    browser.find_element_by_id("pass-signin").send_keys(pw)
+    browser.find_element_by_name("password").send_keys(pw)
 
     #Click Login button
-    browser.find_element_by_id("signin-button").click()
+    browser.find_element_by_xpath("//input[@class='button button-primary']").click()
 
 # Login function
 def login(browser, username, pw):
@@ -314,4 +378,5 @@ def create_user(browser, first_name, last_name, email, user_name, title, manager
 
 
 if __name__ == '__main__':
-    go_to_concur_user_page()
+    browser = go_to_concur_user_page()
+    concur_change_expense_approver(browser=browser)

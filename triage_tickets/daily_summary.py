@@ -7,8 +7,7 @@ import pandas as pd
 from datetime import datetime, date, timedelta
 from HTMLParser import HTMLParser
 import sys
-import os
-
+from static.static_files import get_static_file
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -19,7 +18,7 @@ pd.set_option('display.max_colwidth', -1)
 def triage_timeframe():
     today_date_time = datetime.today()
     today_date_time = today_date_time.replace(hour=10, minute=0, second=0, microsecond=0)
-    if today_date_time.weekday() in range(1, 4):
+    if today_date_time.weekday() in range(1, 5):
         last_triage = today_date_time - timedelta(days=1)
         return last_triage, today_date_time
     else:
@@ -96,7 +95,7 @@ def main():
     html = HTMLParser()
 
     # Get Style sheet for the email.
-    f = open('/Users/martin.valenzuela/Dropbox/Coding/BV/bv_tools/static/styleTags.html', 'r')
+    f = open(get_static_file('styleTags.html'), 'r')
     style = f.readlines()
     style = ' '.join(style)
     style = html.unescape(style)

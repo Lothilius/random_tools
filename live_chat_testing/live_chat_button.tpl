@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     % if environment == 'prod':
-        <script type='text/javascript' src='https://c.la1-c2-dfw.salesforceliveagent.com/content/g/js/36.0/deployment.js'></script>
+        <script type='text/javascript' src='https://c.la1-c2-phx.salesforceliveagent.com/content/g/js/38.0/deployment.js'></script>
         <script type='text/javascript'>
             //  Set User Name for Live Agent
             liveagent.setName('Martin Valenzuela');
@@ -18,10 +18,10 @@
             liveagent.findOrCreate('Account').map('Id', 'AccountIdDetail', true, true, false).saveToTranscript('AccountId');
             // end of replacement code per chuck
 
-            liveagent.init('https://d.la1-c2-dfw.salesforceliveagent.com/chat', '57250000000GmvK', '00D300000000zZB');
+            liveagent.init('https://d.la1-c2-phx.salesforceliveagent.com/chat', '57250000000GmvK', '00D300000000zZB');
         </script>
     % else:
-        <script type='text/javascript' src='https://c.la1-c1cs-dfw.salesforceliveagent.com/content/g/js/36.0/deployment.js'></script>
+        <script type='text/javascript' src='https://c.la1-c1cs-phx.salesforceliveagent.com/content/g/js/39.0/deployment.js'></script>
         <script type='text/javascript'>
             //  Set User Name for Live Agent
             liveagent.setName('Martin Valenzuela');
@@ -36,7 +36,7 @@
             liveagent.findOrCreate('Account').map('Id', 'AccountIdDetail', true, true, false).saveToTranscript('AccountId');
             // end of replacement code per chuck
 
-            liveagent.init('https://d.la1-c1cs-dfw.salesforceliveagent.com/chat', '57250000000GmvK', '00D3B000000DWR3');
+            liveagent.init('https://d.la1-c1cs-phx.salesforceliveagent.com/chat', '57250000000GmvK', '00D2C0000000xT7');
         </script>
     % end
 </head>

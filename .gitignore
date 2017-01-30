@@ -109,3 +109,9 @@ gen
 
 *.pyc
 *.log
+
+testing.xhtml
+
+test.py
+
+helper_scripts/one-offs/product_id.py
