@@ -7,8 +7,7 @@ import pandas as pd
 from datetime import datetime, date, timedelta
 from HTMLParser import HTMLParser
 import sys
-import os
-
+from static.static_files import get_static_file
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -96,7 +95,7 @@ def main():
     html = HTMLParser()
 
     # Get Style sheet for the email.
-    f = open('/Users/martin.valenzuela/Dropbox/Coding/BV/bv_tools/static/styleTags.html', 'r')
+    f = open(get_static_file('styleTags.html'), 'r')
     style = f.readlines()
     style = ' '.join(style)
     style = html.unescape(style)
