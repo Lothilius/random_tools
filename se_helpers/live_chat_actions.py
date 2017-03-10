@@ -67,7 +67,14 @@ def go_to_spark_live_chat(environment='staging'):
         #     browser.close()
         return error_message
 
+
 def login_spark(browser, username, pw):
+    """ Use selenium to apply a user name and password to login to spark.
+    :param browser: Active Selenium webdriver at the login page for the spark portal
+    :param username: Spark user name
+    :param pw: Spark username password
+    :return: Active Selenium webdriver after loging in 
+    """
     #Write Username in Username TextBox
     browser.find_element_by_xpath("//input[@id='j_id0:j_id1:loginForm:username']").send_keys(username)
 
@@ -77,8 +84,15 @@ def login_spark(browser, username, pw):
     #Click Login button
     browser.find_element_by_xpath("//input[@id='j_id0:j_id1:loginForm:loginButton']").click()
 
+    return browser
+
 
 def check_for_agent_reply(browser):
+    """ This is the listener that is looped for 400 seconds that is looped around sending the test script and looped
+        and around weather a user has responded.
+    :param browser: Active Selenium webdriver
+    :return: Text
+    """
     i = 200
     number_or_errors = 0
     try:
@@ -97,15 +111,18 @@ def check_for_agent_reply(browser):
                 try:
                     print number_of_agent_posts
                     print len(operator_message_list)
-                    # Check if error limit has been reached. 
+                    # Check if error limit has been reached.
                     if number_or_errors == 3:
                         reply = "Too many errors on response match. Creating helpdesk ticket."
                         reply_to_agent(browser, message=reply)
                         raise Exception
+                    # Send initial post
                     elif len(operator_message_list) == 2:
                         reply_to_agent(browser, message=test_line)
                         number_of_agent_posts = len(operator_message_list)
+                    # Check if there has been a new post by the agent.
                     elif number_of_agent_posts != len(operator_message_list):
+                        # Check if Agent reply is the same as the test script line
                         if operator_message_list[-1] == test_line:
                             reply_to_agent(browser, message="Match recieved. Please wait...")
                             try:
@@ -115,6 +132,7 @@ def check_for_agent_reply(browser):
                             number_of_agent_posts = len(operator_message_list)
                             number_or_errors = 0
                             break
+                        # This piece is if the agent posted reponse is not the same as the test script
                         elif operator_message_list[-1] != test_line:
                             print test_line
                             print operator_message_list[-1]
@@ -128,6 +146,8 @@ def check_for_agent_reply(browser):
 
 
                 except Exception, e:
+                    notify_help_desk(browser, "")
+                    browser.close()
                     raise Exception
                 i -= 1
         if i < 1:
@@ -140,7 +160,7 @@ def check_for_agent_reply(browser):
 
     except Exception, e:
         print e
-        # notify_help_desk(browser, "Test timed out!!")
+        notify_help_desk(browser, "Test timed out!!")
         browser.close()
 
     return "Test Concluded"
@@ -165,14 +185,12 @@ def explore_page(live_chat_page):
             pass
     return message_table
 
-    # return message_list
-
 
 def reply_to_agent(browser, message='This is a message'):
-    """
-    :param browser:
-    :param message:
-    :return:
+    """ Send a message via the live chat agent session
+    :param browser: Selenium webdriver session that is active in the live chat window
+    :param message: The message to the agent
+    :return: Nothing
     """
     try:
         browser.find_element_by_xpath("//textarea[@class='liveAgentChatTextArea']").send_keys(message)
@@ -184,13 +202,19 @@ def reply_to_agent(browser, message='This is a message'):
 
 
 def notify_help_desk(browser, message):
+    """ Notify helpdesk with a screenshot of the active selenium webdriver seession.
+    :param browser: Selenium Webdriver session that is active
+    :param message:
+    :return:
+    """
     path = environ['MY_TEMP_FOLDER']
     full_path = path + "error_screen_shot_" + datetime.now().strftime(format='%Y_%m_%d-%H_%M') + '.png'
     print "Screen shot saved: %s" % full_path
     browser.get_screenshot_as_file(full_path)
     file_name = [full_path]
     browser.close()
-    oc.send_email('martin.valenzuela@bazaarvoice.com', cc='', body=message, files=file_name)
+    oc.create_helpdesk_ticket(subject='An error with Live Chat has occured [BizApps]',
+                              cc=['holly.socha@bazaarvoice.com', 'sadie.claire@bazaarvoice.com'], body=message, files=file_name)
 
 if __name__ == '__main__':
     go_to_spark_live_chat(environ['ENVIRONMENT'])
