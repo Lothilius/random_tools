@@ -20,11 +20,14 @@ def hover(browser, element):
     hover_over.perform()
 
 
-def get_se_browser():
+def get_se_browser(browser_type='chrome'):
     """ Create a Selenium webdriver object.
     :return: Selenium webdriver object
     """
-    browser = webdriver.Chrome(environ['CHROME_PATH'])
+    if "phantom" in browser_type:
+        browser = webdriver.PhantomJS(executable_path=environ['PHANTOM_JS'])
+    else:
+        browser = webdriver.Chrome(executable_path=environ['CHROME_PATH'])
 
     return browser
 
