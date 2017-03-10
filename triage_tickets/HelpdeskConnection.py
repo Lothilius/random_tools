@@ -47,11 +47,13 @@ class HelpdeskConnection(object):
             wait(1)
             # Create the request and capture the response.
             response = requests.request("POST", url, headers=headers, params=querystring)
+
             # print response.txt
             # Load the response to the request as a json object.
             helpdesk_tickets = json.loads(response.text)
         except AttributeError:
             error_result = "Unexpected error 2: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+
             print error_result
             print helpdesk_tickets["operation"]
             wait(3)

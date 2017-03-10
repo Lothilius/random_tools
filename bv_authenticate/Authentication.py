@@ -24,6 +24,16 @@ class Authentication(object):
         return username, password
 
     @staticmethod
+    def spark_credentials(environment=environ['ENVIRONMENT']):
+        username = '%s@bazaarvoice.com' % environ['SFDC_BIZAPPS']
+        if environment == 'prod':
+            password = environ['SPARK_PW']
+        else:
+            password = environ['SPARK_STAGING_PW']
+
+        return username, password
+
+    @staticmethod
     def tableau__credentials():
         username = environ['USER']
         password = environ['MY_PW']
