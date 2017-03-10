@@ -4,7 +4,9 @@ __author__ = 'Lothilius'
 import smtplib
 from bv_authenticate.Authentication import Authentication as auth
 from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
+from os.path import basename
 import sys
 
 reload(sys)
@@ -13,7 +15,7 @@ sys.setdefaultencoding('utf8')
 class OutlookConnection(object):
 
     @staticmethod
-    def send_email(to, cc='', bcc='', subject='', body=' ', html=''):
+    def send_email(to, cc='', bcc='', subject='', body=' ', html='', files=None):
         username = ''
         password = ''
         # TODO - create user interactive section here.
@@ -34,36 +36,51 @@ class OutlookConnection(object):
             else:
                 bcc = '\n' + 'BCC:' + bcc
 
-        try:
-            username, password = auth.smtp_login()
-            full_message = "From: " + username \
-                           + '\n' + 'To: ' + to \
-                           + cc \
-                           + bcc \
-                           + '\n' + 'Subject: ' + subject \
-                           + '\n\n' + body
+        # try:
+        username, password = auth.smtp_login()
+        full_message = "From: " + username \
+                       + '\n' + 'To: ' + to \
+                       + cc \
+                       + bcc \
+                       + '\n' + 'Subject: ' + subject \
+                       + '\n\n' + body
 
-            all_emails = [to] + [cc] + [bcc]
-            email_connection = OutlookConnection.connect_mail(username, password)
-            if html != '':
-                html = html.encode("utf-8")
-                msg = MIMEMultipart('alternative')
-                msg['Subject'] = subject
-                msg['From'] = username
-                msg['To'] = to
-                part1 = MIMEText(html, 'plain')
-                part2 = MIMEText(html, 'html')
-                # the HTML message, is best and preferred.
-                msg.attach(part1)
-                msg.attach(part2)
-                email_connection.sendmail(username, all_emails, msg.as_string())
-            else:
-                email_connection.sendmail(username, all_emails, full_message)
-            email_connection.close()
-            print 'Message sent'
-        except:
-            error_result = "Unexpected error 1OC: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-            print error_result
+        all_emails = [to] + [cc] + [bcc]
+        email_connection = OutlookConnection.connect_mail(username, password)
+
+        msg = MIMEMultipart()
+        msg.attach(MIMEText(body.encode("utf-8")))
+        # Help from stack over flow
+        # http://stackoverflow.com/questions/3362600/how-to-send-email-attachments-with-python
+        for f in files or []:
+            with open(f, "rb") as fil:
+                part = MIMEApplication(
+                    fil.read(),
+                    Name=basename(f)
+                )
+                part['Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
+                msg.attach(part)
+
+        if html != '':
+            html = html.encode("utf-8")
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = subject
+            msg['From'] = username
+            msg['To'] = to
+            part1 = MIMEText(html, 'plain')
+            part2 = MIMEText(html, 'html')
+            # the HTML message, is best and preferred.
+            msg.attach(part1)
+            msg.attach(part2)
+            email_connection.sendmail(username, all_emails, msg.as_string())
+        else:
+            email_connection.sendmail(username, all_emails, msg.as_string())
+
+        email_connection.close()
+        print 'Message sent'
+        # except:
+        #     error_result = "Unexpected error 1OC: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+        #     print error_result
 
     @staticmethod
     def create_helpdesk_ticket(subject, body, cc='', bcc='', html=''):
