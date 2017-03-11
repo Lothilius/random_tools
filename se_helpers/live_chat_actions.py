@@ -27,13 +27,12 @@ def go_to_spark_live_chat(environment='staging'):
     """ Use as a quick way to jump to the Live chat portal in spark.
     :return: This function provides selenium initiated browsers.
     """
+    browser = get_se_browser('phantom')
     try:
         username, pw = auth.spark_credentials()
         global domain
         domain = domain[environment]
         baseurl = domain + "force.com/cp/cplogin?startURL=%2FCPHome"
-
-        browser = get_se_browser('phantom')
         browser.get(baseurl)
         wait(2)
         login_spark(browser, username, pw)
@@ -73,7 +72,7 @@ def login_spark(browser, username, pw):
     :param browser: Active Selenium webdriver at the login page for the spark portal
     :param username: Spark user name
     :param pw: Spark username password
-    :return: Active Selenium webdriver after loging in 
+    :return: Active Selenium webdriver after loging in
     """
     #Write Username in Username TextBox
     browser.find_element_by_xpath("//input[@id='j_id0:j_id1:loginForm:username']").send_keys(username)
