@@ -100,7 +100,7 @@ def check_for_agent_reply(browser):
         wait(2)
         # Loop through test scripts
         for j, test_line in enumerate(live_chat_script):
-            print test_line
+            # print test_line
             operator_message_list = explore_page(browser.page_source)
             number_of_agent_posts = len(operator_message_list)
 
@@ -109,8 +109,8 @@ def check_for_agent_reply(browser):
                 wait(2)
                 operator_message_list = explore_page(browser.page_source)
                 try:
-                    print number_of_agent_posts
-                    print len(operator_message_list)
+                    # print number_of_agent_posts
+                    # print len(operator_message_list)
                     # Check if error limit has been reached.
                     if number_or_errors == 3:
                         reply = "Too many errors on response match. Creating helpdesk ticket."
@@ -134,8 +134,8 @@ def check_for_agent_reply(browser):
                             break
                         # This piece is if the agent posted reponse is not the same as the test script
                         elif operator_message_list[-1] != test_line:
-                            print test_line
-                            print operator_message_list[-1]
+                            # print test_line
+                            # print operator_message_list[-1]
                             reply = "Response does not match. Please try again."
                             reply_to_agent(browser, message=reply)
                             # reply_to_agent(browser, message=test_line)
