@@ -142,7 +142,8 @@ def check_for_agent_reply(browser):
                             number_of_agent_posts = len(operator_message_list)
                             number_or_errors += 1
                     else:
-                        print "waiting..."
+                        pass
+                        # print "waiting..."
 
 
                 except Exception, e:
@@ -163,6 +164,7 @@ def check_for_agent_reply(browser):
         notify_help_desk(browser, "Test timed out!!")
         browser.close()
 
+    print "Test Concluded"
     return "Test Concluded"
 
 
