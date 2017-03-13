@@ -25,7 +25,7 @@ class Authentication(object):
 
     @staticmethod
     def spark_credentials(environment=environ['ENVIRONMENT']):
-        username = '%s@bazaarvoice.com' % environ['SFDC_BIZAPPS']
+        username = '%s@bazaarvoice.com' % environ['SPARK_USER']
         if environment == 'prod':
             password = environ['SPARK_PW']
         else:
