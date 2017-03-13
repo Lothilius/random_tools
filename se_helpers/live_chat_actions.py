@@ -213,7 +213,8 @@ def notify_help_desk(browser, message):
     file_name = [full_path]
     browser.close()
     oc.create_helpdesk_ticket(subject='An error with Live Chat has occured [BizApps]',
-                              cc=['holly.socha@bazaarvoice.com', 'sadie.claire@bazaarvoice.com'], body=message, files=file_name)
+                              cc=['holly.socha@bazaarvoice.com', 'sadie.claire@bazaarvoice.com'],
+                              body=message, files=file_name)
 
 if __name__ == '__main__':
     go_to_spark_live_chat(environ['ENVIRONMENT'])
