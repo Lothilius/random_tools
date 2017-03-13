@@ -32,7 +32,7 @@ def go_to_spark_live_chat(environment='staging'):
         username, pw = auth.spark_credentials()
         global domain
         domain = domain[environment]
-        baseurl = domain + "force.com/cp/cplogin?startURL=%2FCPHome"
+        baseurl = domain + "force.com/cp/cplogin"
         browser.get(baseurl)
         wait(2)
         login_spark(browser, username, pw)
@@ -58,6 +58,7 @@ def go_to_spark_live_chat(environment='staging'):
         # try:
         error_message = "Unexpected error login:%s, %s" \
                         % (sys.exc_info()[0], sys.exc_info()[1])
+        print error_message
         notify_help_desk(browser, error_message)
         # except:
         #     error_message = "Catastrophic error: Unexpected error login:%s, %s" \
