@@ -3,6 +3,6 @@ bottle
 bs4
 pyprogressbar
 requests
-selenium
+selenium==2.47
 pandas
 phue
