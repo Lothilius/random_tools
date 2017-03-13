@@ -50,6 +50,7 @@ class OutlookConnection(object):
 
         msg = MIMEMultipart()
         msg.attach(MIMEText(body.encode("utf-8")))
+        msg['Subject'] = subject
         # Help from stack over flow
         # http://stackoverflow.com/questions/3362600/how-to-send-email-attachments-with-python
         for f in files or []:
@@ -64,7 +65,6 @@ class OutlookConnection(object):
         if html != '':
             html = html.encode("utf-8")
             msg = MIMEMultipart('alternative')
-            msg['Subject'] = subject
             msg['From'] = username
             msg['To'] = to
             part1 = MIMEText(html, 'plain')
