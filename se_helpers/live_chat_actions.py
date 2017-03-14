@@ -40,7 +40,6 @@ def go_to_spark_live_chat(environment='staging'):
         case_url = domain + 'force.com/cp/sprkCases?cat=Business+or+Technical+Question&page=LeftNavOncphome'
         browser.get(case_url)
         browser.implicitly_wait(5)
-        browser.save_screenshot('/User/martin.valenzuela/Downloads/test.png')
         browser.find_element_by_xpath("//span[@class='liveAgent gold']").click()
         browser.implicitly_wait(5)
 
