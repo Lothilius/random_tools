@@ -67,6 +67,7 @@ class OutlookConnection(object):
             msg = MIMEMultipart('alternative')
             msg['From'] = username
             msg['To'] = to
+            msg['Subject'] = subject
             part1 = MIMEText(html, 'plain')
             part2 = MIMEText(html, 'html')
             # the HTML message, is best and preferred.

@@ -34,14 +34,14 @@ def go_to_spark_live_chat(environment='staging'):
         domain = domain[environment]
         baseurl = domain + "force.com/cp/cplogin"
         browser.get(baseurl)
-        browser.implicitly_wait(5)
+        wait(8)
         login_spark(browser, username, pw)
-        browser.implicitly_wait(5)
+        wait(9)
         case_url = domain + 'force.com/cp/sprkCases?cat=Business+or+Technical+Question&page=LeftNavOncphome'
         browser.get(case_url)
-        browser.implicitly_wait(5)
+        wait(20)
         browser.find_element_by_xpath("//span[@class='liveAgent gold']").click()
-        browser.implicitly_wait(5)
+        wait(10)
 
         # Determine main window reference
         main_window_handle = None
