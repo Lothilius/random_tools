@@ -5,7 +5,6 @@ from os import environ
 class Authentication(object):
     @staticmethod
     def okta_authentication():
-        url = 'https://bazaarvoice.okta.com/api/v1/events?'
         api_key = environ['OKTA_KEY']
         headers = {
         'accept': "application/json",
@@ -14,7 +13,7 @@ class Authentication(object):
         'authorization': "SSWS " + api_key,
         'postman-token': "trs8GxmAQxBT2axefZFA98xig"
         }
-        return url, headers
+        return headers
 
     @staticmethod
     def bv_credentials():

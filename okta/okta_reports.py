@@ -7,15 +7,13 @@ import requests
 import json
 from bv_authenticate.Authentication import Authentication as auth
 from send_email.OutlookConnection import OutlookConnection as outlook
+from Okta_Connection import Okta_Connection as okta_connect
 import smtplib
 import sys
 import pandas as pd
 from datetime import datetime
 from datetime import timedelta
 
-
-# Grab header and url information
-url, headers = auth.okta_authentication()
 
 # Create query
 def create_query():
@@ -65,12 +63,12 @@ def send_message(subject, body, receiver='helpdesk@bazaarvoice.com'):
 
 
 def querry_okta():
-    # Send the request
-    response = requests.request("GET", url, headers=headers, params=create_query())
+    # Initiate connection to Okta
+    okta = okta_connect(primary_object='events', query=create_query())
 
-    # Place response in to a json object
-    okta_json = json.loads(response.text)
-    print json.dumps(okta_json, indent=4, sort_keys=True)
+    # Set response json object to variable
+    okta_json = okta.query_okta()
+    print okta_json
     # Create dataframe
     errors = pd.DataFrame(columns=['Name', 'Message', 'ID', 'Application'])
 
