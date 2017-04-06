@@ -76,6 +76,19 @@ def correct_date_dtype(data_frame, date_time_format=''):
     return data_frame
 
 
+def create_feature_vector_dataframe(dataframe, feature_index_column, feature_column):
+    """
+    :param dataframe:
+    :param feature_index_column:
+    :param feature_column:
+    :return:
+    """
+    grouped_features = dataframe.groupby([feature_index_column, feature_column]).count().reset_index()
+    feature_vector_dataframe = grouped_features.pivot(
+        index=feature_index_column, columns=feature_column, values=feature_column).reset_index()
+
+    return feature_vector_dataframe
+
 
 if __name__ == '__main__':
     now = datetime.now()
