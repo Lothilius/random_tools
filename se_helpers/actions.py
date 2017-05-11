@@ -25,7 +25,8 @@ def get_se_browser(browser_type='chrome'):
     :return: Selenium webdriver object
     """
     if "phantom" in browser_type:
-        browser = webdriver.PhantomJS(executable_path=environ['PHANTOM_JS'])
+        browser = webdriver.PhantomJS(executable_path=environ['PHANTOM_JS'],
+                                      service_log_path='/home/BAZAARVOICE/martin.valenzuela/temp/ghostdriver.log')
     else:
         browser = webdriver.Chrome(executable_path=environ['CHROME_PATH'])
 
@@ -41,6 +42,7 @@ def concur_go_to_employee(browser, employee_id='', employee_name=''):
     """
     try:
         browser.find_element_by_id('searchString').clear()
+        wait(1)
         browser.find_element_by_id('searchString').send_keys(employee_id)
         browser.find_element_by_id('SearchWhat').send_keys("emp")
         browser.find_element_by_id('searchString').send_keys(Keys.ENTER)
@@ -75,6 +77,94 @@ def concur_employee_deprecation(browser, employee_id='', employee_name='', termi
         concur_employee_deprecation(browser, employee_id, employee_name, termination_date)
     except:
          print employee_name, " Unexpected error 2:", sys.exc_info()[0]
+
+
+def concur_set_travel_rule(browser, employee_id='', employee_name='', termination_date=''):
+    """ This function will perform the steps of searching for a user navigating to their user record.
+    :param browser: The selenium Webdriver object.
+    :return: nothing
+    """
+    try:
+        # Go to the employee record.
+        concur_go_to_employee(browser, employee_id, employee_name)
+        browser.find_element_by_xpath("//input[contains(@id,'Custom3Name')]").clear()
+        browser.find_element_by_xpath("//input[contains(@id,'Custom3Name')]").send_keys(Keys.ENTER)
+        wait(2)
+        browser.find_element_by_name('btnSave1').click()
+        # Go to the employee record.
+        concur_go_to_employee(browser, employee_id, employee_name)
+        browser.find_element_by_xpath("//input[contains(@id,'Custom3Name')]").send_keys('General Travel Class')
+        browser.find_element_by_xpath("//input[contains(@id,'Custom3Name')]").send_keys(Keys.ENTER)
+        wait(2)
+        browser.find_element_by_name('btnSave1').click()
+        wait(7)
+
+        print employee_name, "complete"
+    except UnexpectedAlertPresentException:
+        alert = browser.switch_to_alert()
+        alert.accept()
+        wait(3)
+        browser.get('https://www.concursolutions.com/companyadmin/view_users.asp')
+        wait(4)
+        concur_employee_deprecation(browser, employee_id, employee_name, termination_date)
+    except:
+         print employee_name, " Unexpected error 2:", sys.exc_info()[0]
+
+
+def concur_set_request_rule(browser, employee_id='', employee_name=''):
+    """ This function will perform the steps of searching for a user navigating to their user record.
+    :param browser: The selenium Webdriver object.
+    :return: nothing
+    """
+    try:
+        # Go to the employee record.
+        concur_go_to_employee(browser, employee_id, employee_name)
+        browser.implicitly_wait(4)
+        browser.find_element_by_xpath("//input[@id='sRequestUser']").click()
+        browser.implicitly_wait(4)
+        browser.find_element_by_name('btnSave1').click()
+        browser.implicitly_wait(7)
+
+        print employee_name, "complete"
+    except UnexpectedAlertPresentException:
+        alert = browser.switch_to_alert()
+        alert.accept()
+        browser.implicitly_wait(3)
+        browser.get('https://www.concursolutions.com/companyadmin/view_users.asp')
+        browser.implicitly_wait(4)
+        concur_set_request_rule(browser, employee_id, employee_name)
+    except:
+        print employee_name, " Unexpected error 2:", sys.exc_info()[0][1]
+        browser.close()
+
+def concur_set_expense_group(browser, employee_id='', employee_name='', expense_group=''):
+    """ This function will perform the steps of searching for a user navigating to their user record.
+    :param browser: The selenium Webdriver object.
+    :return: nothing
+    """
+    try:
+        # Go to the employee record.
+        concur_go_to_employee(browser, employee_id, employee_name)
+        browser.implicitly_wait(4)
+        browser.find_element_by_xpath("//input[contains(@id,'Custom21Name')]").clear()
+        wait(3)
+        browser.find_element_by_xpath("//input[contains(@id,'Custom21Name')]").send_keys(expense_group)
+        wait(2)
+        browser.find_element_by_xpath("//div[@id='expLocalInfoDiv']").click()
+        wait(2)
+        browser.implicitly_wait(7)
+
+        print employee_name, "complete"
+    except UnexpectedAlertPresentException:
+        alert = browser.switch_to_alert()
+        alert.accept()
+        browser.implicitly_wait(3)
+        browser.get('https://www.concursolutions.com/companyadmin/view_users.asp')
+        browser.implicitly_wait(4)
+        concur_set_request_rule(browser, employee_id, employee_name)
+    except:
+        print employee_name, " Unexpected error 2:", sys.exc_info()[0][1]
+        browser.close()
 
 
 def switch_to_pop_up(browser, main_window_handle):
@@ -382,4 +472,4 @@ def create_user(browser, first_name, last_name, email, user_name, title, manager
 
 if __name__ == '__main__':
     browser = go_to_concur_user_page()
-    concur_change_expense_approver(browser=browser)
+    concur_set_request_rule(browser=browser, employee_id='105220', employee_name='Valenzuela, Martin')
