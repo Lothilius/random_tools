@@ -12,7 +12,9 @@ from tableausdk.Extract import *
 import numpy as np
 from pyprogressbar import Bar
 from os.path import expanduser
+import pandas as pd
 
+# df = pd.read_csv()
 
 
 # Define type maps
