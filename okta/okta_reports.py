@@ -67,7 +67,7 @@ def querry_okta():
     okta = okta_connect(primary_object='events', query=create_query())
 
     # Set response json object to variable
-    okta_json = okta.query_okta()
+    okta_json = okta.fetch_from_okta()
     print okta_json
     # Create dataframe
     errors = pd.DataFrame(columns=['Name', 'Message', 'ID', 'Application'])
