@@ -49,7 +49,7 @@ def go_to_spark_live_chat(environment='staging'):
             main_window_handle = browser.current_window_handle
         # Switch to Live chat window pop up
         switch_to_pop_up(browser, main_window_handle)
-        browser.implicitly_wait(5)
+        wait(10)
         check_for_agent_reply(browser)
 
         return browser
