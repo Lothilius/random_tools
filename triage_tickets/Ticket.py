@@ -12,7 +12,7 @@ sys.setdefaultencoding('utf8')
 # pd.set_option('display.max_columns', 50)
 
 class Ticket(object):
-    def __init__(self, hdt_id, with_resolution=False, with_conversations=False):
+    def __init__(self, hdt_id='', with_resolution=False, with_conversations=False):
         self.hdt_id = hdt_id
         if with_resolution:
             self.resolution = self.get_resolution()
@@ -137,6 +137,28 @@ class Ticket(object):
             error_result = "Unexpected error 1T: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
 
+    def create_ticket(self, data_dictionary):
+        """ Create a ticket.
+        :data_dictionary: Dictionary of ticket with theo following values.
+        :return: Dictionary of the ticket details once the status has been changed.
+        """
+
+        try:
+            url, querystring, headers = hdc.create_api_request()
+
+            url = url + "/"
+            data = str(data_dictionary).replace("'", "")
+            data = data.replace(" ", "")
+            querystring['OPERATION_NAME'] = "ADD_REQUEST"
+            querystring['INPUT_DATA'] = "{operation:{" \
+                                        "Details:%s}}" % data
+            helpdesk_ticket_details = hdc.fetch_from_helpdesk(url, querystring, headers)
+            self.details = helpdesk_ticket_details
+            return helpdesk_ticket_details
+        except :
+            error_result = "Unexpected error 1T: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+            print error_result
+
 
     def send_priority_reply(self):
         """ Send a hard coded reply to a ticket.
@@ -175,7 +197,8 @@ class Ticket(object):
         return get_conversation_detail
 
 if __name__ == '__main__':
-    ticket = Ticket('15438', with_conversations=True)
-    # print ticket
+    ticket = Ticket()
+    data = {'REQUESTEREMAIL':'justin.reneau@bazaarvoice.com','REQUESTTEMPLATE':'BizAppsTestTemplate','REQUESTER':'JustinReneau','DESCRIPTION':'Pleasedonotdelete','SUBJECT':'SFDCTestingticket5'}
+    ticket.create_ticket(data)
     print ticket
 
