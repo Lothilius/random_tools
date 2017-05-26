@@ -148,14 +148,13 @@ class Ticket(object):
 
             url = url + "/"
             data = str(data_dictionary).replace("'", "")
-            data = data.replace(" ", "")
             querystring['OPERATION_NAME'] = "ADD_REQUEST"
             querystring['INPUT_DATA'] = "{operation:{" \
                                         "Details:%s}}" % data
             helpdesk_ticket_details = hdc.fetch_from_helpdesk(url, querystring, headers)
             self.details = helpdesk_ticket_details
             return helpdesk_ticket_details
-        except :
+        except:
             error_result = "Unexpected error 1T: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
 
@@ -198,7 +197,10 @@ class Ticket(object):
 
 if __name__ == '__main__':
     ticket = Ticket()
-    data = {'REQUESTEREMAIL':'justin.reneau@bazaarvoice.com','REQUESTTEMPLATE':'BizAppsTestTemplate','REQUESTER':'JustinReneau','DESCRIPTION':'Pleasedonotdelete','SUBJECT':'SFDCTestingticket5'}
+    data = {'REQUESTEREMAIL':'Martin.Valenzuela@bazaarvoice.com',
+            'REQUESTER':'MartinValenzuela',
+            'DESCRIPTION':'System- SFDC Time frame- Tomorrow Some description that is long ',
+            'SUBJECT':'It hurts'}
     ticket.create_ticket(data)
-    print ticket
+    print ticket.details['WORKORDERID']
 
