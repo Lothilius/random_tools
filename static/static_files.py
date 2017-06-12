@@ -10,6 +10,7 @@ def get_static_file(file_name=''):
     if path.isfile(full_path):
         return full_path
     else:
+        # TODO - Improve error handeling here.
         raise IOError
 
 

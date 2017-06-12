@@ -2,7 +2,7 @@ __author__ = 'Lothilius'
 
 import re
 import numpy as np
-import SFDC_Permissions
+import SFDC_Permission_Sets
 
 
 class SFDC_User_List:
