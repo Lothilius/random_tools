@@ -15,7 +15,7 @@ import sys
 
 class Live_Chat_Test(object):
     def __init__(self):
-        self.domain = {'prod': 'https://bazaarvoice.secure.', 'staging': 'https://staging-bazaarvoice.cs53.'}
+        self.domain = {'prod': 'https://bazaarvoice.secure.', 'staging': 'https://staging-bazaarvoice.cs70.'}
         self.live_chat_welcome_message = 'Hello this is the hourly test. Please repeat the script. Ready?'
         self.live_chat_script = \
             ['1-asdf qwer% zxcvui op.'
@@ -162,12 +162,10 @@ class Live_Chat_Test(object):
             # End the test.
             self.reply_to_agent(message="Thank you. The test has concluded")
             self.browser.find_element_by_xpath("//button[@title='End Chat']").click()
-            self.browser.close()
 
         except Exception, e:
             print e
-            self.notify_help_desk("Test timed out!!")
-            raise
+            return "Test timed out!!"
 
         print "Test Concluded"
         return "Test Concluded"
@@ -235,8 +233,8 @@ class Live_Chat_Test(object):
                     'ATTACHMENT_IDS': ['1005', '1006']}
         except Exception, e:
             print e
-            oc.create_helpdesk_ticket(subject=subject,
-                                  cc=['holly.socha@bazaarvoice.com', 'sadie.claire@bazaarvoice.com'],
+            oc.send_email(subject=subject, to='martin.valenzuela@bazaarvoice.com', #create_helpdesk_ticket(subject=subject,
+                                  # cc=['holly.socha@bazaarvoice.com', 'sadie.claire@bazaarvoice.com'],
                                   body=message, files=self.screen_shot)
             return "error"
 
