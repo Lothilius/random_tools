@@ -64,7 +64,10 @@ def send_message(subject, body, receiver='helpdesk@bazaarvoice.com'):
 
 def querry_okta():
     # Initiate connection to Okta
-    okta = okta_connect(primary_object='events', query=create_query())
+    okta = okta_connect(primary_object='events')
+
+    # Assign query
+    okta.set_query(query=create_query())
 
     # Set response json object to variable
     okta_json = okta.fetch_from_okta()
