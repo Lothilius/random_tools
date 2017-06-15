@@ -15,18 +15,21 @@ class Okta_Users(object):
         """
 
     def __init__(self, app_id=''):
-        primary_object = 'apps/' + app_id + '/users/'
+        """ Creation of instance of Okta users
+        :param app_id: Should be in the format of 'app/<id>'
+        """
+        primary_object = app_id + '/users'
         self.users = self.create_panda(primary_object)
 
     def __str__(self):
         return str(self.users)
 
     def create_panda(self, primary_object):
-        users = okta_connect(primary_object=primary_object, limit=1000, filter='accountType eq \"EMPLOYEE\"').fetch_from_okta()
-        print users
+        users = okta_connect(primary_object=primary_object, limit=500, filter='').fetch_from_okta()
         users_profile_list = pd.read_json(path_or_buf=json.dumps(users), encoding='str')
-        print json.dumps(users_profile_list, indent=4, sort_keys=True)
-        self.users = pd.DataFrame(list(users_profile_list['profile']))
+        # print json.dumps([reponse_headers], indent=4, sort_keys=True)
+        self.users = pd.DataFrame(users_profile_list['profile'].tolist())
+
         return self.users
 
     def okta_users(self):
@@ -34,4 +37,8 @@ class Okta_Users(object):
 
 
 if __name__ == '__main__':
-    print Okta_Users(app_id='0oada9tueRHDXFSYNVMT').users
+    user = Okta_Users(app_id='apps/0oada9tueRHDXFSYNVMT').users
+    reduced_user_info = user[['lastName', 'firstName', 'employeeID', 'email', 'businessTitle', 'managerUserName',
+                              'supervisoryOrg', 'accountType']]
+
+    print reduced_user_info
