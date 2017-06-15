@@ -32,7 +32,8 @@ class SFDC_Permission_Sets(object):
         results_panda.fillna(value='na', inplace=True)
 
         # Rename the columns of the results.
-        results_panda.rename(columns={'AssigneeId': 'UserId', 'Id':'Permission_Set_Id', 'Name':'Permission_Set_Name'}, inplace=True)
+        results_panda.rename(columns={'AssigneeId': 'UserId', 'Id':'Permission_Set_Id', 'Name':'Permission_Set_Name'},
+                             inplace=True)
         final_panda = results_panda[~results_panda['Permission_Set_Name'].str.startswith('X')].copy()
 
         return final_panda

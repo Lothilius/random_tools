@@ -23,34 +23,35 @@ class OutlookConnection(object):
         # username = ''
         # password = ''
         # print 'Username and Password needed'
+        msg = MIMEMultipart()
+        msg.attach(MIMEText(body.encode("utf-8")))
+        msg['To'] = to
+        msg['Subject'] = subject
+
         if isinstance(to, list):
             to = ", ".join(to)
         if cc != '':
             if isinstance(cc, list):
+                msg['CC'] = ", ".join(cc)
                 cc = '\n' + 'CC: ' + ",".join(cc)
             else:
+                msg['CC'] = cc
                 cc = '\n' + 'CC: ' + cc
         if bcc != '':
             if isinstance(cc, list):
+                msg['BCC'] = ", ".join(cc)
                 bcc = '\n' + 'BCC: ' + ",".join(bcc)
             else:
+                msg['BCC'] = bcc
                 bcc = '\n' + 'BCC:' + bcc
 
         # try:
         username, password = auth.smtp_login()
-        full_message = "From: " + username \
-                       + '\n' + 'To: ' + to \
-                       + cc \
-                       + bcc \
-                       + '\n' + 'Subject: ' + subject \
-                       + '\n\n' + body
+        msg['From'] = username
 
         all_emails = [to] + [cc] + [bcc]
         email_connection = OutlookConnection.connect_mail(username, password)
 
-        msg = MIMEMultipart()
-        msg.attach(MIMEText(body.encode("utf-8")))
-        msg['Subject'] = subject
         # Help from stack over flow
         # http://stackoverflow.com/questions/3362600/how-to-send-email-attachments-with-python
         for f in files or []:
@@ -65,9 +66,6 @@ class OutlookConnection(object):
         if html != '':
             html = html.encode("utf-8")
             msg = MIMEMultipart('alternative')
-            msg['From'] = username
-            msg['To'] = to
-            msg['Subject'] = subject
             part1 = MIMEText(html, 'plain')
             part2 = MIMEText(html, 'html')
             # the HTML message, is best and preferred.

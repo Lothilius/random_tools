@@ -5,6 +5,7 @@ import json
 import requests
 from bv_authenticate.Authentication import Authentication as auth
 import pandas as pd
+import ast
 
 pd.set_option('display.width', 260)
 
@@ -30,18 +31,35 @@ class Okta_Connection(object):
     def set_query(self, query):
         self.query = query
 
+    def set_url(self, url):
+        self.api_url = url
+
+    def query_okta(self):
+        # Send the request
+        response = requests.request("GET", url=self.api_url, headers=self.headers, params=self.query)
+        data = response.text
+        # Place response in to a json object
+        okta_json = json.loads(data)
+        if 'next' in response.links.keys():
+            next_page = response.links['next']['url']
+            self.set_url(next_page)
+            self.query = ''
+            # print okta_json
+            okta_json.extend(self.query_okta())
+
+
+        return okta_json
+
+
     def fetch_from_okta(self):
         """ Create the main Okta connecting object.
         :return: Okta query result as json object.
         """
         # Send the request
-        response = requests.request("GET", url=self.api_url, headers=self.headers, params=self.query)
-        print response.url
-        # Place response in to a json object
-        okta_json = json.loads(response.text)
+        data = self.query_okta()
         # print okta_json[11]['profile']
         # print json.dumps(okta_json, indent=4, sort_keys=True)
-        return okta_json
+        return data
 
 if __name__ == '__main__':
     okta_title = Okta_Connection(primary_object='apps', limit='200')
