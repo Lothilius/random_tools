@@ -233,9 +233,9 @@ class Live_Chat_Test(object):
                     'ATTACHMENT_IDS': ['1005', '1006']}
         except Exception, e:
             print e
-            oc.send_email(subject=subject, to='martin.valenzuela@bazaarvoice.com', #create_helpdesk_ticket(subject=subject,
-                                  # cc=['holly.socha@bazaarvoice.com', 'sadie.claire@bazaarvoice.com'],
-                                  body=message, files=self.screen_shot)
+            oc.create_helpdesk_ticket(subject=subject,
+                                      cc=['holly.socha@bazaarvoice.com', 'sadie.claire@bazaarvoice.com'],
+                                      body=message, files=self.screen_shot)
             return "error"
 
 if __name__ == '__main__':
