@@ -25,7 +25,6 @@ try:
         test_livechat.notify_help_desk(errors, files=files)
     elif 'timed out' in results:
         test_livechat.notify_help_desk(errors, files=files)
-    else:
-        test_livechat.browser.close()
+    test_livechat.browser.quit()
 except Exception, e:
     print "error: %s" % e
