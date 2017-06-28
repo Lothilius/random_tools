@@ -29,14 +29,18 @@ class SFDC_Users(object):
         return self.users
 
     def get_user_list(self):
+        """ Get Active standard user list from Salesforce.
+        :return: panda Dataframe of the users with the Username as the Email!!! ---Warning----
+        """
         sf = SFDC.connect_to_SFDC('prod')
-        results = sf.query_all("SELECT Id, Email, Name, Employee_ID__c, Role__c, Profile.Name, ForecastEnabled, "
+        results = sf.query_all("SELECT Id, Username, Email, Name, Employee_ID__c, Role__c, Profile.Name, ForecastEnabled, "
                                "UserPermissionsKnowledgeUser, UserPermissionsLiveAgentUser, "
                                "UserPermissionsMarketingUser, UserPermissionsSFContentUser, "
                                "UserPermissionsSupportUser  FROM User Where isActive=true "
                                "AND UserType = 'Standard'")
         results_panda = self.flaten_dictionary(results_od=results['records'])
-        results_panda.rename(columns={'Id': 'UserId', 'Name': 'Profile_Name'}, inplace=True)
+        results_panda.rename(columns={'Id': 'UserId', 'Name': 'Profile_Name', 'Email': 'true_email',
+                                      'Username': 'Email', }, inplace=True)
 
         return results_panda
 
@@ -84,6 +88,6 @@ class SFDC_Users(object):
         return flat_df
 
 if __name__ == '__main__':
-    the_list = SFDC_Users(include_licenses=True, include_permissions=True)
-    hello = the_list.users_with_licenses_permissions()
-    hello.to_csv('/Users/martin.valenzuela/Downloads/employees_with_license_and_perm_sets.csv', encoding='utf-8')
+    the_list = SFDC_Users()
+    hello = the_list.users
+    print hello[~(hello['true_email'].str.contains('@bazaarvoice.com'))]

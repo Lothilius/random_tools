@@ -8,7 +8,7 @@ from send_email.OutlookConnection import OutlookConnection as outlook
 from tableau_data_publisher.data_assembler import TDEAssembler
 from tableau_data_publisher.data_publisher import publish_data
 from triage_tickets.TicketList import TicketList
-
+import helper_scripts.notify_helpers as give_notice
 
 
 
@@ -38,3 +38,6 @@ except ValueError:
     subject = 'Error with Tableau refresh script'
     print error_result
     outlook.send_email('helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
+    give_notice.set_red()
+    give_notice.wait(120)
+    give_notice.flow_the_light()

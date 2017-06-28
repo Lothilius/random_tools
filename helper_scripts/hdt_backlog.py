@@ -7,6 +7,7 @@ import pandas as pd
 from pyprogressbar import Bar
 
 from helper_scripts.notify_helpers import *
+from misc_helpers.data_manipulation import correct_date_dtype
 
 pd.set_option('display.width', 280)
 pd.set_option('display.max_columns', None)
@@ -46,23 +47,24 @@ def convert_datetime_to_date(the_datetime):
 
 def main():
     # try:
-    ticket_list = pd.read_pickle('/Users/martin.valenzuela/Box Sync/Documents/Austin Office/BizReqs/Monthly_Release_Docs/HDT_History_00465111/a_to_f_2')#,
+    ticket_list = pd.read_pickle("/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Data/EUS_File__pickle")#,
                               #error_bad_lines=False, warn_bad_lines=True)
     # print ticket_list.columns
 
-    # ticket_list.rename(columns={'WORKORDERID': 'RequestID', 'ID': 'RequestID', 'STATUS': 'Request Status',
-    #                                 'Department_Group': 'High-Level Department', 'Completedtime': 'Completed Time',
-    #                                 'CREATEDTIME': 'Created Time', 'COMPLETEDTIME':'Completed Time',
-    #                             'RESOLUTIONLASTUPDATEDTIME':'Resolved Time'}, inplace=True)
+    ticket_list.rename(columns={'CREATEDTIME': 'Created Date',
+                                'COMPLETEDTIME': 'Completed Date',
+                                'RESOLUTIONLASTUPDATEDTIME': 'Resolved Time'}, inplace=True)
 
-    cut_off_date = dt.datetime.strptime('2014-01-01', '%Y-%m-%d').date()
-    stop_date = dt.datetime.strptime('2016-10-31', '%Y-%m-%d').date()
+    # cut_off_date = dt.datetime.strptime('2014-01-01', '%Y-%m-%d').date()
+    stop_date = dt.datetime.strptime('2017-06-20', '%Y-%m-%d').date()
 
     print ticket_list
     ticket_list.replace(to_replace=['0', 'NA', '-1', '-', 'Not Assigned'], value=np.nan, inplace=True)
     print ticket_list
 
-    ticket_list['Created Dated'] = ticket_list['Created Date'].apply(lambda x: dt.datetime.strptime(x, '%Y-%m-%d').date())
+    ticket_list['Created Dated'] = ticket_list['Created Date'].apply(lambda x: x.date())#dt.datetime.strptime(str(x), '%Y-%m-%d'))
+    ticket_list['Completed Date'] = ticket_list['Completed Date'].apply(lambda x: x.date())#dt.datetime.strptime(str(x), '%Y-%m-%d'))
+    ticket_list['Resolved Date'] = ticket_list['Resolved Time'].apply(lambda x: x.date())#dt.datetime.strptime(str(x), '%Y-%m-%d'))
     # print ticket_list['CREATEDTIME']
     # ticket_list['Created Dated'] = pd.to_datetime(ticket_list['Created Dated'], format='%Y-%m-%d')
     # print ticket_list
@@ -135,7 +137,7 @@ def main():
 
     # print open_list.head()
     now = dt.datetime.now().strftime('%Y-%m-%d_%H_%M')
-    open_list.to_csv('/Users/martin.valenzuela/Box Sync/Documents/Austin Office/BizReqs/Monthly_Release_Docs/HDT_History_00465111/back_log_%s.csv' % now, index=False)
+    open_list.to_csv('/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Tickets/EUS_Tableau_report_request_30465/back_log_%s.csv' % now, index=False)
     alert_the_light()
     alert_homer()
 

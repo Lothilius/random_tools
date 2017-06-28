@@ -75,7 +75,7 @@ def correct_date_dtype(data_frame, date_time_format='', date_time_columns={'CREA
     return data_frame
 
 
-def create_feature_vector_dataframe(dataframe, feature_index_column, feature_column):
+def create_feature_vector_dataframe(dataframe, feature_index_column, feature_column, suffix=''):
     """
     :param dataframe:
     :param feature_index_column:
@@ -85,6 +85,17 @@ def create_feature_vector_dataframe(dataframe, feature_index_column, feature_col
     grouped_features = dataframe.groupby([feature_index_column, feature_column]).count().reset_index()
     feature_vector_dataframe = grouped_features.pivot(
         index=feature_index_column, columns=feature_column, values=feature_column).reset_index()
+
+    if suffix != '':
+        try:
+            column_names = pd.Series(data=[element + suffix for element in feature_vector_dataframe.columns.tolist()],
+                                     index=feature_vector_dataframe.columns.tolist())
+        except TypeError:
+            column_names = pd.Series(data=[(element[0] + suffix, element[1]) for element in feature_vector_dataframe.columns.tolist()],
+                                     index=feature_vector_dataframe.columns.tolist())
+        column_names.drop(feature_index_column, inplace=True)
+
+        feature_vector_dataframe.rename(columns=column_names.to_dict(), inplace=True)
 
     return feature_vector_dataframe
 
