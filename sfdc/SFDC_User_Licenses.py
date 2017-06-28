@@ -5,11 +5,14 @@ from sfdc.SFDC import SFDC
 from helper_scripts.misc_helpers.data_manipulation import create_feature_vector_dataframe
 import collections
 
+pd.set_option('display.width', 195)
+
 
 class SFDC_Package_Licenses(object):
     """ Package_License from SFDC. When called, package licenses are retrieved from SFDC in a panda dataframe.
     """
     def __init__(self):
+        self.package_licence_key = ''
         self.licenses = self.get_license_vector()
 
     def __str__(self):
@@ -20,13 +23,32 @@ class SFDC_Package_Licenses(object):
 
     def get_license_list(self):
         sf = SFDC.connect_to_SFDC('prod')
-        results = sf.query_all("SELECT Id,PackageLicense.NamespacePrefix,UserId FROM UserPackageLicense")
+        results = sf.query_all("SELECT PackageLicenseId,PackageLicense.NamespacePrefix,UserId FROM UserPackageLicense")
 
         # Flatten the results from nested ordered dicts and convert to pandas dataframe
         results_panda = self.flaten_dictionary(results['records'])
-        results_panda.fillna(value='na', inplace=True)
+        final_panda = results_panda.fillna(value='na', inplace=False)
 
-        return results_panda
+        self.set_permission_key_df(final_panda[['NamespacePrefix', 'PackageLicenseId']])
+
+        return final_panda
+
+    def set_permission_key_df(self, package_licence):
+        """ The the license key parameter with the licenses in use with their Id's
+        :param package_licence: Dataframe
+        :return: None
+        """
+        df_group = package_licence.groupby(by=['NamespacePrefix', 'PackageLicenseId'], as_index=False).size()
+        df = pd.DataFrame(df_group, columns=['Count']).reset_index()
+        df.drop(labels=['Count'], axis=1, inplace=True)
+
+        self.package_licence_key = pd.DataFrame(data=[df['PackageLicenseId'].tolist()],
+                                               columns=df['NamespacePrefix'].tolist())
+
+    @staticmethod
+    def get_package_licence_key():
+        permissions = SFDC_Package_Licenses()
+        return permissions.package_licence_key
 
     @staticmethod
     def flaten_dictionary(results_od):
@@ -51,9 +73,9 @@ class SFDC_Package_Licenses(object):
 
     def get_license_vector(self):
         user_list = self.get_license_list()
-        license_vector_dataframe = create_feature_vector_dataframe(user_list, 'UserId', 'NamespacePrefix')
+        license_vector_dataframe = create_feature_vector_dataframe(user_list, 'UserId', 'NamespacePrefix', suffix='_lic')
 
         return license_vector_dataframe
 
 if __name__ == '__main__':
-    print SFDC_Package_Licenses()
+    print SFDC_Package_Licenses().get_package_licence_key()
