@@ -107,15 +107,14 @@ def main():
                '<h2>All Tickets</h2>' + html.unescape(full_tickets) + '<br><br>'\
                '</body></html>'
 
-        OutlookConnection.send_email(to=to, subject=subject, body=body, html=body)
+        OutlookConnection().send_email(to=to, subject=subject, body=body, html=body)
     except:
         error_result = "Unexpected error in making connection to mail server: %s, %s" \
                        % (sys.exc_info()[0], sys.exc_info()[1])
         print error_result
         subject = 'It is broken'
         body = error_result
-        OutlookConnection.create_helpdesk_ticket(subject=subject, body=body)
-
+        OutlookConnection().create_helpdesk_ticket(subject=subject, body=body)
 
 if __name__ == '__main__':
     main()

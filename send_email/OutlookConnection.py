@@ -39,39 +39,30 @@ class OutlookConnection(object):
 
         if isinstance(to, list):
             self.msg['To'] = ", ".join(to)
-            self.to = ", ".join(to)
+            self.to = to
         else:
             self.msg['To'] = to
-            self.to = to
+            self.to = [to]
+            # print to
 
         if cc != '':
             if isinstance(cc, list):
                 self.msg['CC'] = ", ".join(cc)
-                self.cc = ", ".join(cc)
+                self.cc = cc
             else:
                 self.msg['CC'] = cc
-                self.cc = cc
+                self.cc = [cc]
         else:
-            self.cc = cc
+            self.cc = [cc]
         if bcc != '':
             if isinstance(cc, list):
                 self.msg['BCC'] = ", ".join(cc)
-                self.bcc = ",".join(bcc)
+                self.bcc = bcc
             else:
                 self.msg['BCC'] = bcc
-                self.bcc = bcc
+                self.bcc = [bcc]
         else:
-            self.bcc = bcc
-
-
-    # def attach_html(self):
-    #     part1 = MIMEText(self.html, 'plain', "utf-8")
-    #     part2 = MIMEText(self.html, 'html', "utf-8")
-    #     print part1
-    #     print part2
-    #     # the HTML message, is best and preferred.
-    #     self.msg.attach(part1)
-    #     self.msg.attach(part2)
+            self.bcc = [bcc]
 
     def attach_file(self):
         """ Attach any files in a list or string passed to the initiation of the object.
@@ -109,7 +100,7 @@ class OutlookConnection(object):
             username, password = auth.smtp_login()
             self.msg['From'] = username
 
-            all_emails = [self.to] + [self.cc] + [self.bcc]
+            all_emails = self.to + self.cc + self.bcc
 
             email_connection = OutlookConnection.connect_mail(username, password)
 
