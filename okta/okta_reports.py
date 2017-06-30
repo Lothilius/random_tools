@@ -58,7 +58,7 @@ def create_message(errors):
 
 # Build and send the emails
 def send_message(subject, body, receiver='helpdesk@bazaarvoice.com'):
-    outlook.send_email(to=receiver, subject=subject, body=body)
+    outlook().send_email(to=receiver, subject=subject, body=body)
     print "Successfully sent email to " + receiver
 
 

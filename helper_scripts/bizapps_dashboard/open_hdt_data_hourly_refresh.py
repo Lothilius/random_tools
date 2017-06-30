@@ -54,7 +54,7 @@ def main():
                        % (sys.exc_info()[0], sys.exc_info()[1])
         subject = 'Error with Hourly Tableau refresh script'
         print error_result
-        outlook.send_email(to='helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email(to='helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
         give_notice.set_red()
         give_notice.wait(120)
         give_notice.flow_the_light()

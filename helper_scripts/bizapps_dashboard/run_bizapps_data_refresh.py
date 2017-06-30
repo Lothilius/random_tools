@@ -29,15 +29,15 @@ try:
         auth.tableau_publishing(datasource_type='BizTech', data_source_name='Helpdesk-Tickets')
 
     publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
-    outlook.send_email(to='martin.valenzuela@bazaarvoice.com',
+    outlook().send_email(to='martin.valenzuela@bazaarvoice.com',
                        subject='HDT-Data update complete', body='HDT-Data update complete')
 
-except ValueError:
+except:
     error_result = "Unexpected AttributeError: %s, %s"\
                    % (sys.exc_info()[0], sys.exc_info()[1])
     subject = 'Error with Tableau refresh script'
     print error_result
-    outlook.send_email('helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
+    outlook().send_email('helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
     give_notice.set_red()
     give_notice.wait(120)
     give_notice.flow_the_light()
