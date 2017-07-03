@@ -36,7 +36,7 @@
             liveagent.findOrCreate('Account').map('Id', 'AccountIdDetail', true, true, false).saveToTranscript('AccountId');
             // end of replacement code per chuck
 
-            liveagent.init('https://d.la1-c1cs-phx.salesforceliveagent.com/chat', '57250000000GmvK', '00D2C0000000xT7');
+            liveagent.init('https://d.la3-c1cs-dfw.salesforceliveagent.com/chat', '57250000000GmvK', '00D3D0000000Shf');
         </script>
     % end
 </head>
