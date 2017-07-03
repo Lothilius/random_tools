@@ -18,13 +18,13 @@ def main():
 
              [BizApps]
             """ % (user_item[0], user_item[1])
-            out.create_helpdesk_ticket(subject=subject, body=body)
+            out().create_helpdesk_ticket(subject=subject, body=body)
     except:
         subject = "%s user needs a new password" % user_item[0]
         body = """Please check the reminder script on the BizTech Ops server.
             The script can be found at the following address
             %s""" % os.path.dirname(unicode(__file__, encoding='utf-8'))
-        out.send_email(to='bizapps@bazaarvoice.com', subject=subject, body=body)
+        out().send_email(to='bizapps@bazaarvoice.com', subject=subject, body=body)
 
 if __name__ == '__main__':
     main()

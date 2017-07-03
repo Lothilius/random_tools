@@ -14,7 +14,7 @@ import helper_scripts.notify_helpers as give_notice
 
 try:
     # Get tickets from the HDT view
-    tickets = TicketList(helpdesk_que='YtoD-BizApps', with_resolution=True)
+    tickets = TicketList(helpdesk_que='YtoD-EUS', with_resolution=True)
     tickets = tickets.reformat_as_dataframe(tickets)
     try:
         tickets.drop('ATTACHMENTS', axis=1, inplace=True)
@@ -22,11 +22,11 @@ try:
         print 'No Attachments column.'
 
     # Package in to a tde file
-    data_file = TDEAssembler(data_frame=tickets, extract_name='BizApps_HDT')
+    data_file = TDEAssembler(data_frame=tickets, extract_name='EUS_HDT')
     # Set values for publishing the data.
     file_name = str(data_file)
     server_url, username, password, site_id, data_source_name, project = \
-        auth.tableau_publishing(datasource_type='BizTech', data_source_name='Helpdesk-Tickets')
+        auth.tableau_publishing(datasource_type='BizApps', data_source_name='EUS-Helpdesk-Tickets')
 
     publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
     outlook().send_email(to='martin.valenzuela@bazaarvoice.com',

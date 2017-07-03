@@ -84,7 +84,18 @@ def main():
                                                'SUBJECT']
                                            )[['GROUP', 'TECHNICIAN', 'PRIORITY', 'WORKORDERID', 'SUBJECT']]
 
-        to = ['martin.valenzuela@bazaarvoice.com', 'Lindsey.Fivecoat@bazaarvoice.com', 'Dustin.Dodson@bazaarvoice.com']
+        if date.today() < date(2017, 7, 5):
+            to = ['diana.mohan@bazaarvoice',
+                  'martin.valenzuela@bazaarvoice.com',
+                  'Lindsey.Fivecoat@bazaarvoice.com',
+                  'Dustin.Dodson@bazaarvoice.com']
+            print 'yes'
+        else:
+            to = ['martin.valenzuela@bazaarvoice.com',
+                  'Lindsey.Fivecoat@bazaarvoice.com',
+                  'Dustin.Dodson@bazaarvoice.com']
+            print 'no'
+
         subject = 'Triage summary %s' % str(date.today())
         # print tickets.iloc[0].tolist()
         ticket_triage = ticket_triage.to_html()

@@ -78,4 +78,4 @@ def publish_data(server_url, username, password, site_id, file_name,
             error_message += "An unknown error occured."
 
         print error_message
-        OutlookConnection.send_email(to='helpdesk@bazaarvoice.com', subject='Error Creating HDT Tableau export', body=error_message)
+        OutlookConnection().send_email(to='helpdesk@bazaarvoice.com', subject='Error Creating HDT Tableau export', body=error_message)
