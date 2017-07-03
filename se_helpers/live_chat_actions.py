@@ -223,7 +223,7 @@ class Live_Chat_Test(object):
 
             self.screen_shot.append(full_path)
             print full_path
-            self.browser.close()
+            self.browser.quit()
             subject = 'An error with Live Chat has occured [BizApps]'
             raise
             data = {'REQUESTEREMAIL': 'holly.socha@bazaarvoice.com',
