@@ -77,7 +77,7 @@ class Authentication(object):
         :return:
         """
         server_url = 'https://tableau.bazaarvoice.com/'
-        if datasource_type == 'BizTech':
+        if datasource_type == 'BizApps':
             project = 'Business Applications'
             site_id = 'BizTech'
             # Set values for publishing the data.
@@ -89,6 +89,18 @@ class Authentication(object):
                 pass
             else:
                 data_source_name = 'BizTech-test'
+        elif datasource_type =='EUS':
+            project = 'EUS'
+            site_id = 'BizTech'
+            # Set values for publishing the data.
+            username, password = Authentication.tableau__credentials()
+            # TODO - Move most of this trash to the publish data module
+            if environ['MY_ENVIRONMENT'] == 'prod' and data_source_name == 'EUS-Helpdesk-Tickets':
+                data_source_name = 'EUS-Helpdesk-Tickets'
+            elif environ['MY_ENVIRONMENT'] == 'prod' and data_source_name != 'New_Extract':
+                pass
+            else:
+                data_source_name = 'EUS-test'
         else:
             # Set values for publishing the data.
             username, password = Authentication.tableau__credentials()
