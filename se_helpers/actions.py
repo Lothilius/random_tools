@@ -52,7 +52,7 @@ def concur_go_to_employee(browser, employee_id='', employee_name=''):
     except:
         print employee_name, " Unexpected error going to employee record:", sys.exc_info()[0]
 
-def concur_employee_deprecation(browser, employee_id='', employee_name='', termination_date=''):
+def concur_employee_deprovision(browser, employee_id='', employee_name='', termination_date=''):
     """ This function will perform the steps of searching for a user navigating to their user record.
     :param browser: The selenium Webdriver object.
     :return: nothing
@@ -74,7 +74,7 @@ def concur_employee_deprecation(browser, employee_id='', employee_name='', termi
         wait(3)
         browser.get('https://www.concursolutions.com/companyadmin/view_users.asp')
         wait(4)
-        concur_employee_deprecation(browser, employee_id, employee_name, termination_date)
+        concur_employee_deprovision(browser, employee_id, employee_name, termination_date)
     except:
          print employee_name, " Unexpected error 2:", sys.exc_info()[0]
 
@@ -106,7 +106,7 @@ def concur_set_travel_rule(browser, employee_id='', employee_name='', terminatio
         wait(3)
         browser.get('https://www.concursolutions.com/companyadmin/view_users.asp')
         wait(4)
-        concur_employee_deprecation(browser, employee_id, employee_name, termination_date)
+        concur_employee_deprovision(browser, employee_id, employee_name, termination_date)
     except:
          print employee_name, " Unexpected error 2:", sys.exc_info()[0]
 

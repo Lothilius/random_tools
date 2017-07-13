@@ -1,6 +1,6 @@
 __author__ = 'Lothilius'
 
-from se_helpers.actions import concur_employee_deprecation
+from se_helpers.actions import concur_employee_deprovision
 from se_helpers.actions import go_to_concur_user_page
 import pandas as pd
 import sys
@@ -19,6 +19,6 @@ if __name__ == '__main__':
     # print employee_list
     for each in employee_list[['Employee ID', 'Employee Name', 'DOT']].itertuples():
         try:
-            concur_employee_deprecation(browser, str(each[1]), str(each[2]), str(each[3]))
+            concur_employee_deprovision(browser, str(each[1]), str(each[2]), str(each[3]))
         except:
             print each[2], " Unexpected error 1:", sys.exc_info()[0], sys.exc_info()[1]
