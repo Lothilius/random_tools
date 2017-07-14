@@ -16,7 +16,7 @@ try:
             if attempt < 9:
                 files.append(test_livechat.screen_shot)
                 errors = errors + '\n' + results
-                test_livechat.browser.close()
+                test_livechat.browser.quit()
             pass
         else:
             break
