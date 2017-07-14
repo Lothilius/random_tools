@@ -123,7 +123,7 @@ class OutlookConnection(object):
         :return:
         """
         to = 'helpdesk@bazaarvoice.com'
-        OutlookConnection.send_email(to=to, cc=cc, bcc=bcc, subject=subject, body=body, html=html, files=files)
+        OutlookConnection().send_email(to=to, cc=cc, bcc=bcc, subject=subject, body=body, html=html, files=files)
 
 
     @staticmethod

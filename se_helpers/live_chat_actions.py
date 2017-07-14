@@ -128,7 +128,7 @@ class Live_Chat_Test(object):
                         elif number_of_agent_posts != len(operator_message_list):
                             # Check if Agent reply is the same as the test script line
                             if operator_message_list[-1] == test_line:
-                                self.reply_to_agent(message="Match recieved. Please wait...")
+                                self.reply_to_agent(message="Match received. Please wait...")
                                 try:
                                     self.reply_to_agent(message=self.live_chat_script[j+1])
                                 except IndexError:
@@ -200,6 +200,7 @@ class Live_Chat_Test(object):
         :param message: The message to the agent
         :return: Nothing
         """
+        # TODO I think there is an issues with leaving hanging phantomJS sessions here
         try:
             self.browser.find_element_by_xpath("//textarea[@class='liveAgentChatTextArea']").send_keys(message)
             wait(2)
