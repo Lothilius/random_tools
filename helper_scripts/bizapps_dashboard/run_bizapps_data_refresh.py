@@ -26,7 +26,7 @@ try:
     # Set values for publishing the data.
     file_name = str(data_file)
     server_url, username, password, site_id, data_source_name, project = \
-        auth.tableau_publishing(datasource_type='BizTech', data_source_name='Helpdesk-Tickets')
+        auth.tableau_publishing(datasource_type='BizApps', data_source_name='Helpdesk-Tickets')
 
     publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
     outlook().send_email(to='martin.valenzuela@bazaarvoice.com',
