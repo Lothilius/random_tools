@@ -22,7 +22,8 @@ try:
         print 'No Attachments column.'
 
     # Package in to a tde file
-    data_file = TDEAssembler(data_frame=tickets, extract_name='EUS_HDT')
+    data_file = TDEAssembler(data_frame=tickets, file_path='/var/shared_folder/EUS/Tableau_data/',
+                             extract_name='EUS_HDT')
     # Set values for publishing the data.
     file_name = str(data_file)
     server_url, username, password, site_id, data_source_name, project = \
