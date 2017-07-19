@@ -160,7 +160,7 @@ def main():
 
         # Set values for publishing the data.
         server_url, username, password, site_id, data_source_name, project = \
-            auth.tableau_publishing(datasource_type='BizTech',
+            auth.tableau_publishing(datasource_type='BizApps',
                                     data_source_name="Historical BizReq Business Demand Backlog")
         publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
 
