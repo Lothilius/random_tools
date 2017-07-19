@@ -20,11 +20,9 @@ def alert_the_light():
         hue_ip, hue_token = auth.hue_bridge()
         light_bridge = phue.Bridge(hue_ip, username=hue_token)
         light_bridge.set_light(1, parameter={"effect": "none"})
-        light_bridge.set_light(1, parameter={"alert": "select"})
         wait(.5)
         light_bridge.set_light(1, parameter={"alert": "select"})
         wait(.5)
-        light_bridge.set_light(1, parameter={"alert": "select"})
     except:
         error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
         print error_result
