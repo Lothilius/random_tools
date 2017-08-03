@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 __author__ = 'Lothilius'
 
 import requests
@@ -50,7 +51,7 @@ class HelpdeskConnection(object):
 
             # print response.txt
             # Load the response to the request as a json object.
-            helpdesk_tickets = json.loads(response.text)
+            helpdesk_tickets = json.loads(response.text.encode(encoding='utf-8'))
         except AttributeError:
             error_result = "Unexpected error 2: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
 

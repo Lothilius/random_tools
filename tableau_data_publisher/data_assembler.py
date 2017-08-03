@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 __author__ = 'Lothilius'
 
 # The primary purpose of this script is to return data from a csv or api source and package it as
@@ -185,6 +186,7 @@ class TDEAssembler (object):
                 row_object.setString(column_number, value)
         except:
             home = expanduser("~")
+            home = home + 'problem_dataframe'
             self.data_frame = pd.read_pickle(path=home)
 
 if __name__ == '__main__':
