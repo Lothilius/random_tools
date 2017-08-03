@@ -186,6 +186,7 @@ class TDEAssembler (object):
                 row_object.setString(column_number, value)
         except:
             home = expanduser("~")
+            home = home + 'problem_dataframe'
             self.data_frame = pd.read_pickle(path=home)
 
 if __name__ == '__main__':
