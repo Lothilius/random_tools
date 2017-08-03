@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 __author__ = 'Lothilius'
 
 # The primary purpose of this script is to return data from a csv or api source and package it as
