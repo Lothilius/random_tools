@@ -1,4 +1,4 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 __author__ = 'Lothilius'
 
 from HelpdeskConnection import HelpdeskConnection as hdc
@@ -6,8 +6,7 @@ import sys
 import re
 from time import time
 
-reload(sys)
-sys.setdefaultencoding('utf8')
+
 # pd.set_option('display.width', 340)
 # pd.set_option('display.max_columns', 50)
 

@@ -13,8 +13,7 @@ from Ticket import Ticket
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from time import time
 
-reload(sys)
-sys.setdefaultencoding('utf8')
+
 pd.set_option('display.width', 340)
 pd.set_option('display.max_columns', 50)
 
@@ -24,6 +23,7 @@ class TicketList(object):
         gather the tickets.
     """
     def __init__(self, helpdesk_que='Triage', with_resolution=False, with_conversations=False):
+        self.ticket_cursor = 1
         self.with_resolution = with_resolution
         self.with_conversations = with_conversations
         view_id = self.get_view_id(helpdesk_que)
@@ -88,7 +88,6 @@ class TicketList(object):
 
     def get_all_tickets(self, helpdesk_que='7256000001531681_MyView_7256000001531679'):
         try:
-            from_value = 1
             # Get first 100 ticket from helpdesk
             helpdesk_tickets = self.get_100_tickets(helpdesk_que=helpdesk_que)
 
@@ -96,9 +95,9 @@ class TicketList(object):
             if len(helpdesk_tickets) == 100:
                 # TODO - Make this a recursive method!!!
                 while len(helpdesk_tickets) % 100 == 0:
-                    from_value = from_value + 100
+                    self.ticket_cursor = self.ticket_cursor + 100
                     helpdesk_tickets = self.aggregate_tickets(
-                        helpdesk_tickets, self.get_100_tickets(helpdesk_que=helpdesk_que, from_value=from_value))
+                        helpdesk_tickets, self.get_100_tickets(helpdesk_que=helpdesk_que, from_value=self.ticket_cursor))
             # print pd.DataFrame(helpdesk_tickets)
             ticket_details = []
             print 'Retrieving ticket detail.'
