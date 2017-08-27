@@ -8,9 +8,10 @@ from send_email.OutlookConnection import OutlookConnection as outlook
 from tableau_data_publisher.data_assembler import TDEAssembler
 from tableau_data_publisher.data_publisher import publish_data
 from triage_tickets.TicketList import TicketList
-import helper_scripts.notify_helpers as give_notice
+from helper_scripts.notify_helpers import Notifier
+from os.path import basename
 
-
+give_notice = Notifier()
 
 try:
     # Get tickets from the HDT view
