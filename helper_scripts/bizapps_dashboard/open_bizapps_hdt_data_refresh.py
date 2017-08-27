@@ -11,6 +11,7 @@ from triage_tickets.TicketList import TicketList
 from helper_scripts.notify_helpers import Notifier
 from time import time
 from os import remove
+from os.path import basename
 
 
 give_notice = Notifier()
@@ -55,9 +56,9 @@ def main():
     except ValueError:
         error_result = "Unexpected AttributeError: %s, %s"\
                        % (sys.exc_info()[0], sys.exc_info()[1])
-        subject = 'Error with Hourly Tableau refresh script'
+        subject = 'Error with Hourly Tableau refresh script, %s' % basename(__file__)
         print error_result
-        outlook().send_email(to='helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
+        # outlook().send_email(to='helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
         give_notice.set_red()
         give_notice.wait(120)
         give_notice.flow_the_light()
