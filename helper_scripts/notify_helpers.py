@@ -9,8 +9,11 @@ import os
 
 class Notifier(object):
     def __init__(self):
-        self.light_bridge = self.create_light_bridge_object()
-        self.specific_light_bulbs = self.get_first_light()
+        try:
+            self.light_bridge = self.create_light_bridge_object()
+            self.specific_light_bulbs = self.get_first_light()
+        except:
+            pass
 
     @staticmethod
     def create_light_bridge_object():
@@ -90,7 +93,6 @@ class Notifier(object):
         try:
             if specific_light_bulbs is None:
                 specific_light_bulbs = self.specific_light_bulbs
-                print
             self.light_bridge.set_light(specific_light_bulbs, parameter={"effect": "none"})
             self.light_bridge.set_light(specific_light_bulbs, parameter={"xy": [.33, .33]})
         except:
