@@ -18,11 +18,11 @@ give_notice = Notifier()
 
 def backlog_levels(backlog_number):
     give_notice.alert_the_light()
-    if backlog_number < 67:
+    if backlog_number < 61:
         give_notice.set_green()
-    elif 67 <= backlog_number < 74:
+    elif 61 <= backlog_number < 68:
         give_notice.set_yellow()
-    elif backlog_number >= 74:
+    elif backlog_number >= 68:
         give_notice.set_red()
     else:
         raise ValueError
