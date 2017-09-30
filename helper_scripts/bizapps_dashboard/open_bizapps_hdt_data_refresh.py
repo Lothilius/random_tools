@@ -53,12 +53,15 @@ def main():
                              subject='HDT-Hourly update complete', body='HDT-Hourly update complete')
         remove(file_name)
 
-    except ValueError:
+    except KeyboardInterrupt:
+        pass
+    except:
         error_result = "Unexpected AttributeError: %s, %s"\
                        % (sys.exc_info()[0], sys.exc_info()[1])
         subject = 'Error with Hourly Tableau refresh script, %s' % basename(__file__)
         print error_result
-        outlook().send_email(to='helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email(to='helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com',
+                             subject=subject, body=error_result)
         give_notice.set_red()
         give_notice.wait(30)
         give_notice.flow_the_light()
