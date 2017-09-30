@@ -84,16 +84,16 @@ def main():
                                                'SUBJECT']
                                            )[['GROUP', 'TECHNICIAN', 'PRIORITY', 'WORKORDERID', 'SUBJECT']]
 
-        if date.today() < date(2017, 7, 5):
-            to = ['diana.mohan@bazaarvoice',
+        if date(2017, 10, 5) <= date.today() <= date(2017, 10, 13):
+            to = ['theo.broxson@bazaarvoice.com',
+                  'daniel.parkhurst@bazaarvoice.com',
                   'martin.valenzuela@bazaarvoice.com',
-                  'Lindsey.Fivecoat@bazaarvoice.com',
-                  'Dustin.Dodson@bazaarvoice.com']
+                  'dustin.dodson@bazaarvoice.com']
             print 'yes'
         else:
             to = ['martin.valenzuela@bazaarvoice.com',
-                  'Lindsey.Fivecoat@bazaarvoice.com',
-                  'Dustin.Dodson@bazaarvoice.com']
+                  'theo.broxson@bazaarvoice.com',
+                  'dustin.dodson@bazaarvoice.com']
             print 'no'
 
         subject = 'Triage summary %s' % str(date.today())
