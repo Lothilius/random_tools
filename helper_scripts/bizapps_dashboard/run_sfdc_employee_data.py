@@ -2,7 +2,6 @@
 __author__ = 'Lothilius'
 
 import sys
-
 from bv_authenticate.Authentication import Authentication as auth
 from send_email.OutlookConnection import OutlookConnection as outlook
 from tableau_data_publisher.data_assembler import TDEAssembler
@@ -13,7 +12,6 @@ from os import remove
 from os.path import basename
 from datetime import datetime
 from time import time
-
 
 
 def main():

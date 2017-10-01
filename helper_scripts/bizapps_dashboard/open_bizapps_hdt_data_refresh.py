@@ -17,6 +17,7 @@ from datetime import datetime
 
 give_notice = Notifier()
 
+
 def backlog_levels(backlog_number):
     give_notice.alert_the_light()
     if backlog_number < 61:
