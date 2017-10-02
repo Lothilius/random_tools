@@ -42,13 +42,20 @@
 </head>
 <body>
 Hello {{environment}}
-    <a id="liveagent_button_online_573500000008P6o" href="javascript://Chat" style="display: none;" onclick="liveagent.startChat('573500000008P6o')"><!-- Online Chat Content -->Let's Chat</a>
-    <div id="liveagent_button_offline_573500000008P6o" style="display: none;"><!-- Offline Chat Content -->Let's not Chat</div>
-    <script type="text/javascript">
+    <a id="liveagent_button_online_57350000000PIIC" href="javascript://Chat" style="display: none;" onclick="liveagent.startChat('57350000000PIIC')"><!-- Online Chat Content -->Let's Chat on Community</a>
+    <div id="liveagent_button_offline_57350000000PIIC" style="display: none;"><!-- Offline Chat Content -->Let's not Chat</div><script type="text/javascript">
         if (!window._laq) { window._laq = []; }
-        window._laq.push(function(){liveagent.showWhenOnline('573500000008P6o', document.getElementById('liveagent_button_online_573500000008P6o'));
-        liveagent.showWhenOffline('573500000008P6o', document.getElementById('liveagent_button_offline_573500000008P6o'));
+        window._laq.push(function(){liveagent.showWhenOnline('57350000000PIIC', document.getElementById('liveagent_button_online_57350000000PIIC'));
+        liveagent.showWhenOffline('57350000000PIIC', document.getElementById('liveagent_button_offline_57350000000PIIC'));
         });
     </script>
+    <!--<a id="liveagent_button_online_573500000008P6o" href="javascript://Chat" style="display: none;" onclick="liveagent.startChat('573500000008P6o')">&lt;!&ndash; Online Chat Content &ndash;&gt;Let's Chat</a>-->
+    <!--<div id="liveagent_button_offline_573500000008P6o" style="display: none;">&lt;!&ndash; Offline Chat Content &ndash;&gt;Let's not Chat</div>-->
+    <!--<script type="text/javascript">-->
+        <!--if (!window._laq) { window._laq = []; }-->
+        <!--window._laq.push(function(){liveagent.showWhenOnline('573500000008P6o', document.getElementById('liveagent_button_online_573500000008P6o'));-->
+        <!--liveagent.showWhenOffline('573500000008P6o', document.getElementById('liveagent_button_offline_573500000008P6o'));-->
+        <!--});-->
+    <!--</script>-->
 </body>
 </html>

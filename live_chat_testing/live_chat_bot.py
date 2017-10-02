@@ -27,4 +27,5 @@ try:
         test_livechat.notify_help_desk(errors, files=files)
     test_livechat.browser.quit()
 except Exception, e:
+    test_livechat.browser.quit()
     print "error: %s" % e

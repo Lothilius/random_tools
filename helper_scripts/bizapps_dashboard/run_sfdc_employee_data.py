@@ -2,13 +2,13 @@
 __author__ = 'Lothilius'
 
 import sys
-
 from bv_authenticate.Authentication import Authentication as auth
 from send_email.OutlookConnection import OutlookConnection as outlook
 from tableau_data_publisher.data_assembler import TDEAssembler
 from tableau_data_publisher.data_publisher import publish_data
-from triage_tickets.TicketList import TicketList
 from helper_scripts.notify_helpers import Notifier
+from sfdc.SFDC_Users import SFDC_Users
+from os import remove
 from os.path import basename
 from datetime import datetime
 from time import time
@@ -16,25 +16,25 @@ from time import time
 
 def main():
     try:
-        # Get tickets from the HDT view
-        tickets = TicketList(helpdesk_que='YtoD-BizApps', with_resolution=True)
-        tickets = tickets.reformat_as_dataframe(tickets)
-        try:
-            tickets.drop('ATTACHMENTS', axis=1, inplace=True)
-        except:
-            print 'No Attachments column.'
+        # Get SFDC_users from the Salesforcewith permissions and licenses
+        the_list = SFDC_Users(include_licenses=True, include_permissions=True)
+        sfdc_users = the_list.users_with_licenses_permissions()
 
         # Package in to a tde file
-        data_file = TDEAssembler(data_frame=tickets, extract_name='BizApps_HDT')
+        data_file = TDEAssembler(data_frame=sfdc_users, extract_name='SFDC_User_data')
         # Set values for publishing the data.
         file_name = str(data_file)
         server_url, username, password, site_id, data_source_name, project = \
-            auth.tableau_publishing(datasource_type='BizApps', data_source_name='Helpdesk-Tickets')
+            auth.tableau_publishing(datasource_type='BizApps', data_source_name='SFDC_User_Permissions')
 
         publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
         outlook().send_email(to='martin.valenzuela@bazaarvoice.com',
-                           subject='HDT-Data update complete', body='HDT-Data update complete')
+                           subject='SFDC_User_data compiling complete', body='SFDC_User_data compiling complete')
 
+        remove(file_name)
+
+    except KeyboardInterrupt:
+        pass
     except:
         error_result = "Unexpected AttributeError: %s, %s"\
                        % (sys.exc_info()[0], sys.exc_info()[1])
@@ -53,4 +53,4 @@ if __name__ == '__main__':
     end = time()
     print (end - start) / 60
     print datetime.now()
-    print '-----------------\n'
+    print '-----------------'

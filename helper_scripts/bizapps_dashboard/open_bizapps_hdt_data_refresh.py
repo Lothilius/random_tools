@@ -8,21 +8,27 @@ from send_email.OutlookConnection import OutlookConnection as outlook
 from tableau_data_publisher.data_assembler import TDEAssembler
 from tableau_data_publisher.data_publisher import publish_data
 from triage_tickets.TicketList import TicketList
-import helper_scripts.notify_helpers as give_notice
+from helper_scripts.notify_helpers import Notifier
 from time import time
 from os import remove
+from os.path import basename
+from datetime import datetime
+
+
+give_notice = Notifier()
 
 
 def backlog_levels(backlog_number):
     give_notice.alert_the_light()
-    if backlog_number < 67:
+    if backlog_number < 61:
         give_notice.set_green()
-    elif 67 <= backlog_number < 74:
+    elif 61 <= backlog_number < 68:
         give_notice.set_yellow()
-    elif backlog_number >= 74:
+    elif backlog_number >= 68:
         give_notice.set_red()
     else:
         raise ValueError
+
 
 def main():
     try:
@@ -35,8 +41,6 @@ def main():
         except:
             print 'No Attachments column.'
 
-        print tickets
-        print len(tickets)
         backlog_levels(len(tickets))
         # Package in to a tde file
         data_file = TDEAssembler(data_frame=tickets, extract_name='BizApps_Open_HDT')
@@ -47,17 +51,20 @@ def main():
 
         publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
         outlook().send_email(to='martin.valenzuela@bazaarvoice.com',
-                           subject='HDT-Hourly update complete', body='HDT-Hourly update complete')
+                             subject='HDT-Hourly update complete', body='HDT-Hourly update complete')
         remove(file_name)
 
-    except ValueError:
+    except KeyboardInterrupt:
+        pass
+    except:
         error_result = "Unexpected AttributeError: %s, %s"\
                        % (sys.exc_info()[0], sys.exc_info()[1])
-        subject = 'Error with Hourly Tableau refresh script'
+        subject = 'Error with Hourly Tableau refresh script, %s' % basename(__file__)
         print error_result
-        outlook().send_email(to='helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email(to='helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com',
+                             subject=subject, body=error_result)
         give_notice.set_red()
-        give_notice.wait(120)
+        give_notice.wait(30)
         give_notice.flow_the_light()
 
 if __name__ == '__main__':
@@ -65,3 +72,5 @@ if __name__ == '__main__':
     main()
     end = time()
     print (end - start)/60
+    print datetime.now()
+    print '-----------------'
