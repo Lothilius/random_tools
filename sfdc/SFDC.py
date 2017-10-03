@@ -81,7 +81,7 @@ class SFDC(Status):
     @staticmethod
     def connect_to_SFDC(environment='prod'):
         user_name, pw, token, sandbox = auth.sfdc_login(environment)
-        sf = Salesforce(username=user_name, password=pw, security_token=token, sandbox=sandbox)
+        sf = Salesforce(username=user_name, password=pw, security_token=token, sandbox=sandbox, version='32.0')
 
         return sf
 
