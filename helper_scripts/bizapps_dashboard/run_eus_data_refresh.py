@@ -9,11 +9,13 @@ from tableau_data_publisher.data_assembler import TDEAssembler
 from tableau_data_publisher.data_publisher import publish_data
 from triage_tickets.TicketList import TicketList
 from helper_scripts.notify_helpers import Notifier
-from datetime import datetime, timedelta
+from datetime import timedelta
 import pandas as pd
 import os
 from os import environ
 from os.path import basename
+from datetime import datetime
+from time import time
 
 
 if os.environ['MY_ENVIRONMENT'] == 'prod':
@@ -21,64 +23,75 @@ if os.environ['MY_ENVIRONMENT'] == 'prod':
 else:
     file_path = '/Users/%s/Downloads/' % environ['USER']
 
-extract_name = 'EUS_testing_fixxxxed'
+extract_name = 'EUS_HDT'
+last_record_file = file_path + extract_name + '_last_data_row_pickle'
 
-attempts = 10
+attempts = 1
 give_notice = Notifier()
 
 def gather_tickets():
-    for i in range(attempts):
-        try:
-            last_record_file = file_path + extract_name + '_last_data_row_pickle'
+        # for i in range(attempts):
+        # TODO - Fix the retry mechanism
+        # try:
+        #     # Check for last processed ticket ID
+        #     last_data_record = pd.read_pickle(last_record_file)
+        #
+        #     time_since_last_extract = datetime.now() - last_data_record['Extract_Timestamp'].iloc[0].to_pydatetime()
+        #     if time_since_last_extract < timedelta(hours=24):
+        #         last_record_id = int(last_data_record['WORKORDERID'].iloc[0])
+        #     else:
+        #         last_record_id = 0
+        #         # os.remove(last_record_file)
+        #     break
+        # except:
+        #     last_record_id = 0
+        # print last_record_id
 
-            # Check for last processed ticket ID
-            last_data_record = pd.read_pickle(last_record_file)
-
-            time_since_last_extract = datetime.now() - last_data_record['Extract_Timestamp'].iloc[0].to_pydatetime()
-            if time_since_last_extract < timedelta(hours=24):
-                last_record_id = int(last_data_record['WORKORDERID'].iloc[0])
-            else:
-                last_record_id = 0
-                os.remove(last_record_file)
-            break
-        except:
-            last_record_id = 0
-        print last_record_id
-
-        try:
+        # try:
             # Get tickets from the HDT view
-            tickets = TicketList(helpdesk_que='Testing-HDT', with_resolution=True, last_id=last_record_id)
-            tickets = tickets.reformat_as_dataframe(tickets)
-            try:
-                tickets.drop('ATTACHMENTS', axis=1, inplace=True)
-            except:
-                print 'No Attachments column.'
+        tickets = TicketList(helpdesk_que='YtoD-EUS', with_resolution=True)
+        tickets = tickets.reformat_as_dataframe(tickets)
+        try:
+            tickets.drop('ATTACHMENTS', axis=1, inplace=True)
         except:
+            print 'No Attachments column.'
+        return tickets
+
+        # except:
+        #     raise Exception
 
 
+def main():
+    try:
+        tickets = gather_tickets()
+
+        # Package in to a tde file
+        data_file = TDEAssembler(data_frame=tickets, file_path=file_path, extract_name=extract_name)
+        # Set values for publishing the data.
+        file_name = str(data_file)
+        server_url, username, password, site_id, data_source_name, project = \
+            auth.tableau_publishing(datasource_type='EUS', data_source_name='EUS-Helpdesk-Tickets')
+
+        publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
+        outlook().send_email(to='martin.valenzuela@bazaarvoice.com',
+                             subject='EUS-HDT-Data update complete', body='EUS-HDT-Data update complete')
+
+    except:
+        error_result = "Unexpected AttributeError: %s, %s"\
+                       % (sys.exc_info()[0], sys.exc_info()[1])
+        subject = 'Error with Tableau refresh script, %s' % basename(__file__)
+        for each in sys.exc_info():
+            print each
+        outlook().send_email('helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
+        give_notice.set_red()
+        give_notice.wait(30)
+        give_notice.flow_the_light()
 
 
-try:
-
-
-    # Package in to a tde file
-    data_file = TDEAssembler(data_frame=tickets, file_path=file_path, extract_name=extract_name)
-    # Set values for publishing the data.
-    # file_name = str(data_file)
-    # server_url, username, password, site_id, data_source_name, project = \
-    #     auth.tableau_publishing(datasource_type='EUS', data_source_name='EUS-Helpdesk-Tickets')
-
-    # publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
-    # outlook().send_email(to='martin.valenzuela@bazaarvoice.com',
-    #                    subject='EUS-HDT-Data update complete', body='EUS-HDT-Data update complete')
-
-except:
-    error_result = "Unexpected AttributeError: %s, %s"\
-                   % (sys.exc_info()[0], sys.exc_info()[1])
-    subject = 'Error with Tableau refresh script, %s' % basename(__file__)
-    for each in sys.exc_info():
-        print each
-    # outlook().send_email('helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
-    # give_notice.set_red()
-    # give_notice.wait(120)
-    # give_notice.flow_the_light()
+if __name__ == '__main__':
+    start = time()
+    main()
+    end = time()
+    print (end - start) / 60
+    print datetime.now()
+    print '-----------------'
