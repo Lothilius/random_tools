@@ -30,8 +30,8 @@ def main():
             auth.tableau_publishing(datasource_type='BizApps', data_source_name='Workday_Employee_data')
 
         publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
-        outlook().send_email(to='martin.valenzuela@bazaarvoice.com',
-                           subject='SFDC_User_data compiling complete', body='SFDC_User_data compiling complete')
+        outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
+                           subject='Workday_User_data compiling complete', body='Workday_User_data compiling complete')
 
 
     except KeyboardInterrupt:
@@ -41,7 +41,7 @@ def main():
                        % (sys.exc_info()[0], sys.exc_info()[1])
         subject = 'Error with Tableau refresh script, %s' % basename(__file__)
         print error_result
-        outlook().send_email('helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com',
+        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
                              subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
