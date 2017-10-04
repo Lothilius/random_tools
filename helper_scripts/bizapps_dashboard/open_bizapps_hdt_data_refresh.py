@@ -50,7 +50,7 @@ def main():
             auth.tableau_publishing(datasource_type='BizApps', data_source_name='BizApps_Open_HDTs')
 
         publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
-        outlook().send_email(to='martin.valenzuela@bazaarvoice.com',
+        outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
                              subject='HDT-Hourly update complete', body='HDT-Hourly update complete')
         remove(file_name)
 
@@ -61,7 +61,7 @@ def main():
                        % (sys.exc_info()[0], sys.exc_info()[1])
         subject = 'Error with Hourly Tableau refresh script, %s' % basename(__file__)
         print error_result
-        outlook().send_email(to='helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com',
+        outlook().send_email(to='helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
                              subject=subject, body=error_result)
         give_notice.set_red()
         give_notice.wait(30)
