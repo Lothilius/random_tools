@@ -73,7 +73,7 @@ def main():
             auth.tableau_publishing(datasource_type='EUS', data_source_name='EUS-Helpdesk-Tickets')
 
         publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
-        outlook().send_email(to='martin.valenzuela@bazaarvoice.com',
+        outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
                              subject='EUS-HDT-Data update complete', body='EUS-HDT-Data update complete')
 
     except:
@@ -82,7 +82,7 @@ def main():
         subject = 'Error with Tableau refresh script, %s' % basename(__file__)
         for each in sys.exc_info():
             print each
-        outlook().send_email('helpdesk@bazaarvoice.com', cc='martin.valenzuela@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject, body=error_result)
         give_notice.set_red()
         give_notice.wait(30)
         give_notice.flow_the_light()
