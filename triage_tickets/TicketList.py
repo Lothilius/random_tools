@@ -125,7 +125,7 @@ class TicketList(object):
             except:
                 error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
                 print error_result
-                raise Exception(ticket_details)
+                raise Exception(error_result + str(ticket_details))
 
             return ticket_details
         except EOFError:
