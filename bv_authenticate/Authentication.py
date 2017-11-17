@@ -52,6 +52,12 @@ class Authentication(object):
         return helpdesk_token
 
     @staticmethod
+    def lever_token():
+        lever_token = environ['LEVER_TOKEN']
+
+        return lever_token
+
+    @staticmethod
     def sfdc_login(environment='staging'):
         if environment == 'prod':
             username, password = Authentication.bv_credentials()
