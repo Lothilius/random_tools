@@ -12,8 +12,10 @@ from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from time import time
 
 
-pd.set_option('display.width', 340)
+pd.set_option('display.width', 283)
 pd.set_option('display.max_columns', 50)
+pd.set_option('display.max_colwidth', 250)
+
 
 class Postings(object):
     """ The ticket list class creates an object that gathers individual tickets that belong to a particular list view.
@@ -79,7 +81,7 @@ class Postings(object):
                 # Convert helpdesk ticket list to Dataframe
                 lever_df = pd.DataFrame(lever_record_list)
                 lever_df = self.reformat_as_dataframe(lever_df)
-                print lever_df
+                # print lever_df
 
             except:
                 error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
@@ -126,6 +128,7 @@ class Postings(object):
                 return date_only
             else:
                 return unicode_series
+
         except:
             pass
 
@@ -137,8 +140,10 @@ class Postings(object):
         """
         requisition_details = pd.DataFrame(requisition_details)
         requisition_details = requisition_details.applymap(Postings.convert_time)
+
         # ticket_details = ticket_details.applymap(TicketList.reduce_to_year)
         requisition_details = correct_date_dtype(requisition_details, date_time_format='%Y-%m-%d %H:%M:%S')
+        requisition_details.drop(labels=['content'], axis=1, inplace=True)
 
         return requisition_details
 
@@ -157,5 +162,10 @@ if __name__ == '__main__':
     # reqs.drop('ATTACHMENTS', axis=1, inplace=True)
     end = time()
     print (end - start) / 60
-    print type(posts.postings)
-    posts.postings.to_csv("/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Tickets/Lever_Testing/postings.csv", encoding='utf-8')
+    print posts.postings
+
+    posts.postings.to_csv(
+        "/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Tickets/Lever_Testing/postings.csv",
+        encoding='utf-8',
+        escapechar='\\',
+        index=False)
