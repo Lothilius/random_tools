@@ -10,6 +10,7 @@ from pyprogressbar import Bar
 from Lever_Connection import LeverConnection as lhc
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from time import time
+from helper_scripts.misc_helpers.data_manipulation import multiply_by_multiselect
 
 
 pd.set_option('display.width', 340)
@@ -143,21 +144,24 @@ class Requisitions(object):
         # ticket_details = ticket_details.applymap(TicketList.reduce_to_year)
         requisition_details = correct_date_dtype(requisition_details, date_time_format='%Y-%m-%d %H:%M:%S')
 
+        # Duplicate records by number of postings
+        requisition_details = multiply_by_multiselect(requisition_details, "id", "postings")
+
         return requisition_details
 
 
 if __name__ == '__main__':
     start = time()
     try:
-        tickets = TicketList('Testing-HDT', last_id=33183)
+        reqs = Requisitions()
     except AttributeError as e:
-        tickets = e.args[0]
+        reqs = e.args[0]
 
-    # print type(tickets)
-    # print tickets[0]['WORKORDERID']
-
-    tickets = TicketList.reformat_as_dataframe(tickets)
-    tickets.drop('ATTACHMENTS', axis=1, inplace=True)
     end = time()
     print (end - start) / 60
-    print tickets
+    # print type(reqs.requisitions)
+    print reqs.requisitions
+    # print type(reqs.requisitions["postings"].iloc[0])
+    reqs.requisitions.to_csv("/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Tickets/Lever_Testing/requisitions.csv",
+                             encoding='utf-8',
+                             index=False)
