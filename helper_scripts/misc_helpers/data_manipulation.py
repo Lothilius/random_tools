@@ -100,6 +100,16 @@ def create_feature_vector_dataframe(dataframe, feature_index_column, feature_col
     return feature_vector_dataframe
 
 
+def multiply_by_multiselect(dataframe, feature_index_column, feature_column):
+    columns = dataframe.columns.tolist()
+    # print dataframe.set_index(columns)
+    dataframe_reformated = dataframe.apply(lambda x: pd.Series(x[feature_column]), axis=1).stack().reset_index(level=1, drop=True)
+    dataframe_reformated.name = 'posts'
+    dataframe_reformated = dataframe.join(dataframe_reformated)
+    # dataframe_reformated.name = feature_column
+    return dataframe_reformated
+
+
 if __name__ == '__main__':
     now = datetime.now()
     today = datetime.today()

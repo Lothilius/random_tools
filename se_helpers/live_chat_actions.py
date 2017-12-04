@@ -100,6 +100,7 @@ class Live_Chat_Test(object):
         i = 200
         number_or_errors = 0
         try:
+            # TODO - Fix instances of early agent response
             self.reply_to_agent(message=self.live_chat_welcome_message)
             wait(2)
             # Loop through test scripts
