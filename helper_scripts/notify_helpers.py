@@ -38,18 +38,15 @@ class Notifier(object):
             print error_result
 
 
-    def set_error_light(self, specific_light_bulbs=None):
+    def set_error_light(self, specific_light_bulbs=None, blink_number=6):
         try:
             if specific_light_bulbs is None:
                 specific_light_bulbs = self.specific_light_bulbs
             self.light_bridge.set_light(specific_light_bulbs, parameter={"effect": "none"})
-            self.light_bridge.set_light(specific_light_bulbs, parameter={"alert": "select"})
-            wait(.5)
-            self.light_bridge.set_light(specific_light_bulbs, parameter={"alert": "select"})
-            wait(.5)
             self.light_bridge.set_light(specific_light_bulbs, parameter={"hue": 65280})
-            wait(.5)
-            self.light_bridge.set_light(specific_light_bulbs, parameter={"alert": "lselect"})
+            for each in range(blink_number):
+                self.light_bridge.set_light(specific_light_bulbs, parameter={"alert": "select"})
+                wait(.5)
         except:
             error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
@@ -123,4 +120,4 @@ class Notifier(object):
 
 if __name__ == '__main__':
     notify = Notifier()
-    notify.flow_the_light(specific_light_bulbs="BizApps backlog")
+    notify.set_error_light(specific_light_bulbs="BizApps backlog")

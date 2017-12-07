@@ -22,7 +22,7 @@ def backlog_levels(backlog_number):
     give_notice.alert_the_light()
     if backlog_number < 58:
         give_notice.set_green()
-    elif 59 <= backlog_number < 66:
+    elif 58 <= backlog_number < 66:
         give_notice.set_yellow()
     elif backlog_number >= 66:
         give_notice.set_red()
@@ -64,8 +64,8 @@ def main():
         print error_result
         outlook().send_email(to='helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
                              subject=subject, body=error_result)
-        give_notice.set_red()
-        give_notice.wait(30)
+        give_notice.set_error_light()
+        give_notice.wait(3)
         give_notice.flow_the_light()
 
 if __name__ == '__main__':
