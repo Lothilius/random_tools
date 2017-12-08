@@ -89,4 +89,4 @@ class SFDC_Users(object):
 if __name__ == '__main__':
     the_list = SFDC_Users()
     hello = the_list.users
-    print hello[~(hello['true_email'].str.contains('@bazaarvoice.com'))]
+    print hello

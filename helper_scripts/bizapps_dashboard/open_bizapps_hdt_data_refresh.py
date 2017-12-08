@@ -27,7 +27,7 @@ def backlog_levels(backlog_number):
     elif backlog_number >= 66:
         give_notice.set_red()
     else:
-        raise ValueError
+        raise ValueError(backlog_number)
 
 
 def main():
