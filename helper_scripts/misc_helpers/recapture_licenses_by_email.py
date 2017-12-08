@@ -7,8 +7,9 @@ import pandas as pd
 
 from helper_scripts.misc_helpers.request_input_prompt import request_user_input
 from send_email.OutlookConnection import OutlookConnection as out_look_email
-from sfdc.SFDC_Users import SFDC_Package_License as sfdc_licenses
+from sfdc.SFDC_User_Licenses import SFDC_Package_Licenses as sfdc_licenses
 from sfdc.SFDC_Users import SFDC_Users as sf_users
+from okta.Okta_Application import Okta_Application
 
 pd.set_option('display.width', 250)
 pd.set_option('display.max_columns', 40)
@@ -22,7 +23,7 @@ Please take a moment to consider your use of the \"New Comment\" button on the C
 If it has been a while since you have used the \"New Comment\" button,
 """)
 
-jbara = ('05050000000PGwkAAG', """      In an effort to reduce our licensing costs, BizApps is looking to identify unused \"Gainsight\" licenses.
+gainsight = ('05050000000PGwkAAG', """      In an effort to reduce our licensing costs, BizApps is looking to identify unused \"Gainsight\" licenses.
 
 Please take a moment to consider whether you use \"Gainsight\" functionality in Salesforce.
 If it has been a while since you have used \"Gainsights\",
@@ -33,6 +34,8 @@ workit =('05050000000PDJGAA4', """      In an effort to reduce our licensing cos
 Please take a moment to consider whether you use \"WorkIt\" case timing functionality in Salesforce.
 If it has been a while since you have used \"Workit\" case timing functionality,
 """)
+
+license_list = [e2cp, gainsight, workit]
 
 # Create email addresses.
 def create_email_address(name):
@@ -72,6 +75,10 @@ def send_message(smtp_object, subject, body, receiver='martin.valenzuela@bazaarv
     print "Successfully sent email to " + receiver
 
 def create_deprovisioning_body(user_list):
+    """ Create the HTML body for emailing the data frame that is passed to it.
+    :param user_list: Must be a Pandas Dataframe
+    :return: sting of the html ready to send in an email.
+    """
     html = HTMLParser()
     user_list = user_list.to_html()
 
@@ -94,14 +101,17 @@ def main():
         sys.exit("mail failed1; %s" % str(exc))
 
     try:
-        # Get users
-        sfdc_users = sf_users.get_user_list()
+        # Get Active SFDC users
+        sfdc_users = sf_users().get_user_list()
         sfdc_users.rename(columns={'Id': 'UserId'}, inplace=True)
         sfdc_users['Email'] = sfdc_users['Email'].apply(lambda x: x.lower())
+        sfdc_users = sfdc_users[sfdc_users['IsActive'] == True]
 
-        file_name = '/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Data/Active_BV_Workforce-Basic_Worker_Data_2016-11-09 17_10 CDT_prod.csv' #raw_input('Please enter file name of current active employees: ')
-        current_emplyee_list = pd.read_csv(file_name)
-        current_emplyee_list.rename(columns={'User Name (Email)': 'Email'}, inplace=True)
+        # Get Workday Users
+        workday = Okta_Application(app_name='workday')
+        current_emplyee_list = workday.app_users
+
+        current_emplyee_list.rename(columns={'email': 'Email'}, inplace=True)
         current_emplyee_list['Email'] = current_emplyee_list['Email'].apply(lambda x: x.lower())
 
         print current_emplyee_list.columns
@@ -110,7 +120,7 @@ def main():
         print 'Try Again ' + str(error)  # give a error message
 
     # Get list of licenses with users.
-    licensed_users = sfdc_licenses.get_license_list()
+    licensed_users = sfdc_licenses().get_license_list()
 
     # print licensed_users
 
@@ -119,22 +129,23 @@ def main():
     left_outer_list = users_and_license.merge(current_emplyee_list, on='Email', how='left')
     print "<---------- deprovision_list ---------->"
     deprovision_list = left_outer_list[
-        (left_outer_list['EEID'].isnull())
+        (left_outer_list['employeeID'].isnull())
         &
-        (~left_outer_list['Name'].str.contains('AutoCaseUser|Integration|BizApps|Apttus Cache Warmer'))].copy()
+        (~left_outer_list['UserName'].str.contains(
+            'AutoCaseUser|Integration|BizApps|Apttus Cache Warmer|Tableau'))].copy()
 
-    deprovision_list.drop_duplicates(subset=['Name', 'Email', 'UserId'], keep='first', inplace=True)
-    body = create_deprovisioning_body(deprovision_list[['Name', 'Email', 'UserId']])
+    deprovision_list.drop_duplicates(subset=['UserName', 'Email', 'UserId'], keep='first', inplace=True)
+    body = create_deprovisioning_body(deprovision_list[['UserName', 'Email', 'UserId']])
     outlook.create_helpdesk_ticket(subject='Users not found as active employees.', body=body, html=body)
 
     # Gather users with E2CP licenses.
-    e2cp_users = users_and_license[['PackageLicenseId', 'UserId', 'Email', 'Name']][users_and_license['PackageLicenseId'] == e2cp[0]]
+    e2cp_users = users_and_license[['PackageLicenseId', 'UserId', 'Email', 'UserName']][users_and_license['PackageLicenseId'] == e2cp[0]]
 
 
     #gather list of user emails that have the license and are not on the deprovision list
     print "<---------- Emailing ---------->"
-    users_to_ask = e2cp_users[~e2cp_users['Email'].isin(deprovision_list['Email'].tolist())][['Email', 'Name']].values.tolist()
-    e2cp_users[~e2cp_users['Email'].isin(deprovision_list['Email'].tolist())][['Email', 'Name']].to_csv('/Users/martin.valenzuela/Downloads/recieved_email_.csv')
+    users_to_ask = e2cp_users[~e2cp_users['Email'].isin(deprovision_list['Email'].tolist())][['Email', 'UserName']].values.tolist()
+    e2cp_users[~e2cp_users['Email'].isin(deprovision_list['Email'].tolist())][['Email', 'UserName']].to_csv('/Users/martin.valenzuela/Downloads/recieved_email_.csv')
 
     # Request user input...
     response = request_user_input(prompt='Ready to send emails?')
