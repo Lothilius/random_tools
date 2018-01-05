@@ -6,6 +6,12 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 import sys
 from Status import Status
+from os import environ
+import time
+from selenium.webdriver.chrome.options import Options
+
+def wait(seconds=5):
+    time.sleep(seconds)
 
 class Concur(Status):
     """ Extend Status class for Helpdesk.
@@ -52,7 +58,7 @@ class Concur(Status):
         for i, each in enumerate(product_table):
             product = each.string
             icon = soup.find_all('td',
-                                 attrs={'class':'icon blue-stripe chart',
+                                 attrs={'class':'icon chart blue-stripe',
                                         'data-reactid': '.1.1.0.1.$%s%s.0'
                                                         % (product, row[i])})
 
@@ -70,25 +76,21 @@ class Concur(Status):
                     self.set_error_message(error_result)
                     return 2
 
-
-
         return status_table, status_message
 
     def get_status(self):
-        # Get NetSuite Status from Status page using headless Webkit so that javascript is rendered.
+        # Get Concur Status from Status page using headless Webkit so that javascript is rendered.
         try:
-            browser = webdriver.PhantomJS(executable_path=
-                                          '/Users/martin.valenzuela/Dropbox/Coding/BV/'
-                                          'phantomjs-2.0.0-macosx/bin/phantomjs') # Might need executable_path=
-            browser.get("http://concuropenstatus.concur.com/#us")
+            chrome_options = Options()
+            chrome_options.add_argument("--headless")
+            browser = webdriver.Chrome(executable_path=environ['CHROME_PATH'], port=9515,
+                                       chrome_options=chrome_options) # PhantomJS(executable_path=os.environ['PHANTOM_JS'])
+            browser.get("http://open.concur.com/#us")
+            wait(2)
             concur_reply = browser.page_source
             browser.quit()
 
             status_list, status_message = self.explore_page(concur_reply)
-            if status_message == '':
-                self.set_status_message('Functioning normally')
-            else:
-                self.set_status_message(status_message)
 
             # Iterate through status list to make sure all components of Concur are up.
             up_count = 0
@@ -101,8 +103,13 @@ class Concur(Status):
                     else:
                         pass
             if up_count == len(status_list):
+                if status_message == '':
+                    self.set_status_message('Functioning normally')
+                else:
+                    self.set_status_message(status_message)
                 return 1
             else:
+                self.set_status_message(status_message)
                 return 0
         except:
             error_result = "Unexpected error 2: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
