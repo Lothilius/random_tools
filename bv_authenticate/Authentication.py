@@ -1,6 +1,7 @@
 __author__ = 'Lothilius'
 
 from os import environ
+from requests_aws4auth import AWS4Auth
 
 class Authentication(object):
     @staticmethod
@@ -121,3 +122,7 @@ class Authentication(object):
         hue_token = environ['HUE_TOKEN']
 
         return hue_ip, hue_token
+
+    @staticmethod
+    def aws_connect():
+        aws_connector = AWS4Auth(environ['AWS_ACCESS_KEY'], environ['AWS_SECRET_KEY'], 'us-east-1', 'es')
