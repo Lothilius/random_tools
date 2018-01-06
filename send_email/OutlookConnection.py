@@ -13,7 +13,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 class OutlookConnection(object):
-    def __init__(self, to='', cc='', bcc='', subject='', body=' ', html='', files=None):
+    def __init__(self, to='', cc='', bcc='', subject='', body=' ', html='', files=None, reply_to=''):
         try:
             self.html = html.encode("utf-8")
             self.files = files
@@ -28,13 +28,13 @@ class OutlookConnection(object):
             username, password = auth.smtp_login()
             self.msg['From'] = username
 
-            self.build(to, cc=cc, bcc=bcc, subject=subject)
+            self.build(to, cc=cc, bcc=bcc, reply_to=reply_to, subject=subject)
         except:
             error_result = "Unexpected error in initiating Outlook Connection: %s, %s" \
                            % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
 
-    def build(self, to, cc='', bcc='', subject=''):
+    def build(self, to, cc='', bcc='', reply_to='', subject=''):
         self.msg['Subject'] = subject
 
         if isinstance(to, list):
@@ -56,13 +56,24 @@ class OutlookConnection(object):
             self.cc = [cc]
         if bcc != '':
             if isinstance(cc, list):
-                self.msg['BCC'] = ", ".join(cc)
+                self.msg['BCC'] = ", ".join(bcc)
                 self.bcc = bcc
             else:
                 self.msg['BCC'] = bcc
                 self.bcc = [bcc]
         else:
             self.bcc = [bcc]
+
+        if reply_to != '':
+            if isinstance(reply_to, list):
+                self.msg['Reply-to'] = ", ".join(reply_to)
+                self.reply_to = reply_to
+            else:
+                self.msg['Reply-to'] = reply_to
+                self.reply_to = [reply_to]
+        else:
+            self.reply_to = [reply_to]
+
 
     def attach_file(self):
         """ Attach any files in a list or string passed to the initiation of the object.
@@ -80,7 +91,7 @@ class OutlookConnection(object):
                 part['Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
                 self.msg.attach(part)
 
-    def send_email(self, to='', cc='', bcc='', subject='', body=' ', html='', files=''):
+    def send_email(self, to='', cc='', bcc='', subject='', body=' ', html='', files='', reply_to=''):
         """ Send email with or without variables passed in initiation.
         :param to: list or comma separated string of To emails addresses
         :param cc: list or comma separated string of CC emails addresses
@@ -89,18 +100,19 @@ class OutlookConnection(object):
         :param body: HTML or Plain text body of email
         :param html: HTML of the text in the body of the email
         :param files: file address of attachment for the email
+        :param reply_to: list or comma separated string of reply_to emails
 
         """
         # TODO - create user interactive section here.
 
         if body != ' ':
-            self.__init__(to, cc, bcc, subject, body, html, files)
+            self.__init__(to, cc, bcc, subject, body, html, files, reply_to)
 
         try:
             username, password = auth.smtp_login()
             self.msg['From'] = username
 
-            all_emails = self.to + self.cc + self.bcc
+            all_emails = self.to + self.cc + self.bcc + self.reply_to
 
             email_connection = OutlookConnection.connect_mail(username, password)
 
