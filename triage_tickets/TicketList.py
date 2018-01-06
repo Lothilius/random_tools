@@ -22,13 +22,14 @@ class TicketList(object):
         The list view will need to be specified from the list of view available to the person running the quarry to
         gather the tickets.
     """
-    def __init__(self, helpdesk_que='Triage', with_resolution=False, with_conversations=False, last_id=0):
+    def __init__(self, helpdesk_que='Triage', with_resolution=False, with_conversations=False,
+                 with_detail=True, last_id=0):
         self.ticket_cursor = 1
         self.last_ticket_id = last_id
         self.with_resolution = with_resolution
         self.with_conversations = with_conversations
         view_id = self.get_view_id(helpdesk_que)
-        self.tickets = list(self.get_all_tickets(view_id))
+        self.tickets = list(self.get_all_tickets(view_id, with_detail))
 
 
     def __getitem__(self, item):
@@ -87,7 +88,7 @@ class TicketList(object):
 
         return hdc.fetch_from_helpdesk(url, querystring, headers)
 
-    def get_all_tickets(self, helpdesk_que='7256000001531681_MyView_7256000001531679'):
+    def get_all_tickets(self, helpdesk_que='7256000001531681_MyView_7256000001531679', with_detail=True):
         try:
             # Get first 100 ticket from helpdesk
             helpdesk_tickets = self.get_100_tickets(helpdesk_que=helpdesk_que)
@@ -100,34 +101,37 @@ class TicketList(object):
                     helpdesk_tickets = self.aggregate_tickets(
                         helpdesk_tickets, self.get_100_tickets(helpdesk_que=helpdesk_que,
                                                                from_value=self.ticket_cursor))
-            ticket_details = []
-            try:
-                # Convert helpdesk ticket list to Dataframe
-                helpdesk_df = pd.DataFrame(helpdesk_tickets)
-                helpdesk_df['WORKORDERID'] = pd.to_numeric(helpdesk_df['WORKORDERID'], errors='coerce')
+            if with_detail:
+                ticket_details = []
+                try:
+                    # Convert helpdesk ticket list to Dataframe
+                    helpdesk_df = pd.DataFrame(helpdesk_tickets)
+                    helpdesk_df['WORKORDERID'] = pd.to_numeric(helpdesk_df['WORKORDERID'], errors='coerce')
 
-                # Reduce ticket list to only tickets greater than the last ticket id
-                # Note: If now last ticket ID is given the last ticket ID is 0 and so all ticket detail is retrieved.
-                detail_list = helpdesk_df[helpdesk_df['WORKORDERID'] > self.last_ticket_id]
-                if self.last_ticket_id != 0:
-                    print 'Retrieving ticket detail from Work order ID: %s' % self.last_ticket_id
-                else:
-                    print 'Retrieving ticket detail.'
+                    # Reduce ticket list to only tickets greater than the last ticket id
+                    # Note: If now last ticket ID is given the last ticket ID is 0 and so all ticket detail is retrieved.
+                    detail_list = helpdesk_df[helpdesk_df['WORKORDERID'] > self.last_ticket_id]
+                    if self.last_ticket_id != 0:
+                        print 'Retrieving ticket detail from Work order ID: %s' % self.last_ticket_id
+                    else:
+                        print 'Retrieving ticket detail.'
 
-                # Gather Ticket details for each in the summery dataframe
-                pbar = Bar(len(detail_list['WORKORDERID'].tolist()))
-                for i, each in enumerate(detail_list['WORKORDERID'].tolist()):
-                    # print i
-                    ticket = Ticket(str(each), self.with_resolution, self.with_conversations)
-                    ticket_details.append(ticket.details)
-                    pbar.passed()
+                    # Gather Ticket details for each in the summery dataframe
+                    pbar = Bar(len(detail_list['WORKORDERID'].tolist()))
+                    for i, each in enumerate(detail_list['WORKORDERID'].tolist()):
+                        # print i
+                        ticket = Ticket(str(each), self.with_resolution, self.with_conversations)
+                        ticket_details.append(ticket.details)
+                        pbar.passed()
 
-            except:
-                error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-                print error_result
-                raise Exception(error_result)
+                except:
+                    error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+                    print error_result
+                    raise Exception(error_result)
 
-            return ticket_details
+                return ticket_details
+            else:
+                return helpdesk_tickets
         except EOFError:
             error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             # TODO -Fix this issue so that error_message is populated!
@@ -190,7 +194,7 @@ class TicketList(object):
 if __name__ == '__main__':
     start = time()
     try:
-        tickets = TicketList('Testing-HDT', last_id=33183)
+        tickets = TicketList('Testing-HDT', with_detail=False)
     except AttributeError as e:
         tickets = e.args[0]
 
@@ -198,7 +202,7 @@ if __name__ == '__main__':
     # print tickets[0]['WORKORDERID']
 
     tickets = TicketList.reformat_as_dataframe(tickets)
-    tickets.drop('ATTACHMENTS', axis=1, inplace=True)
+    # tickets.drop('ATTACHMENTS', axis=1, inplace=True)
     end = time()
     print (end - start) / 60
     print tickets
