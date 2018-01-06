@@ -104,7 +104,7 @@ def multiply_by_multiselect(dataframe, feature_index_column, feature_column):
     columns = dataframe.columns.tolist()
     # print dataframe.set_index(columns)
     dataframe_reformated = dataframe.apply(lambda x: pd.Series(x[feature_column]), axis=1).stack().reset_index(level=1, drop=True)
-    dataframe_reformated.name = 'posts'
+    dataframe_reformated.name = feature_column + "_as_feature_column"
     dataframe_reformated = dataframe.join(dataframe_reformated)
     # dataframe_reformated.name = feature_column
     return dataframe_reformated
