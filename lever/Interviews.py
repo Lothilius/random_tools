@@ -9,7 +9,10 @@ import pandas as pd
 from pyprogressbar import Bar
 from Lever_Connection import LeverConnection as lhc
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
+from helper_scripts.misc_helpers.data_manipulation import multiply_by_multiselect
 from time import time
+import collections
+
 
 
 pd.set_option('display.width', 283)
@@ -17,69 +20,72 @@ pd.set_option('display.max_columns', 50)
 pd.set_option('display.max_colwidth', 250)
 
 
-class Postings(object):
+class Interviews(object):
     """ The ticket list class creates an object that gathers individual tickets that belong to a particular list view.
         The list view will need to be specified from the list of view available to the person running the quarry to
         gather the tickets.
     """
     def __init__(self, record_id=''):
-        self.last_posting_id = record_id
-        self.postings = self.get_all_postings(record_id)
+        self.last_interview_id = record_id
+        self.inteview = self.get_all_interviews(record_id)
 
 
     def __getitem__(self, item):
-        return self.postings[item]
+        return self.inteview[item]
 
     def __str__(self):
-        return str(self.postings)
+        return str(self.inteview)
 
-    def aggregate_postings(self, ticket_list_a, ticket_list_b):
+    def aggregate_interviews(self, interview_list_a, interview_list_b):
         """ Join to lists of lever records.
 
-        :param ticket_list_a: list
-        :param ticket_list_b: list
-        :return: list - helpdesk_tickets
+        :param interview_list_a: list
+        :param interview_list_b: list
+        :return: list - interview_list
         """
-        helpdesk_tickets = ticket_list_a + ticket_list_b
+        interview_list = interview_list_a + interview_list_b
 
-        return helpdesk_tickets
+        return interview_list
 
-    def get_100_postings(self, offset='', record_id=''):
+    def get_100_interviews(self, offset='', record_id=''):
         """ Get lever records up to 100 at a time.
         :return: dict with lever requisition info {data, hasNext[, next]}
         """
-        url, querystring, headers = lhc.create_api_request(object='postings', offset=offset, record_id=record_id)
+        url, querystring, headers = lhc.create_api_request(object='interview', offset=offset, record_id=record_id)
 
         return lhc.fetch_from_lever(url, querystring, headers)
 
 
-    def gather_postings(self, lever_record_list, lever_records):
+    def gather_interviews(self, lever_record_list, lever_records):
         try:
             self.record_cursor = lever_records['next']
-            lever_records = self.get_100_postings(offset=self.record_cursor)
-            lever_record_list = self.aggregate_postings(lever_record_list, lever_records['data'])
+            lever_records = self.get_100_interviews(offset=self.record_cursor)
+            lever_record_list = self.aggregate_interviews(lever_record_list, lever_records['data'])
 
-            lever_record_list, lever_records = self.gather_postings(lever_record_list, lever_records)
+            lever_record_list, lever_records = self.gather_interviews(lever_record_list, lever_records)
         except KeyError:
             pass
 
         return lever_record_list, lever_records
 
 
-    def get_all_postings(self, record_id=''):
+    def get_all_interviews(self, record_id=''):
         try:
             # Get first 100 ticket from lever
-            lever_records = self.get_100_postings(record_id=record_id)
+            lever_records = self.get_100_interviews(record_id=record_id)
             # print type(lever_records['data'])
             lever_record_list = lever_records['data']
 
             # Check if more than 100 exist and need to be aggregated.
             if len(lever_record_list) == 100:
-                lever_record_list, lever_records = self.gather_postings(lever_record_list, lever_records)
+                lever_record_list, lever_records = self.gather_interviews(lever_record_list, lever_records)
 
             try:
+                lever_record_list = self.flaten_dictionary(lever_record_list)
                 # Convert helpdesk ticket list to Dataframe
                 lever_df = pd.DataFrame(lever_record_list)
+                print '------ here goober --------'
+                print lever_df
                 lever_df = self.reformat_as_dataframe(lever_df)
                 # print lever_df
 
@@ -89,8 +95,9 @@ class Postings(object):
                 raise Exception(error_result + str(lever_df))
 
             return lever_df
-        except Exception:
+        except EOFError:
             error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+            # TODO -Fix this issue so that error_message is populated!
             print error_result
 
     @staticmethod
@@ -131,40 +138,55 @@ class Postings(object):
         except:
             pass
 
-    @staticmethod
-    def reformat_as_dataframe(requisition_details):
+    def reformat_as_dataframe(self, requisition_details):
         """ Use to reformat responses to a panda data frame.
         :param requisition_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
         :return: returns panda dataframe
         """
         requisition_details = pd.DataFrame(requisition_details)
-        requisition_details = requisition_details.applymap(Postings.convert_time)
+        # print requisition_details
+        requisition_details = requisition_details.applymap(Interviews.convert_time)
 
         # ticket_details = ticket_details.applymap(TicketList.reduce_to_year)
         requisition_details = correct_date_dtype(requisition_details, date_time_format='%Y-%m-%d %H:%M:%S')
-        requisition_details.drop(labels=['content'], axis=1, inplace=True)
+        # requisition_details.drop(labels=['content'], axis=1, inplace=True)
+
+        # Duplicate records by number of postings
+        requisition_details = multiply_by_multiselect(requisition_details, "id", "applications")
 
         return requisition_details
 
+    @staticmethod
+    def flaten_dictionary(results_od):
+        """ Create a flat dictionary that can be converted in to a Pandas Dataframe.
+        :param results_od: Dict
+        :return: a flattened dictionary of the reasults_od data
+        """
+        data = {}
+        for each in results_od:
+            for k, v in each.items():
+                # print type(k), v
+                if type(v) == collections.OrderedDict:
+                    for l, m in v.items():
+                        data.setdefault(l, []).append(m)
+                else:
+                    data.setdefault(k, []).append(v)
+        flat_df = pd.DataFrame.from_dict(data)
+        print data
+
+        return flat_df
 
 if __name__ == '__main__':
     start = time()
     # try:
-    posts = Postings()
-    # except AttributeError as e:
-    #     reqs = e.args[0]
+    candis = Interviews()
 
-    # print type(tickets)
-    # print tickets[0]['WORKORDERID']
-
-    # reqs = Postings.reformat_as_dataframe(reqs)
-    # reqs.drop('ATTACHMENTS', axis=1, inplace=True)
     end = time()
     print (end - start) / 60
-    print posts.postings
+    # print candis.candidates
 
-    posts.postings.to_csv(
-        "/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Tickets/Lever_Testing/postings.csv",
-        encoding='utf-8',
-        escapechar='\\',
-        index=False)
+    # candis.candidates.to_csv(
+    #     "/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Tickets/Lever_Testing/postings.csv",
+    #     encoding='utf-8',
+    #     escapechar='\\',
+    #     index=False)
