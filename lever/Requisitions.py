@@ -9,12 +9,14 @@ import pandas as pd
 from pyprogressbar import Bar
 from Lever_Connection import LeverConnection as lhc
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
+from helper_scripts.misc_helpers.data_manipulation import create_feature_dataframe
 from time import time
 from helper_scripts.misc_helpers.data_manipulation import multiply_by_multiselect
 
 
-pd.set_option('display.width', 340)
+pd.set_option('display.width', 350)
 pd.set_option('display.max_columns', 50)
+pd.set_option('display.max_colwidth', 50)
 
 class Requisitions(object):
     """ The ticket list class creates an object that gathers individual tickets that belong to a particular list view.
@@ -22,9 +24,14 @@ class Requisitions(object):
         gather the tickets.
     """
     def __init__(self, record_id=''):
+        self.compensation_band = pd.DataFrame()
+        self.custom_fields = pd.DataFrame()
         self.record_cursor = None
         self.last_ticket_id = record_id
         self.requisitions = self.get_all_requisitions(record_id)
+        self.full_requisitions = pd.merge(pd.merge(self.requisitions, self.compensation_band, how='left', on='id'),
+                                      self.custom_fields,how='left', on='id')
+
 
 
     def __getitem__(self, item):
@@ -86,9 +93,9 @@ class Requisitions(object):
                 # print lever_df
 
             except:
-                error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+                error_result = "Unexpected error 2TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
                 print error_result
-                raise Exception(error_result)
+                # raise Exception(error_result)
 
             return lever_df
         except EOFError:
@@ -133,8 +140,7 @@ class Requisitions(object):
         except:
             pass
 
-    @staticmethod
-    def reformat_as_dataframe(requisition_details):
+    def reformat_as_dataframe(self, requisition_details):
         """ Use to reformat responses to a panda data frame.
         :param requisition_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
         :return: returns panda dataframe
@@ -143,6 +149,9 @@ class Requisitions(object):
         requisition_details = requisition_details.applymap(Requisitions.convert_time)
         # ticket_details = ticket_details.applymap(TicketList.reduce_to_year)
         requisition_details = correct_date_dtype(requisition_details, date_time_format='%Y-%m-%d %H:%M:%S')
+
+        self.compensation_band = create_feature_dataframe(requisition_details, "id", "compensationBand")
+        self.custom_fields = create_feature_dataframe(requisition_details, "id", "customFields")
 
         # Duplicate records by number of postings
         requisition_details = multiply_by_multiselect(requisition_details, "id", "postings")
@@ -160,8 +169,4 @@ if __name__ == '__main__':
     end = time()
     print (end - start) / 60
     # print type(reqs.requisitions)
-    print reqs.requisitions
-    # print type(reqs.requisitions["postings"].iloc[0])
-    reqs.requisitions.to_csv("/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Tickets/Lever_Testing/requisitions.csv",
-                             encoding='utf-8',
-                             index=False)
+    print reqs.full_requisitions
