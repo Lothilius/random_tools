@@ -122,21 +122,6 @@ class Postings(object):
         except:
             return unicode_series
 
-    @staticmethod
-    def reduce_to_year(unicode_series):
-        try:
-            pattern = re.compile("(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})$")
-            match = pattern.match(unicode_series)
-            if match:
-                date_only = unicode_series[:10]
-                date_only = datetime.datetime.strptime(date_only, '%Y-%m-%d')
-                return date_only
-            else:
-                return unicode_series
-
-        except:
-            pass
-
     def reformat_as_dataframe(self, posting_details):
         """ Use to reformat responses to a panda data frame.
         :param posting_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
