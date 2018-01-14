@@ -18,8 +18,6 @@ pd.set_option('display.max_columns', 50)
 
 class Lever_Users(object):
     """ The ticket list class creates an object that gathers individual tickets that belong to a particular list view.
-        The list view will need to be specified from the list of view available to the person running the quarry to
-        gather the tickets.
     """
     def __init__(self, user_id=''):
         self.record_cursor = None
@@ -44,14 +42,14 @@ class Lever_Users(object):
 
         return helpdesk_tickets
 
-    def get_100_lever_users(self, offset='', record_id=''):
+    @staticmethod
+    def get_100_lever_users(offset='', record_id=''):
         """ Get lever records up to 100 at a time.
         :return: dict with lever requisition info {data, hasNext[, next]}
         """
         url, querystring, headers = lhc.create_api_request(object='users', offset=offset, record_id=record_id)
 
         return lhc.fetch_from_lever(url, querystring, headers)
-
 
     def gather_lever_users(self, lever_record_list, lever_records):
         try:
@@ -64,7 +62,6 @@ class Lever_Users(object):
             pass
 
         return lever_record_list, lever_records
-
 
     def get_all_lever_users(self, record_id=''):
         try:
@@ -93,7 +90,6 @@ class Lever_Users(object):
             return lever_df
         except EOFError:
             error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-            # TODO -Fix this issue so that error_message is populated!
             print error_result
 
     @staticmethod
@@ -141,11 +137,9 @@ class Lever_Users(object):
         """
         requisition_details = pd.DataFrame(requisition_details)
         requisition_details = requisition_details.applymap(Lever_Users.convert_time)
-        # ticket_details = ticket_details.applymap(TicketList.reduce_to_year)
+
         requisition_details = correct_date_dtype(requisition_details, date_time_format='%Y-%m-%d %H:%M:%S')
 
-        # Duplicate records by number of postings
-        # requisition_details = multiply_by_multiselect(requisition_details, "id", "postings")
 
         return requisition_details
 
@@ -161,7 +155,3 @@ if __name__ == '__main__':
     print (end - start) / 60
     # print type(reqs.requisitions)
     print users.users
-    # print type(reqs.requisitions["postings"].iloc[0])
-    users.users.to_csv("/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Tickets/Lever_Testing/users.csv",
-                       encoding='utf-8',
-                       index=False)
