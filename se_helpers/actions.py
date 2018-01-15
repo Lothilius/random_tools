@@ -255,7 +255,7 @@ def go_to_sfdc_page(environment='', url_ending=''):
         baseurl = "https://na3.salesforce.com/"
     elif environment == ('st' or 'staging'):
         username, pw, token, sandbox = auth.sfdc_login()
-        baseurl = "https://cs13.salesforce.com/"
+        baseurl = "https://cs77.salesforce.com/"
 
     baseurl = baseurl + url_ending
     browser = get_se_browser()
@@ -298,12 +298,13 @@ def start_form_fill(environment, first_name, last_name, email, user_name, title,
         baseurl = "https://na3.salesforce.com/005?retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DUsers&setupid=ManageUsers"
     elif environment == ('st' or 'staging'):
         username, pw, token, sandbox = auth.sfdc_login()
-        baseurl = "https://cs13.salesforce.com/005?retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DUsers&setupid=ManageUsers"
+        baseurl = "https://cs77.salesforce.com/005?retURL=%2Fui%2Fsetup%2FSetup%3Fsetupid%3DUsers&setupid=ManageUsers"
 
     browser = get_se_browser()
     browser.get(baseurl)
     browser.implicitly_wait(4)
     login(browser, username, pw)
+    wait(10)
     create_user(browser, first_name, last_name, email, user_name, title, manager)
 
 
