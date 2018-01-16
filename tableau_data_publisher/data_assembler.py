@@ -107,8 +107,8 @@ class TDEAssembler (object):
                     #     raise Exception
                     pbar.passed()
 
-                data_extract.close()
-                ExtractAPI.cleanup()
+            data_extract.close()
+            ExtractAPI.cleanup()
         except:
             file_name = self.tde_file()
 
@@ -208,7 +208,7 @@ class TDEAssembler (object):
                     frac = 0
                 row_object.setDateTime(column_number, year, month, day,	hour, min, sec, frac)
             else:
-                row_object.setString(column_number, value)
+                row_object.setString(column_number, str(value))
         except Exception as e:
             # Create pickle of the offending dataframe.
             print "%s \n Value: %s, Value Type: %s, column name: %s" % (e, value, value_type, column_name)
