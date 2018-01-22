@@ -108,6 +108,16 @@ class Authentication(object):
                 pass
             else:
                 data_source_name = 'EUS-test'
+        elif datasource_type =='PandT':
+            project = 'Recruiting'
+            site_id = 'PeopleandTalent'
+            # Set values for publishing the data.
+            username, password = Authentication.tableau__credentials()
+            # TODO - Move most of this trash to the publish data module
+            if environ['MY_ENVIRONMENT'] == 'prod' and data_source_name != 'New_Extract':
+                pass
+            else:
+                data_source_name = 'PandT-test'
         else:
             # Set values for publishing the data.
             username, password = Authentication.tableau__credentials()
