@@ -57,22 +57,22 @@ def correct_date_dtype(data_frame, date_time_format='', date_time_columns={'CREA
     :return: a pandas data frame
     """
     columns = data_frame.columns
-    data_frame.fillna('-', inplace=True)
+    final_df = data_frame.fillna('-')
     for column_name in columns.tolist():
         if column_name in date_time_columns:
             try:
-                data_frame[column_name] = data_frame[column_name].apply(correct_datetime_format)
-                data_frame[column_name].replace(to_replace=['0', 'NA', '-1', '-', 'Not Assigned', np.nan],
-                                                value='2000-01-01 00:00:00', inplace=True)
+                final_df[column_name] = final_df[column_name].apply(correct_datetime_format)
+                final_df[column_name].replace(to_replace=['0', 'NA', '-1', '-', 'Not Assigned', np.nan],
+                                              value='2000-01-01 00:00:00', inplace=True)
                 # data_frame[column_name].replace(to_replace='NA', value='2000-01-01 00:00:00', inplace=True)
                 # print data_frame.columns
-                data_frame[column_name] = pd.to_datetime(data_frame[column_name], format=date_time_format, errors='coerce')
+                final_df[column_name] = pd.to_datetime(final_df[column_name], format=date_time_format, errors='coerce')
                 # print data_frame[column_name].iloc[0], type(data_frame[column_name].iloc[0])
                 # data_frame[column_name] = data_frame[column_name].apply(lambda x: x.date())
             except IOError:
                 pass
 
-    return data_frame
+    return final_df
 
 
 def create_feature_vector_dataframe(dataframe, feature_index_column, feature_column, suffix=''):
@@ -99,6 +99,54 @@ def create_feature_vector_dataframe(dataframe, feature_index_column, feature_col
 
     return feature_vector_dataframe
 
+
+def create_feature_dataframe(df, id_column, feature_column):
+    """ Create a dataframe of the id and feature column of a data frame.
+    The elements in the feature column are expected to contain a dict.
+
+    :param df: dataframe
+    :param id_column: the name of the column that has the id for the record row
+    :param feature_column: the column name of features held as a dict.
+    :return: dataframe
+    """
+    # Create Copy of dataframe for changes
+    content = df[[feature_column, id_column]].copy(deep=True)
+    # Convert Dict elements in to dataframes and
+
+    feature_df = pd.DataFrame()
+
+    # iterate over the feature dataframe to peal out all the features in the single column
+    for row in content.iterrows():
+        if isinstance(row[1][feature_column], list):
+            df_feature_values = pd.DataFrame(row[1][feature_column])
+        else:
+            df_feature_values = pd.DataFrame([row[1][feature_column]])
+
+        df_feature_values[id_column] = row[1][id_column]
+
+        feature_df = pd.concat([feature_df, df_feature_values])
+
+    return feature_df
+
+
+def expand_nested_fields_to_dataframe(df, id_column, feature_column, value_column):
+    """Create a dataframe of the id and feature column of a data frame.
+    The elements in the feature column are expected to contain a dict.
+
+    :param id_column:
+    :param feature_column:
+    :param value_column:
+    :return:
+    """
+    # Create Copy of dataframe for changes
+    content = df[[feature_column, value_column, id_column]].copy(deep=True)
+
+    # Convert a column in content to values in individual columns
+    feature_df = pd.DataFrame(data=[content[value_column].tolist()], columns=content[feature_column].tolist())
+    # Add the the index to the row
+    feature_df[id_column] = content[id_column].iloc[0]
+
+    return feature_df
 
 def multiply_by_multiselect(dataframe, feature_index_column, feature_column):
     columns = dataframe.columns.tolist()
