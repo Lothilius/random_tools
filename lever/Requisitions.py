@@ -27,8 +27,8 @@ class Requisitions(object):
         self.record_cursor = None
         self.last_requisition_id = record_id
         self.requisitions = self.get_all_requisitions(record_id)
-        self.full_requisitions = pd.merge(pd.merge(self.requisitions, self.compensation_band, how='left', on='id'),
-                                      self.custom_fields,how='left', on='id')
+        self.full_requisitions = pd.merge(pd.merge(self.requisitions, self.compensation_band, how='left', on='requisition_id'),
+                                      self.custom_fields,how='left', on='requisition_id')
 
 
 
@@ -87,15 +87,15 @@ class Requisitions(object):
             try:
                 # Convert lever requisition list to Dataframe
                 lever_df = pd.DataFrame(lever_record_list)
+                lever_df.rename(columns={'id': 'requisition_id'}, inplace=True)
                 lever_df = self.reformat_as_dataframe(lever_df)
-                # print lever_df
 
+                return lever_df
             except:
                 error_result = "Unexpected error 2TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
                 print error_result
                 # raise Exception(error_result)
 
-            return lever_df
         except EOFError:
             error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
@@ -131,13 +131,14 @@ class Requisitions(object):
         requisition_details = pd.DataFrame(requisition_details)
         requisition_details = requisition_details.applymap(Requisitions.convert_time)
 
-        requisition_details = correct_date_dtype(requisition_details, date_time_format='%Y-%m-%d %H:%M:%S')
+        requisition_details = correct_date_dtype(requisition_details, date_time_format='%Y-%m-%d %H:%M:%S',
+                                                 date_time_columns={'updatedAt', 'createdAt'})
 
-        self.compensation_band = create_feature_dataframe(requisition_details, "id", "compensationBand")
-        self.custom_fields = create_feature_dataframe(requisition_details, "id", "customFields")
+        self.compensation_band = create_feature_dataframe(requisition_details, "requisition_id", "compensationBand")
+        self.custom_fields = create_feature_dataframe(requisition_details, "requisition_id", "customFields")
 
         # Duplicate records by number of postings
-        requisition_details = multiply_by_multiselect(requisition_details, "id", "postings")
+        requisition_details = multiply_by_multiselect(requisition_details, "requisition_id", "postings")
 
         return requisition_details
 
