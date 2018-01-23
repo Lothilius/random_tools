@@ -28,7 +28,7 @@ class Candidates(object):
         self.stages = pd.DataFrame()
         self.last_candidate_id = record_id
         self.candidates = self.get_all_candidates(record_id)
-        self.full_candidates = pd.merge(self.candidates, self.stages, how='left', on='id')
+        self.full_candidates = pd.merge(self.candidates, self.stages, how='left', on='candidate_id')
 
     def __getitem__(self, item):
         return self.candidates[item]
@@ -80,7 +80,9 @@ class Candidates(object):
 
             try:
                 # Convert lever candidate list to Dataframe
-                lever_df = self.reformat_as_dataframe(lever_record_list)
+                lever_df = pd.DataFrame(lever_record_list)
+                lever_df.rename(columns={'id': 'candidate_id'}, inplace=True)
+                lever_df = self.reformat_as_dataframe(lever_df)
                 return lever_df
 
             except EOFError:
@@ -116,21 +118,6 @@ class Candidates(object):
         except:
             return unicode_series
 
-    @staticmethod
-    def reduce_to_year(unicode_series):
-        try:
-            pattern = re.compile("(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})$")
-            match = pattern.match(unicode_series)
-            if match:
-                date_only = unicode_series[:10]
-                date_only = datetime.datetime.strptime(date_only, '%Y-%m-%d')
-                return date_only
-            else:
-                return unicode_series
-
-        except:
-            pass
-
     def reformat_as_dataframe(self, candidate_details):
         """ Use to reformat responses to a panda data frame.
         :param candidate_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
@@ -138,15 +125,18 @@ class Candidates(object):
         """
         candidate_details = pd.DataFrame(candidate_details)
         candidate_details = candidate_details.applymap(Candidates.convert_time)
-        candidate_details = correct_date_dtype(candidate_details, date_time_format='%Y-%m-%d %H:%M:%S')
+        candidate_details = correct_date_dtype(candidate_details, date_time_format='%Y-%m-%d %H:%M:%S',
+                                         date_time_columns={'createdAt', 'lastAdvancedAt',
+                                                            'lastInteractionAt', 'updatedAt', 'snoozedUntil'})
 
         # Use candidate details to create stages data frame
-        self.stages = create_feature_dataframe(candidate_details, "id", "stageChanges")
+        self.stages = create_feature_dataframe(candidate_details, "candidate_id", "stageChanges")
         self.stages = self.stages.applymap(Candidates.convert_time)
-        self.stages = correct_date_dtype(self.stages, date_time_format='%Y-%m-%d %H:%M:%S')
+        self.stages = correct_date_dtype(self.stages, date_time_format='%Y-%m-%d %H:%M:%S',
+                                         date_time_columns={'updatedAt'})
 
         # Duplicate records by number of postings
-        candidate_details = multiply_by_multiselect(candidate_details, "id", "applications")
+        candidate_details = multiply_by_multiselect(candidate_details, "candidate_id", "applications")
 
         return candidate_details
 
@@ -158,4 +148,4 @@ if __name__ == '__main__':
     end = time()
     print (end - start) / 60
     # print candis.candidates
-    print candis.full_candidates
+    print candis.candidates
