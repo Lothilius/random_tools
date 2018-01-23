@@ -80,6 +80,7 @@ class Lever_Stages(object):
             try:
                 # Convert lever stage list to Dataframe
                 lever_df = pd.DataFrame(lever_record_list)
+                lever_df.rename(columns={'id': 'stage_id'}, inplace=True)
                 lever_df = self.reformat_as_dataframe(lever_df)
                 return lever_df
 
