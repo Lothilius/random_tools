@@ -27,8 +27,8 @@ class Postings(object):
         self.content = pd.DataFrame()
         self.last_posting_id = record_id
         self.postings = self.get_all_postings(record_id)
-        self.full_postings = pd.merge(pd.merge(self.postings, self.categories, how='left', on='id')
-                                      , self.content, how='left', on='id')
+        self.full_postings = pd.merge(pd.merge(self.postings, self.categories, how='left', on='post_id')
+                                      , self.content, how='left', on='post_id')
 
 
     def __getitem__(self, item):
@@ -85,16 +85,15 @@ class Postings(object):
 
                 # Convert posting list to Dataframe
                 lever_df = pd.DataFrame(lever_record_list)
-
+                lever_df.rename(columns={'id': 'post_id'}, inplace=True)
                 lever_df = self.reformat_as_dataframe(lever_df)
-                print lever_df
+
+                return lever_df
 
             except:
                 error_result = "Unexpected error 2TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
                 print error_result
                 # raise Exception(error_result + str(lever_df))
-
-            return lever_df
         except Exception:
             error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
@@ -130,10 +129,11 @@ class Postings(object):
         posting_details = pd.DataFrame(posting_details)
         posting_details = posting_details.applymap(Postings.convert_time)
 
-        posting_details = correct_date_dtype(posting_details, date_time_format='%Y-%m-%d %H:%M:%S')
+        posting_details = correct_date_dtype(posting_details, date_time_format='%Y-%m-%d %H:%M:%S',
+                                             date_time_columns={'updatedAt', 'createdAt'})
 
-        self.categories = create_feature_dataframe(posting_details, "id", "categories")
-        self.content = create_feature_dataframe(posting_details, "id", "content")
+        self.categories = create_feature_dataframe(posting_details, "post_id", "categories")
+        self.content = create_feature_dataframe(posting_details, "post_id", "content")
 
         # posting_details.drop(labels=['content'], axis=1, inplace=True)
 
