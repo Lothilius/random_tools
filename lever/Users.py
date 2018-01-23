@@ -31,7 +31,7 @@ class Lever_Users(object):
     def __str__(self):
         return str(self.users)
 
-    def aggregate_requisitions(self, ticket_list_a, ticket_list_b):
+    def aggregate_users(self, ticket_list_a, ticket_list_b):
         """ Join to lists of lever records.
 
         :param ticket_list_a: list
@@ -45,7 +45,7 @@ class Lever_Users(object):
     @staticmethod
     def get_100_lever_users(offset='', record_id=''):
         """ Get lever records up to 100 at a time.
-        :return: dict with lever requisition info {data, hasNext[, next]}
+        :return: dict with lever user info {data, hasNext[, next]}
         """
         url, querystring, headers = lhc.create_api_request(object='users', offset=offset, record_id=record_id)
 
@@ -55,7 +55,7 @@ class Lever_Users(object):
         try:
             self.record_cursor = lever_records['next']
             lever_records = self.get_100_lever_users(offset=self.record_cursor)
-            lever_record_list = self.aggregate_requisitions(lever_record_list, lever_records['data'])
+            lever_record_list = self.aggregate_users(lever_record_list, lever_records['data'])
 
             lever_record_list, next_lever_records = self.gather_lever_users(lever_record_list, lever_records)
         except KeyError:
@@ -80,14 +80,15 @@ class Lever_Users(object):
                 # Convert helpdesk ticket list to Dataframe
                 lever_df = pd.DataFrame(lever_record_list)
                 lever_df = self.reformat_as_dataframe(lever_df)
-                # print lever_df
+
+                lever_df.rename(columns={'id': 'user_id'}, inplace=True)
+
+                return lever_df
 
             except:
                 error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
                 print error_result
-                raise Exception(error_result)
 
-            return lever_df
         except EOFError:
             error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
@@ -130,18 +131,18 @@ class Lever_Users(object):
             pass
 
     @staticmethod
-    def reformat_as_dataframe(requisition_details):
+    def reformat_as_dataframe(user_details):
         """ Use to reformat responses to a panda data frame.
-        :param requisition_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
+        :param user_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
         :return: returns panda dataframe
         """
-        requisition_details = pd.DataFrame(requisition_details)
-        requisition_details = requisition_details.applymap(Lever_Users.convert_time)
+        user_details = pd.DataFrame(user_details)
+        user_details = user_details.applymap(Lever_Users.convert_time)
 
-        requisition_details = correct_date_dtype(requisition_details, date_time_format='%Y-%m-%d %H:%M:%S')
+        user_details = correct_date_dtype(user_details, date_time_format='%Y-%m-%d %H:%M:%S', date_time_columns={'createdAt'})
 
 
-        return requisition_details
+        return user_details
 
 
 if __name__ == '__main__':
@@ -153,5 +154,5 @@ if __name__ == '__main__':
 
     end = time()
     print (end - start) / 60
-    # print type(reqs.requisitions)
+    # print type(reqs.users)
     print users.users
