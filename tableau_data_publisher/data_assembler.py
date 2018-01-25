@@ -211,7 +211,7 @@ class TDEAssembler (object):
                 row_object.setString(column_number, str(value))
         except Exception as e:
             # Create pickle of the offending dataframe.
-            print "%s \n Value: %s, Value Type: %s, column name: %s" % (e, value, value_type, column_name)
+            print "%s \n Value: %s, Value Type: %s, column name: %s, %s" % (e, value, value_type, column_name, type(value))
             home = expanduser("~") + "/problem_dataframe"
             self.data_frame.to_pickle(path=home)
 
