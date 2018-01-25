@@ -9,6 +9,7 @@ import pandas as pd
 from Lever_Connection import LeverConnection as lhc
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from helper_scripts.misc_helpers.data_manipulation import create_feature_dataframe
+from lever.Candidates import Candidates
 from helper_scripts.misc_helpers.data_manipulation import expand_nested_fields_to_dataframe
 from time import time
 import collections
@@ -25,16 +26,18 @@ class Offers(object):
     """ The  class creates an object that gathers individual offers that belong to a particular list view.
     """
     def __init__(self, candidate_id, record_id=''):
-        self.extra_fields = pd.DataFrame()
         self.candidate_id = candidate_id
+
+        self.extra_fields = pd.DataFrame()
         self.last_offer_id = record_id
         self.offer = self.get_all_offers(record_id)
         try:
-            self.full_offer = pd.merge(self.offer, self.extra_fields, how='left', on='id')
+            self.full_offer = pd.merge(self.offer, self.extra_fields, how='left', on='offer_id',
+                                             suffixes=('_offer', '_fields'))
         except ValueError:
             if self.extra_fields.empty:
-                self.extra_fields = pd.DataFrame(data=[{'id': None, 'candidate_id': self.candidate_id}])
-                self.full_offer = pd.DataFrame(data=[{'id': None, 'candidate_id': self.candidate_id}])
+                self.extra_fields = pd.DataFrame(data=[{'offer_id': None, 'candidate_id': self.candidate_id}])
+                self.full_offer = pd.DataFrame(data=[{'offer_id': None, 'candidate_id': self.candidate_id}])
             else:
                 error_result = "Unexpected error 2LO: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
                 print error_result
@@ -53,28 +56,34 @@ class Offers(object):
         :param offer_list_b: list
         :return: list - offer_list
         """
+
         offer_list = offer_list_a + offer_list_b
 
         return offer_list
 
-    def get_100_offers(self, candidate_id='', offset='', record_id=''):
+    def get_the_offer(self, offset='', record_id=''):
         """ Get lever records up to 100 at a time.
         :return: dict with lever offer info {data, hasNext[, next]}
         """
-        url, querystring, headers = lhc.create_api_request(object='candidates/%s/offers' % (candidate_id),
-                                                           offset=offset, record_id=record_id)
+        url, querystring, headers = lhc.create_api_request(object='candidates/%s/offers' % (offset),
+                                                           record_id=record_id)
 
         return lhc.fetch_from_lever(url, querystring, headers)
 
 
-    def gather_offer(self, lever_record_list, lever_records):
+    def gather_offer(self, lever_record_list='', lever_records=''):
         try:
-            self.record_cursor = lever_records['next']
-            lever_records = self.get_100_offers(offset=self.record_cursor)
+            if isinstance(lever_record_list, str):
+                lever_record_list = []
+            if isinstance(self.candidate_id, list):
+                self.record_cursor = self.candidate_id.pop()
+            else:
+                self.candidate_id = [self.candidate_id]
+                self.record_cursor = self.candidate_id.pop()
+            lever_records = self.get_the_offer(offset=self.record_cursor)
             lever_record_list = self.aggregate_offers(lever_record_list, lever_records['data'])
-
             lever_record_list, lever_records = self.gather_offer(lever_record_list, lever_records)
-        except KeyError:
+        except IndexError:
             pass
 
         return lever_record_list, lever_records
@@ -82,19 +91,13 @@ class Offers(object):
 
     def get_all_offers(self, record_id=''):
         try:
-            # Get first 100 offer from lever
-            lever_records = self.get_100_offers(candidate_id=self.candidate_id, record_id=record_id)
-            # print type(lever_records['data'])
-            lever_record_list = lever_records['data']
+            # Gather the records for tall the submitted candidates
+            lever_record_list, lever_records = self.gather_offer()
             if lever_record_list != []:
-                # Check if more than 100 exist and need to be aggregated.
-                if len(lever_record_list) == 100:
-                    lever_record_list, lever_records = self.gather_offer(lever_record_list, lever_records)
-
                 try:
                     # Convert offer list to Dataframe
                     lever_df = pd.DataFrame(lever_record_list)
-
+                    lever_df.rename(columns={'id': 'offer_id'}, inplace=True)
                     lever_df = self.reformat_as_dataframe(lever_df)
                     # print lever_df
                     return lever_df
@@ -103,7 +106,7 @@ class Offers(object):
                     print error_result
             else:
                 print "no offer found"
-                self.offer = pd.DataFrame(data=[{'id': None, 'candidate_id': self.candidate_id}])
+                self.offer = pd.DataFrame(data=[{'offer_id': None, 'candidate_id': self.candidate_id}])
 
 
 
@@ -135,21 +138,6 @@ class Offers(object):
         except:
             return unicode_series
 
-    @staticmethod
-    def reduce_to_year(unicode_series):
-        try:
-            pattern = re.compile("(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})$")
-            match = pattern.match(unicode_series)
-            if match:
-                date_only = unicode_series[:10]
-                date_only = datetime.datetime.strptime(date_only, '%Y-%m-%d')
-                return date_only
-            else:
-                return unicode_series
-
-        except:
-            pass
-
     def reformat_as_dataframe(self, offer_details):
         """ Use to reformat responses to a panda data frame.
         :param offer_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
@@ -160,12 +148,16 @@ class Offers(object):
         offer_details = offer_details.applymap(Offers.convert_time)
 
         # offer_details = offer_details.applymap(TicketList.reduce_to_year)
-        offer_details = correct_date_dtype(offer_details, date_time_format='%Y-%m-%d %H:%M:%S')
+        offer_details = correct_date_dtype(offer_details, date_time_format='%Y-%m-%d %H:%M:%S',
+                                                 date_time_columns={'createdAt', 'approvedAt', 'sentAt'})
         # offer_details.drop(labels=['content'], axis=1, inplace=True)
 
         # Convert extra fields nested in a dataframe column in to column with values
-        self.extra_fields = create_feature_dataframe(offer_details, "id", "fields")
-        self.extra_fields = expand_nested_fields_to_dataframe(self.extra_fields, "id", "text", "value")
+        self.extra_fields = create_feature_dataframe(offer_details, "offer_id", "fields")
+        self.extra_fields = correct_date_dtype(self.extra_fields, date_time_format='%Y-%m-%d %H:%M:%S',
+                                               date_time_columns={'createdAt'})
+
+        # self.extra_fields = expand_nested_fields_to_dataframe(self.extra_fields, "id", "text", "value")
 
         return offer_details
 
@@ -173,8 +165,17 @@ class Offers(object):
 if __name__ == '__main__':
     start = time()
     # try:
+    stage_ids = ['44015e45-bbf3-447c-8517-55fe4540acdc', 'offer']
+    # candidates = Candidates()
+    # candidates = candidates.candidates
+    # # print candidates
+    # candidates_with_offers = candidates[candidates['stage'].isin(stage_ids)]['candidate_id']
+    # print len(candidates_with_offers)
+    # candidates.to_pickle('/Users/martin.valenzuela/Box Sync/Documents/Austin Office/BizReqs/Lever_API_595101/Lever_Candidates_')
     offers = Offers(candidate_id='9a5bca12-ef0e-42ba-bbb0-85e3155cc935')
 
     end = time()
     print (end - start) / 60
-    print offers.full_offer
+    print offers.extra_fields.columns
+    print offers.offer.columns
+    print offers.full_offer.columns
