@@ -16,7 +16,7 @@ from helper_scripts.misc_helpers.data_manipulation import multiply_by_multiselec
 pd.set_option('display.width', 340)
 pd.set_option('display.max_columns', 50)
 
-class Lever_Archive_Reasons(object):
+class Archive_Reasons(object):
     """ The archive_reason list class creates an object that gathers individual archive_reasons that belong to a particular list view.
     """
     def __init__(self, archive_reason_id=''):
@@ -122,7 +122,7 @@ class Lever_Archive_Reasons(object):
         :return: returns panda dataframe
         """
         archive_reason_details = pd.DataFrame(archive_reason_details)
-        archive_reason_details = archive_reason_details.applymap(Lever_Archive_Reasons.convert_time)
+        archive_reason_details = archive_reason_details.applymap(Archive_Reasons.convert_time)
 
         archive_reason_details = correct_date_dtype(archive_reason_details, date_time_format='%Y-%m-%d %H:%M:%S',
                                            date_time_columns={'createdAt'})
@@ -134,7 +134,7 @@ class Lever_Archive_Reasons(object):
 if __name__ == '__main__':
     start = time()
     try:
-        archive_reasons = Lever_Archive_Reasons()
+        archive_reasons = Archive_Reasons()
     except AttributeError as e:
         archive_reasons = e.args[0]
 
