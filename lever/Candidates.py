@@ -124,10 +124,16 @@ class Candidates(object):
         :return: returns panda dataframe
         """
         candidate_details = pd.DataFrame(candidate_details)
+        # Move archived reason to main dataframe
+        archived = create_feature_dataframe(candidate_details, "candidate_id", "archived")
+        candidate_details = pd.merge(candidate_details, archived, how='left', on='candidate_id')
+
+        # Change Unix time to date time values.
         candidate_details = candidate_details.applymap(Candidates.convert_time)
         candidate_details = correct_date_dtype(candidate_details, date_time_format='%Y-%m-%d %H:%M:%S',
                                          date_time_columns={'createdAt', 'lastAdvancedAt',
-                                                            'lastInteractionAt', 'updatedAt', 'snoozedUntil'})
+                                                            'lastInteractionAt', 'updatedAt', 'snoozedUntil', 'archivedAt'})
+
 
         # Use candidate details to create stages data frame
         self.stages = create_feature_dataframe(candidate_details, "candidate_id", "stageChanges")
