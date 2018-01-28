@@ -105,7 +105,6 @@ class Offers(object):
                     error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
                     print error_result
             else:
-                print "no offer found"
                 self.offer = pd.DataFrame(data=[{'offer_id': None, 'candidate_id': self.candidate_id}])
 
 
