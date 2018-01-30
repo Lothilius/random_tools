@@ -2,7 +2,7 @@
 __author__ = 'Lothilius'
 
 import sys
-
+import pandas as pd
 from bv_authenticate.Authentication import Authentication as auth
 from send_email.OutlookConnection import OutlookConnection as outlook
 from tableau_data_publisher.data_assembler import TDEAssembler
@@ -29,6 +29,18 @@ def main():
         testing_file_path = '/Users/martin.valenzuela/Box Sync/Documents/Austin Office/BizReqs/Lever_API_595101/'
         stage_ids = ['44015e45-bbf3-447c-8517-55fe4540acdc', 'offer']
 
+        # Get stages from Lever
+        stages = Lever_Stages()
+        stages = stages.stages
+        stages.set_index(['stage_id'], inplace=True)
+        stages.loc['-'] = '-'
+
+        # Get archive_reasons from Lever
+        archive_reasons = Archive_Reasons()
+        archive_reasons = archive_reasons.archive_reasons
+        archive_reasons.set_index(['archive_reason_id'], inplace=True)
+        archive_reasons.loc['-'] = '-'
+
         # Get users from Lever
         users = Lever_Users()
         users = users.users
@@ -46,18 +58,22 @@ def main():
         candidates = Candidates()
         candidate_stages_ids = candidates.stages[['candidate_id', 'toStageId']]
         candidates = candidates.full_candidates
+        # Swap out if values with Label
+        candidates.reason = candidates.reason.apply(lambda x: archive_reasons.loc[x])
+        candidates.stage = candidates.stage.apply(lambda x: stages.loc[x])
 
+        # Narrow candidates to only those that reaches stage_ids at some point for applications and offers
         candidates_with_offers = candidate_stages_ids[candidate_stages_ids['toStageId'].isin(stage_ids)]['candidate_id']
         candidates_with_offers = candidates_with_offers.copy()
         candidates_with_offers.drop_duplicates(inplace=True)
+        # Update stage tds with labels
+        candidates.toStageId = candidates.toStageId.apply(lambda x: stages.loc[x])
+        # Split out a list for applications and offers
+        candidates_with_applications = candidates_with_offers.tolist()
         candidates_with_offers = candidates_with_offers.tolist()
 
-        # Get stages from Lever
-        stages = Lever_Stages()
-        stages = stages.stages
-
         # Get applications from Lever based on candidates having been in stages that are in stage_ids
-        applications = Applications(candidate_id=candidates_with_offers)
+        applications = Applications(candidate_id=candidates_with_applications)
         applications = applications.full_application
         applications = correct_date_dtype(applications, date_time_format='%Y-%m-%d %H:%M:%S',
                                           date_time_columns={'createdAt_application', 'createdAt__fields'})
@@ -72,9 +88,12 @@ def main():
         requisition_fields = Requisition_Fields()
         requisition_fields = requisition_fields.requisition_fields
 
-        # Get archive_reasons from Lever
-        archive_reasons = Archive_Reasons()
-        archive_reasons = archive_reasons.archive_reasons
+        # Left join candidates with offers
+        candidates_and_offers = pd.merge(left=candidates, right=offers[['candidate_id', 'offer_id', 'posting']],
+                                         how='left', on='candidate_id')
+        candidates_with_offers = pd.merge(left=candidates_and_offers,
+                                          right=postings[['post_id', 'team', 'location', 'owner']], how='left',
+                                         left_on='posting', right_on='post_id', suffixes=('_candidate', '_posting'))
 
         try:
             # Create table array to iterate through for creation and publishing.
@@ -82,7 +101,8 @@ def main():
                             [candidates, 'Lever_Candidates'], [stages, 'Lever_Stages'],
                             [applications, 'Lever_Applications'],
                             [requisition_fields, 'Lever_Req_Fields'], [offers, 'Lever_Offers'],
-                            [archive_reasons, 'Lever_Archieve_Reasons']]
+                            [archive_reasons, 'Lever_Archieve_Reasons'],
+                            [candidates_with_offers, 'Lever_Candidates_with_Offers_Posts']]
 
             file_names_to_publish = {}
 
@@ -94,7 +114,7 @@ def main():
                 # Set values for publishing the data.
                 file_names_to_publish[table[1]] = str(data_file)
 
-                print table[1], "\n", str(data_file)
+                print table[1], "\n", str(data_file), "\n-------------\n\n"
         except:
             error_result = "Error building tableau extract. Unexpected Error: %s, %s" \
                            % (sys.exc_info()[0], sys.exc_info()[1])

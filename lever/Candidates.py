@@ -124,6 +124,7 @@ class Candidates(object):
         :return: returns panda dataframe
         """
         candidate_details = pd.DataFrame(candidate_details)
+        candidate_details['sources'] = candidate_details['sources'].apply(lambda x: ', '.join(x))
         # Move archived reason to main dataframe
         archived = create_feature_dataframe(candidate_details, "candidate_id", "archived")
         candidate_details = pd.merge(candidate_details, archived, how='left', on='candidate_id')

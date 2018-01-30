@@ -27,7 +27,7 @@ class Offers(object):
     """
     def __init__(self, candidate_id, record_id=''):
         self.candidate_id = candidate_id
-
+        self.record_cursor = record_id
         self.extra_fields = pd.DataFrame()
         self.last_offer_id = record_id
         self.offer = self.get_all_offers(record_id)
@@ -76,22 +76,30 @@ class Offers(object):
             if isinstance(lever_record_list, str):
                 lever_record_list = []
             if isinstance(self.candidate_id, list):
-                self.record_cursor = self.candidate_id.pop()
+                if len(self.candidate_id) != 0:
+                    self.record_cursor = self.candidate_id.pop()
             else:
                 self.candidate_id = [self.candidate_id]
                 self.record_cursor = self.candidate_id.pop()
             lever_records = self.get_the_offer(offset=self.record_cursor)
+            if lever_records['data'] == []:
+                candidates_id = self.record_cursor
+                lever_records['data'] = [{'id': '-', 'candidate_id': candidates_id, 'fields': ['']}]
+            else:
+                lever_records['data'][0]['candidate_id'] = self.record_cursor
             lever_record_list = self.aggregate_offers(lever_record_list, lever_records['data'])
-            lever_record_list, lever_records = self.gather_offer(lever_record_list, lever_records)
+            if len(self.candidate_id) != 0:
+                lever_record_list, lever_records = self.gather_offer(lever_record_list, lever_records)
         except IndexError:
-            pass
+            error_result = "Unexpected error 1go: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+            print error_result
 
         return lever_record_list, lever_records
 
 
     def get_all_offers(self, record_id=''):
         try:
-            # Gather the records for tall the submitted candidates
+            # Gather the records for all the submitted candidates
             lever_record_list, lever_records = self.gather_offer()
             if lever_record_list != []:
                 try:
@@ -105,7 +113,8 @@ class Offers(object):
                     error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
                     print error_result
             else:
-                self.offer = pd.DataFrame(data=[{'offer_id': None, 'candidate_id': self.candidate_id}])
+                pass
+                # self.offer = pd.DataFrame(data=[{'offer_id': '-', 'candidate_id': self.candidate_id}])
 
 
 
@@ -165,16 +174,19 @@ if __name__ == '__main__':
     start = time()
     # try:
     stage_ids = ['44015e45-bbf3-447c-8517-55fe4540acdc', 'offer']
-    # candidates = Candidates()
+    # candidates = [u'eebcaa40-3fb7-40f8-b699-1068f9311d59', u'70b35a0c-30c3-445c-b477-caac7b69a1ce', u'35940644-7c21-472b-8645-9bd015f5d266', u'44a7b15e-9ac0-4939-81a8-b749409d9967']
     # candidates = candidates.candidates
-    # # print candidates
-    # candidates_with_offers = candidates[candidates['stage'].isin(stage_ids)]['candidate_id']
+    candidates = Candidates()
+    candidate_stages_ids = candidates.stages[['candidate_id', 'toStageId']]
+    candidates_with_offers = candidate_stages_ids[candidate_stages_ids['toStageId'].isin(stage_ids)]['candidate_id']
+    candidates_with_offers = candidates_with_offers.copy()
     # print len(candidates_with_offers)
-    # candidates.to_pickle('/Users/martin.valenzuela/Box Sync/Documents/Austin Office/BizReqs/Lever_API_595101/Lever_Candidates_')
-    offers = Offers(candidate_id='9a5bca12-ef0e-42ba-bbb0-85e3155cc935')
+    candidates_with_offers.drop_duplicates(inplace=True)
+    candidates_with_offers = candidates_with_offers.tolist()
+    offers = Offers(candidate_id=candidates_with_offers)
 
     end = time()
     print (end - start) / 60
     print offers.extra_fields.columns
     print offers.offer.columns
-    print offers.full_offer.columns
+    print offers.full_offer

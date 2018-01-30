@@ -23,7 +23,7 @@ class LeverConnection(object):
         if record_id != '':
             record_id = '/' + record_id
 
-        # Main HDT api URL
+        # Main Lever api URL
         url = "https://api.lever.co/v1/%s%s" % (object, record_id)
 
         if offset != '':
@@ -48,7 +48,8 @@ class LeverConnection(object):
         :return: Return a data frame of the
         """
         try:
-            wait(1)
+            wait(.1)
+            # print querystring
             # Create the request and capture the response.
             response = requests.request("GET", url, headers=headers, params=querystring)
 
