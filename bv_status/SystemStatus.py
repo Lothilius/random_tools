@@ -1,9 +1,10 @@
 __author__ = 'Lothilius'
 
-from SFDC import SFDC
-from Helpdesk import Helpdesk
-from Concur import Concur
-from Netsuite import Netsuite
+from sfdc.SFDC import SFDC
+from triage_tickets.Helpdesk import Helpdesk
+from bv_status.Concur import Concur
+from bv_status.Netsuite import Netsuite
+from bv_status.Okta import Okta
 
 class SystemStatus(object):
     # Initiate the status list
@@ -14,7 +15,8 @@ class SystemStatus(object):
         self.system_list = dict({'Helpdesk': Helpdesk().__dict__,
                                  'Salesforce': SFDC().__dict__,
                              'Netsuite': Netsuite().__dict__,
-                             'Concur': Concur().__dict__})
+                             # 'Concur': Concur().__dict__,
+                                'Okta': Okta().__dict__})
 
 
     def refresh_system_status(self):

@@ -4,9 +4,8 @@ import requests
 import json
 from bv_authenticate.Authentication import Authentication as auth
 import sys
+from Meraki_Connection import Elastic_Search_Connection
 from bv_status.Status import Status
-from simple_salesforce import Salesforce
-import simple_salesforce.login
 import time
 import sys
 
@@ -14,22 +13,13 @@ import sys
 def wait(seconds=5):
     time.sleep(seconds)
 
-class SFDC(Status):
-    """ Extend Status class for Helpdesk.
+host = 'https://vpc-bv-locations-gbzs5ip4uu4f333ghtiec2njyy.us-east-1.es.amazonaws.com'
+
+class Meraki(object):
+    """ Extend Status class for Meraki.
     """
-
-    @staticmethod
-    def status_api_request(instance='na3'):
-        """
-        """
-        # Main SFDC api URL
-        url = "http://api.status.salesforce.com/v1/instances/%s/status" % instance
-
-        # Header information
-        headers = {
-            "Accept": "application/json"
-        }
-        return url, headers
+    def __init__(self):
+        self.meraki_es_connection = Elastic_Search_Connection.connect_to_aws_elastic_search(host)
 
     @staticmethod
     def fetch_status_jason(url, headers):
@@ -101,8 +91,8 @@ class SFDC(Status):
         :return: OrderedDict that contains totalsize, done, and records. Records in turn is also given as an
                 OrderedDict with the actualrecords data.
         """
-        sf = SFDC.connect_to_SFDC(environment)
-        result = sf.query_all(SFDC.build_query())
+        sf = Meraki.connect_to_SFDC(environment)
+        result = sf.query_all(Meraki.build_query())
 
         return result
 
@@ -133,5 +123,5 @@ class SFDC(Status):
 
 
 if __name__ == '__main__':
-    status = SFDC()
+    status = Meraki()
     print status

@@ -9,22 +9,26 @@ import pandas as pd
 from pyprogressbar import Bar
 from Lever_Connection import LeverConnection as lhc
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
+from helper_scripts.misc_helpers.data_manipulation import create_feature_dataframe
 from time import time
+from se_helpers.actions import wait
 
 
-pd.set_option('display.width', 283)
+pd.set_option('display.width', 183)
 pd.set_option('display.max_columns', 50)
-pd.set_option('display.max_colwidth', 250)
+pd.set_option('display.max_colwidth', 25)
 
 
 class Postings(object):
-    """ The ticket list class creates an object that gathers individual tickets that belong to a particular list view.
-        The list view will need to be specified from the list of view available to the person running the quarry to
-        gather the tickets.
+    """ The Postings list class creates an object that gathers individual postings that are in Lever.
     """
     def __init__(self, record_id=''):
-        self.last_ticket_id = record_id
+        self.categories = pd.DataFrame()
+        self.content = pd.DataFrame()
+        self.last_posting_id = record_id
         self.postings = self.get_all_postings(record_id)
+        self.full_postings = pd.merge(pd.merge(self.postings, self.categories, how='left', on='post_id')
+                                      , self.content, how='left', on='post_id')
 
 
     def __getitem__(self, item):
@@ -33,16 +37,16 @@ class Postings(object):
     def __str__(self):
         return str(self.postings)
 
-    def aggregate_postings(self, ticket_list_a, ticket_list_b):
+    def aggregate_postings(self, posting_list_a, posting_list_b):
         """ Join to lists of lever records.
 
-        :param ticket_list_a: list
-        :param ticket_list_b: list
-        :return: list - helpdesk_tickets
+        :param posting_list_a: list
+        :param posting_list_b: list
+        :return: list - lever_postings
         """
-        helpdesk_tickets = ticket_list_a + ticket_list_b
+        lever_postings = posting_list_a + posting_list_b
 
-        return helpdesk_tickets
+        return lever_postings
 
     def get_100_postings(self, offset='', record_id=''):
         """ Get lever records up to 100 at a time.
@@ -68,7 +72,7 @@ class Postings(object):
 
     def get_all_postings(self, record_id=''):
         try:
-            # Get first 100 ticket from lever
+            # Get first 100 posts from lever
             lever_records = self.get_100_postings(record_id=record_id)
             # print type(lever_records['data'])
             lever_record_list = lever_records['data']
@@ -78,20 +82,20 @@ class Postings(object):
                 lever_record_list, lever_records = self.gather_postings(lever_record_list, lever_records)
 
             try:
-                # Convert helpdesk ticket list to Dataframe
+
+                # Convert posting list to Dataframe
                 lever_df = pd.DataFrame(lever_record_list)
+                lever_df.rename(columns={'id': 'post_id'}, inplace=True)
                 lever_df = self.reformat_as_dataframe(lever_df)
-                # print lever_df
+
+                return lever_df
 
             except:
-                error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+                error_result = "Unexpected error 2TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
                 print error_result
-                raise Exception(error_result + str(lever_df))
-
-            return lever_df
-        except EOFError:
+                # raise Exception(error_result + str(lever_df))
+        except Exception:
             error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-            # TODO -Fix this issue so that error_message is populated!
             print error_result
 
     @staticmethod
@@ -117,55 +121,31 @@ class Postings(object):
         except:
             return unicode_series
 
-    @staticmethod
-    def reduce_to_year(unicode_series):
-        try:
-            pattern = re.compile("(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})$")
-            match = pattern.match(unicode_series)
-            if match:
-                date_only = unicode_series[:10]
-                date_only = datetime.datetime.strptime(date_only, '%Y-%m-%d')
-                return date_only
-            else:
-                return unicode_series
-
-        except:
-            pass
-
-    @staticmethod
-    def reformat_as_dataframe(requisition_details):
+    def reformat_as_dataframe(self, posting_details):
         """ Use to reformat responses to a panda data frame.
-        :param requisition_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
+        :param posting_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
         :return: returns panda dataframe
         """
-        requisition_details = pd.DataFrame(requisition_details)
-        requisition_details = requisition_details.applymap(Postings.convert_time)
+        posting_details = pd.DataFrame(posting_details)
+        posting_details['tags'] = posting_details['tags'].apply(lambda x: ', '.join(x))
+        posting_details = posting_details.applymap(Postings.convert_time)
 
-        # ticket_details = ticket_details.applymap(TicketList.reduce_to_year)
-        requisition_details = correct_date_dtype(requisition_details, date_time_format='%Y-%m-%d %H:%M:%S')
-        requisition_details.drop(labels=['content'], axis=1, inplace=True)
+        posting_details = correct_date_dtype(posting_details, date_time_format='%Y-%m-%d %H:%M:%S',
+                                             date_time_columns={'updatedAt', 'createdAt'})
 
-        return requisition_details
+        self.categories = create_feature_dataframe(posting_details, "post_id", "categories")
+        self.content = create_feature_dataframe(posting_details, "post_id", "content")
+
+        # posting_details.drop(labels=['content'], axis=1, inplace=True)
+
+        return posting_details
 
 
 if __name__ == '__main__':
     start = time()
-    # try:
+
     posts = Postings()
-    # except AttributeError as e:
-    #     reqs = e.args[0]
 
-    # print type(tickets)
-    # print tickets[0]['WORKORDERID']
-
-    # reqs = Postings.reformat_as_dataframe(reqs)
-    # reqs.drop('ATTACHMENTS', axis=1, inplace=True)
     end = time()
     print (end - start) / 60
-    print posts.postings
-
-    posts.postings.to_csv(
-        "/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Tickets/Lever_Testing/postings.csv",
-        encoding='utf-8',
-        escapechar='\\',
-        index=False)
+    print posts.full_postings

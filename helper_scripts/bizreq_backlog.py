@@ -164,7 +164,8 @@ def main():
                                     data_source_name="Historical BizReq Business Demand Backlog")
         publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
 
-        alert_the_light()
+        notify = Notifier()
+        notify.alert_the_light()
         # alert_homer()
     except:
         error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])

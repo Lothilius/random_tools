@@ -3,6 +3,7 @@ __author__ = 'Lothilius'
 
 from sfdc.SFDC_Connection import SFDC_Connection
 import pandas as pd
+
 import json
 import sys
 
@@ -25,7 +26,7 @@ def refresh_object(object='Lead'):
     return results_panda
 
 def append_staging(value):
-    value = str(value).split(sep='.staging')
+    value = str(value).split('.staging')
     staging_value = ''.join(value) + '.staging'
 
     return staging_value

@@ -9,22 +9,27 @@ import pandas as pd
 from pyprogressbar import Bar
 from Lever_Connection import LeverConnection as lhc
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
+from helper_scripts.misc_helpers.data_manipulation import create_feature_dataframe
 from time import time
 from helper_scripts.misc_helpers.data_manipulation import multiply_by_multiselect
 
 
-pd.set_option('display.width', 340)
+pd.set_option('display.width', 350)
 pd.set_option('display.max_columns', 50)
+pd.set_option('display.max_colwidth', 50)
 
 class Requisitions(object):
-    """ The ticket list class creates an object that gathers individual tickets that belong to a particular list view.
-        The list view will need to be specified from the list of view available to the person running the quarry to
-        gather the tickets.
+    """ The requisition list class creates an object that gathers individual requisitions that are published on Lever.
     """
     def __init__(self, record_id=''):
+        self.compensation_band = pd.DataFrame()
+        self.custom_fields = pd.DataFrame()
         self.record_cursor = None
-        self.last_ticket_id = record_id
+        self.last_requisition_id = record_id
         self.requisitions = self.get_all_requisitions(record_id)
+        self.full_requisitions = pd.merge(pd.merge(self.requisitions, self.compensation_band, how='left', on='requisition_id'),
+                                      self.custom_fields,how='left', on='requisition_id')
+
 
 
     def __getitem__(self, item):
@@ -33,16 +38,16 @@ class Requisitions(object):
     def __str__(self):
         return str(self.requisitions)
 
-    def aggregate_requisitions(self, ticket_list_a, ticket_list_b):
+    def aggregate_requisitions(self, requisition_list_a, requisition_list_b):
         """ Join to lists of lever records.
 
-        :param ticket_list_a: list
-        :param ticket_list_b: list
-        :return: list - helpdesk_tickets
+        :param requisition_list_a: list
+        :param requisition_list_b: list
+        :return: list - lever_requisitions
         """
-        helpdesk_tickets = ticket_list_a + ticket_list_b
+        lever_requisitions = requisition_list_a + requisition_list_b
 
-        return helpdesk_tickets
+        return lever_requisitions
 
     def get_100_requisitions(self, offset='', record_id=''):
         """ Get lever records up to 100 at a time.
@@ -68,7 +73,7 @@ class Requisitions(object):
 
     def get_all_requisitions(self, record_id=''):
         try:
-            # Get first 100 ticket from lever
+            # Get first 100 requisition from lever
             lever_records = self.get_100_requisitions(record_id=record_id)
             # print type(lever_records['data'])
             lever_record_list = lever_records['data']
@@ -80,20 +85,19 @@ class Requisitions(object):
                 lever_record_list = [lever_record_list]
 
             try:
-                # Convert helpdesk ticket list to Dataframe
+                # Convert lever requisition list to Dataframe
                 lever_df = pd.DataFrame(lever_record_list)
+                lever_df.rename(columns={'id': 'requisition_id'}, inplace=True)
                 lever_df = self.reformat_as_dataframe(lever_df)
-                # print lever_df
 
+                return lever_df
             except:
-                error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+                error_result = "Unexpected error 2TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
                 print error_result
-                raise Exception(error_result)
+                # raise Exception(error_result)
 
-            return lever_df
         except EOFError:
             error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-            # TODO -Fix this issue so that error_message is populated!
             print error_result
 
     @staticmethod
@@ -119,33 +123,22 @@ class Requisitions(object):
         except:
             return unicode_series
 
-    @staticmethod
-    def reduce_to_year(unicode_series):
-        try:
-            pattern = re.compile("(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})$")
-            match = pattern.match(unicode_series)
-            if match:
-                date_only = unicode_series[:10]
-                date_only = datetime.datetime.strptime(date_only, '%Y-%m-%d')
-                return date_only
-            else:
-                return unicode_series
-        except:
-            pass
-
-    @staticmethod
-    def reformat_as_dataframe(requisition_details):
+    def reformat_as_dataframe(self, requisition_details):
         """ Use to reformat responses to a panda data frame.
         :param requisition_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
         :return: returns panda dataframe
         """
         requisition_details = pd.DataFrame(requisition_details)
         requisition_details = requisition_details.applymap(Requisitions.convert_time)
-        # ticket_details = ticket_details.applymap(TicketList.reduce_to_year)
-        requisition_details = correct_date_dtype(requisition_details, date_time_format='%Y-%m-%d %H:%M:%S')
+
+        requisition_details = correct_date_dtype(requisition_details, date_time_format='%Y-%m-%d %H:%M:%S',
+                                                 date_time_columns={'updatedAt', 'createdAt'})
+
+        self.compensation_band = create_feature_dataframe(requisition_details, "requisition_id", "compensationBand")
+        self.custom_fields = create_feature_dataframe(requisition_details, "requisition_id", "customFields")
 
         # Duplicate records by number of postings
-        requisition_details = multiply_by_multiselect(requisition_details, "id", "postings")
+        requisition_details = multiply_by_multiselect(requisition_details, "requisition_id", "postings")
 
         return requisition_details
 
@@ -160,8 +153,4 @@ if __name__ == '__main__':
     end = time()
     print (end - start) / 60
     # print type(reqs.requisitions)
-    print reqs.requisitions
-    # print type(reqs.requisitions["postings"].iloc[0])
-    reqs.requisitions.to_csv("/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Tickets/Lever_Testing/requisitions.csv",
-                             encoding='utf-8',
-                             index=False)
+    print reqs.full_requisitions

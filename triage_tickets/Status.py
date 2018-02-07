@@ -1,7 +1,9 @@
 class Status(object):
 
     def __init__(self):
-
+        self.status = 2
+        self.status_message = 'Loading Message'
+        self.error_message = '?'
         self.tickets = self.get_all_tickets()
 
     def __str__(self):
@@ -22,3 +24,4 @@ class Status(object):
 
     def set_status_message(self, message):
         self.status_message = message
+

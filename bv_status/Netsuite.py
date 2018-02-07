@@ -6,6 +6,8 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 import sys
 from Status import Status
+import os
+
 
 class Netsuite(Status):
     """ Extend Status class for Helpdesk.
@@ -65,33 +67,30 @@ class Netsuite(Status):
     def get_status(self):
         # Get NetSuite Status from Status page using headless Webkit so that javascript is rendered.
         try:
-            browser = webdriver.PhantomJS(executable_path=
-                                          '/Users/martin.valenzuela/Dropbox/Coding/BV/'
-                                          'phantomjs-2.0.0-macosx/bin/phantomjs') # Might need executable_path=
-            browser.get("https://status.netsuite.com/#dtc=sc9#")
+            browser = webdriver.PhantomJS(executable_path=os.environ['PHANTOM_JS'])
+            browser.get("https://status.netsuite.com/#dtc=se4#")
+            browser.implicitly_wait(2)
             netsuite_reply = browser.page_source
             browser.quit()
 
             status_list, status_message = self.explore_page(netsuite_reply)
 
-            if status_message == 'No recent posts':
-                self.set_status_message('Functioning normally')
-            else:
-                self.set_status_message(status_message)
-
             # Iterate through status list to make sure all components of NetSuite are up.
             up_count = 0
             if len(status_list[0]) == 2:
                 for each in status_list:
-                    if "icon-icon_messaging_available" in each[1]:
-                        up_count = up_count + 1
-                    elif str(each[0]) == each[1]:
+                    if "icon-icon_messaging_available" in each[1] or each[0] == None:
                         up_count = up_count + 1
                     else:
                         pass
             if up_count == len(status_list):
+                if status_message == 'No recent posts':
+                    self.set_status_message('Functioning normally')
+                else:
+                    self.set_status_message(status_message)
                 return 1
             else:
+                self.set_status_message(status_message)
                 return 0
         except:
             error_result = "Unexpected error 2: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])

@@ -1,6 +1,7 @@
 __author__ = 'Lothilius'
 
 from os import environ
+from requests_aws4auth import AWS4Auth
 
 class Authentication(object):
     @staticmethod
@@ -82,7 +83,10 @@ class Authentication(object):
         :param data_source_name:
         :return:
         """
-        server_url = 'https://tableau.bazaarvoice.com/'
+        if environ['MY_ENVIRONMENT'] == 'prod':
+            server_url = 'https://tableauserver.bazaarvoice.com/'
+        else:
+            server_url = 'https://tableau.bazaarvoice.com/'
         if datasource_type == 'BizApps':
             project = 'Business Applications'
             site_id = 'BizTech'
@@ -107,6 +111,16 @@ class Authentication(object):
                 pass
             else:
                 data_source_name = 'EUS-test'
+        elif datasource_type =='PandT':
+            project = 'Recruiting'
+            site_id = 'PeopleandTalent'
+            # Set values for publishing the data.
+            username, password = Authentication.tableau__credentials()
+            # TODO - Move most of this trash to the publish data module
+            if environ['MY_ENVIRONMENT'] == 'prod' and data_source_name != 'New_Extract':
+                pass
+            else:
+                data_source_name = 'PandT-test'
         else:
             # Set values for publishing the data.
             username, password = Authentication.tableau__credentials()
@@ -121,3 +135,7 @@ class Authentication(object):
         hue_token = environ['HUE_TOKEN']
 
         return hue_ip, hue_token
+
+    @staticmethod
+    def aws_connect():
+        aws_connector = AWS4Auth(environ['AWS_ACCESS_KEY'], environ['AWS_SECRET_KEY'], 'us-east-1', 'es')

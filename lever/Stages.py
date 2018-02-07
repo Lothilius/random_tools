@@ -16,73 +16,72 @@ from helper_scripts.misc_helpers.data_manipulation import multiply_by_multiselec
 pd.set_option('display.width', 340)
 pd.set_option('display.max_columns', 50)
 
-class Lever_Users(object):
-    """ The ticket list class creates an object that gathers individual tickets that belong to a particular list view.
+class Lever_Stages(object):
+    """ The stage list class creates an object that gathers individual stages that belong to a particular list view.
     """
-    def __init__(self, user_id=''):
+    def __init__(self, stage_id=''):
         self.record_cursor = None
-        self.last_record_id = user_id
-        self.users = self.get_all_lever_users(user_id)
+        self.last_record_id = stage_id
+        self.stages = self.get_all_lever_stages(stage_id)
 
 
     def __getitem__(self, item):
-        return self.users[item]
+        return self.stages[item]
 
     def __str__(self):
-        return str(self.users)
+        return str(self.stages)
 
-    def aggregate_users(self, ticket_list_a, ticket_list_b):
+    def aggregate_stages(self, stage_list_a, stage_list_b):
         """ Join to lists of lever records.
 
-        :param ticket_list_a: list
-        :param ticket_list_b: list
-        :return: list - helpdesk_tickets
+        :param stage_list_a: list
+        :param stage_list_b: list
+        :return: list - lever_stages
         """
-        helpdesk_tickets = ticket_list_a + ticket_list_b
+        lever_stages = stage_list_a + stage_list_b
 
-        return helpdesk_tickets
+        return lever_stages
 
     @staticmethod
-    def get_100_lever_users(offset='', record_id=''):
+    def get_100_lever_stages(offset='', record_id=''):
         """ Get lever records up to 100 at a time.
-        :return: dict with lever user info {data, hasNext[, next]}
+        :return: dict with lever stage info {data, hasNext[, next]}
         """
-        url, querystring, headers = lhc.create_api_request(object='users', offset=offset, record_id=record_id)
+        url, querystring, headers = lhc.create_api_request(object='stages', offset=offset, record_id=record_id)
 
         return lhc.fetch_from_lever(url, querystring, headers)
 
-    def gather_lever_users(self, lever_record_list, lever_records):
+    def gather_lever_stages(self, lever_record_list, lever_records):
         try:
             self.record_cursor = lever_records['next']
-            lever_records = self.get_100_lever_users(offset=self.record_cursor)
-            lever_record_list = self.aggregate_users(lever_record_list, lever_records['data'])
+            lever_records = self.get_100_lever_stages(offset=self.record_cursor)
+            lever_record_list = self.aggregate_stages(lever_record_list, lever_records['data'])
 
-            lever_record_list, next_lever_records = self.gather_lever_users(lever_record_list, lever_records)
+            lever_record_list, next_lever_records = self.gather_lever_stages(lever_record_list, lever_records)
         except KeyError:
             pass
 
         return lever_record_list, lever_records
 
-    def get_all_lever_users(self, record_id=''):
+    def get_all_lever_stages(self, record_id=''):
         try:
-            # Get first 100 ticket from lever
-            lever_records = self.get_100_lever_users(record_id=record_id)
-            # print type(lever_records['data'])
+            # Get first 100 stage from lever
+            lever_records = self.get_100_lever_stages(record_id=record_id)
+            # print type(lever_records['data'][0])
             lever_record_list = lever_records['data']
 
             # Check if more than 100 exist and need to be aggregated.
             if len(lever_record_list) == 100:
-                lever_record_list, lever_records = self.gather_lever_users(lever_record_list, lever_records)
+                lever_record_list, lever_records = self.gather_lever_stages(lever_record_list, lever_records)
             else:
-                lever_record_list = [lever_record_list]
+                # lever_record_list = [lever_record_list]
+                pass
 
             try:
-                # Convert helpdesk ticket list to Dataframe
+                # Convert lever stage list to Dataframe
                 lever_df = pd.DataFrame(lever_record_list)
+                lever_df.rename(columns={'id': 'stage_id'}, inplace=True)
                 lever_df = self.reformat_as_dataframe(lever_df)
-
-                lever_df.rename(columns={'id': 'user_id'}, inplace=True)
-
                 return lever_df
 
             except:
@@ -117,42 +116,29 @@ class Lever_Users(object):
             return unicode_series
 
     @staticmethod
-    def reduce_to_year(unicode_series):
-        try:
-            pattern = re.compile("(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})$")
-            match = pattern.match(unicode_series)
-            if match:
-                date_only = unicode_series[:10]
-                date_only = datetime.datetime.strptime(date_only, '%Y-%m-%d')
-                return date_only
-            else:
-                return unicode_series
-        except:
-            pass
-
-    @staticmethod
-    def reformat_as_dataframe(user_details):
+    def reformat_as_dataframe(stage_details):
         """ Use to reformat responses to a panda data frame.
-        :param user_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
+        :param stage_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
         :return: returns panda dataframe
         """
-        user_details = pd.DataFrame(user_details)
-        user_details = user_details.applymap(Lever_Users.convert_time)
+        stage_details = pd.DataFrame(stage_details)
+        stage_details = stage_details.applymap(Lever_Stages.convert_time)
 
-        user_details = correct_date_dtype(user_details, date_time_format='%Y-%m-%d %H:%M:%S', date_time_columns={'createdAt'})
+        stage_details = correct_date_dtype(stage_details, date_time_format='%Y-%m-%d %H:%M:%S',
+                                           date_time_columns={'createdAt'})
 
 
-        return user_details
+        return stage_details
 
 
 if __name__ == '__main__':
     start = time()
     try:
-        users = Lever_Users()
+        stages = Lever_Stages()
     except AttributeError as e:
-        users = e.args[0]
+        stages = e.args[0]
 
     end = time()
     print (end - start) / 60
-    # print type(reqs.users)
-    print users.users
+    # print type(reqs.stages)
+    print stages.stages
