@@ -127,6 +127,7 @@ class Postings(object):
         :return: returns panda dataframe
         """
         posting_details = pd.DataFrame(posting_details)
+        posting_details['tags'] = posting_details['tags'].apply(lambda x: ', '.join(x))
         posting_details = posting_details.applymap(Postings.convert_time)
 
         posting_details = correct_date_dtype(posting_details, date_time_format='%Y-%m-%d %H:%M:%S',
