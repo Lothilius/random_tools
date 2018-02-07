@@ -32,6 +32,15 @@ def main():
         # Get stages from Lever
         stages = Lever_Stages()
         stages = stages.stages
+        stages = stages.append([{'stage_id': '4ddfa41f-8cf2-4648-9780-21923247c3f3',
+                                 'text': 'Recruiter Qualified'},
+                                {'stage_id': '0798c37a-2a2f-4978-88ac-8af174a5a2e8',
+                                 'text': 'Hiring Manager Qualified'},
+                                {'stage_id': '32c7f46d-8921-4752-8091-a207199d60c0',
+                                 'text': 'Contact Candidate'},
+                                {'stage_id': '44015e45-bbf3-447c-8517-55fe4540acdc',
+                                 'text': 'Background Check'}
+                                ])
         stages.set_index(['stage_id'], inplace=True)
         stages.loc['-'] = '-'
 
@@ -40,6 +49,10 @@ def main():
         archive_reasons = archive_reasons.archive_reasons
         archive_reasons.set_index(['archive_reason_id'], inplace=True)
         archive_reasons.loc['-'] = '-'
+
+        # Combine Stage and Archive reasons
+        stage_and_archive_reasons = pd.merge(left=stages, right=archive_reasons, how='outer', on='text',
+                                             left_index=True, right_index=True)
 
         # Get users from Lever
         users = Lever_Users()
@@ -52,22 +65,22 @@ def main():
 
         # Get requisitions from Lever
         requisitions = Requisitions()
-        requisitions = requisitions.full_requisitions
+        requisitions_full = requisitions.full_requisitions
 
         # Get candidates from Lever
         candidates = Candidates()
         candidate_stages_ids = candidates.stages[['candidate_id', 'toStageId']]
-        candidates = candidates.full_candidates
+        candidates_full = candidates.full_candidates
         # Swap out if values with Label
-        candidates.reason = candidates.reason.apply(lambda x: archive_reasons.loc[x])
-        candidates.stage = candidates.stage.apply(lambda x: stages.loc[x])
+        candidates_full['reason'] = candidates_full['reason'].apply(lambda x: stage_and_archive_reasons.loc[x])
+        candidates_full['stage'] = candidates_full['stage'].apply(lambda x: stage_and_archive_reasons.loc[x])
 
         # Narrow candidates to only those that reaches stage_ids at some point for applications and offers
         candidates_with_offers = candidate_stages_ids[candidate_stages_ids['toStageId'].isin(stage_ids)]['candidate_id']
         candidates_with_offers = candidates_with_offers.copy()
         candidates_with_offers.drop_duplicates(inplace=True)
         # Update stage tds with labels
-        candidates.toStageId = candidates.toStageId.apply(lambda x: stages.loc[x])
+        candidates_full['toStageId'] = candidates_full['toStageId'].apply(lambda x: stage_and_archive_reasons.loc[x])
         # Split out a list for applications and offers
         candidates_with_applications = candidates_with_offers.tolist()
         candidates_with_offers = candidates_with_offers.tolist()
@@ -89,20 +102,67 @@ def main():
         requisition_fields = requisition_fields.requisition_fields
 
         # Left join candidates with offers
-        candidates_and_offers = pd.merge(left=candidates, right=offers[['candidate_id', 'offer_id', 'posting']],
+        candidates_and_offers = pd.merge(left=candidates_full, right=offers[['candidate_id', 'offer_id', 'posting']],
                                          how='left', on='candidate_id')
         candidates_with_offers = pd.merge(left=candidates_and_offers,
-                                          right=postings[['post_id', 'team', 'location', 'owner']], how='left',
-                                         left_on='posting', right_on='post_id', suffixes=('_candidate', '_posting'))
+                                          right=postings[['post_id', 'team', 'location', 'owner', 'reqCode']],
+                                          how='left', left_on='posting', right_on='post_id',
+                                          suffixes=('_candidate', '_posting'))
+
+        """ Left join requisition data with candidates"""
+        # Gather limited data on Candidates
+        candidates_for_heatmap = candidates.candidates[['candidate_id', 'archivedAt', 'reason']]
+
+        # Left join Offers data with Candidates
+        candidates_for_heatmap_with_offers = pd.merge(left=candidates_for_heatmap,
+                                                      right=offers[['candidate_id', 'offer_id', 'posting']],
+                                                      how='left', on='candidate_id', suffixes=('_candidate', '_offer'))
+        candidates_for_heatmap_with_offers.rename(columns={'posting': 'post_id'}, inplace=True)
+        # Left join Posting data with Candidates
+        candidates_for_heatmap_with_offers_posts = pd.merge(left=candidates_for_heatmap_with_offers,
+                                                            right=postings[['post_id', 'tags', 'owner', 'updatedAt',
+                                                                            'createdAt']],
+                                                            how='left', on='post_id',
+                                                            suffixes=('_candidate', '_posts'))
+        candidates_for_heatmap_with_offers_posts.fillna(value='-', inplace=True)
+        candidates_for_heatmap_with_offers_posts = candidates_for_heatmap_with_offers_posts.copy()
+        candidates_for_heatmap_with_offers_posts.rename(columns={'owner': 'owner_posting',
+                                                                 'updatedAt': 'updatedAt_posts',
+                                                                 'createdAt': 'createdAt_posts'}, inplace=True)
+        # Reduce row count
+        candidates_for_heatmap_with_offers_posts.drop_duplicates(subset=['candidate_id', 'offer_id', 'post_id'],
+                                                                 inplace=True)
+
+        # Gather requisitions for joining with the candidates
+        requisitions_for_heatmap = requisitions.requisitions[['team', 'postings_as_feature_column', 'requisition_id',
+                                                              'location', 'offerIds', 'createdAt', 'name', 'creator',
+                                                              'owner', 'status', 'hiringManager', 'requisitionCode']]
+
+        requisitions_for_heatmap.rename(columns={'postings_as_feature_column': 'post_id'}, inplace=True)
+
+        requisitions_for_heatmap = pd.merge(left=requisitions_for_heatmap,
+                                            right=candidates_for_heatmap_with_offers_posts,
+                                            how='left', on='post_id', suffixes=('_requisition', '_candidate'))
+
+        requisitions_for_heatmap = requisitions_for_heatmap.copy()
+        requisitions_for_heatmap.drop_duplicates(subset=['requisition_id', 'offer_id'],
+                                                 inplace=True)
+
+        # Clean up date columns
+        requisitions_for_heatmap = correct_date_dtype(requisitions_for_heatmap, date_time_format='%Y-%m-%d %H:%M:%S',
+                                    date_time_columns={'archivedAt', 'createdAt', 'updatedAt_posts', 'createdAt_posts'})
+
 
         try:
             # Create table array to iterate through for creation and publishing.
-            extract_name = [[users, 'Lever_Users'], [final_posts, 'Lever_Posts'], [requisitions, 'Lever_Requisitions'],
-                            [candidates, 'Lever_Candidates'], [stages, 'Lever_Stages'],
+            extract_name = [[users, 'Lever_Users'], [final_posts, 'Lever_Posts'],
+                            [requisitions_full, 'Lever_Requisitions'],
+                            [candidates_full, 'Lever_Candidates'], [stages, 'Lever_Stages'],
                             [applications, 'Lever_Applications'],
                             [requisition_fields, 'Lever_Req_Fields'], [offers, 'Lever_Offers'],
                             [archive_reasons, 'Lever_Archieve_Reasons'],
-                            [candidates_with_offers, 'Lever_Candidates_with_Offers_Posts']]
+                            [candidates_with_offers, 'Lever_Candidates_with_Offers_Posts'],
+                            [requisitions_for_heatmap, 'Lever_Requisitions_with_Candidates_data_for_Heatmap']]
 
             file_names_to_publish = {}
 
