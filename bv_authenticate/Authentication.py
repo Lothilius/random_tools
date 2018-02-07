@@ -83,7 +83,10 @@ class Authentication(object):
         :param data_source_name:
         :return:
         """
-        server_url = 'https://tableau.bazaarvoice.com/'
+        if environ['MY_ENVIRONMENT'] == 'prod':
+            server_url = 'https://tableauserver.bazaarvoice.com/'
+        else:
+            server_url = 'https://tableau.bazaarvoice.com/'
         if datasource_type == 'BizApps':
             project = 'Business Applications'
             site_id = 'BizTech'
