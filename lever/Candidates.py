@@ -118,6 +118,16 @@ class Candidates(object):
         except:
             return unicode_series
 
+    @staticmethod
+    def create_hired_stage_entry(row):
+        if pd.isnull(row['archivedAt']):
+           return row
+        else:
+            row['stageChanges'].append({u'toStageIndex': 14, u'userId': row['owner'], u'toStageId': row['reason'],
+                                        u'updatedAt': row['archivedAt']})
+            return row
+
+
     def reformat_as_dataframe(self, candidate_details):
         """ Use to reformat responses to a panda data frame.
         :param candidate_details: Should be in the form of an array of dicts ie [{1,2,...,n},{...}...,{...}]
@@ -131,9 +141,16 @@ class Candidates(object):
 
         # Change Unix time to date time values.
         candidate_details = candidate_details.applymap(Candidates.convert_time)
+        candidate_details[['owner', 'reason', 'archivedAt', 'stageChanges']] = \
+            candidate_details[['owner',
+                                'reason',
+                                'archivedAt',
+                                'stageChanges']].apply(self.create_hired_stage_entry, axis=1)
+
         candidate_details = correct_date_dtype(candidate_details, date_time_format='%Y-%m-%d %H:%M:%S',
                                          date_time_columns={'createdAt', 'lastAdvancedAt',
-                                                            'lastInteractionAt', 'updatedAt', 'snoozedUntil', 'archivedAt'})
+                                                            'lastInteractionAt', 'updatedAt',
+                                                            'snoozedUntil', 'archivedAt'})
 
 
         # Use candidate details to create stages data frame
