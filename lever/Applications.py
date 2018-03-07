@@ -10,7 +10,6 @@ from Lever_Connection import LeverConnection as lhc
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from helper_scripts.misc_helpers.data_manipulation import create_feature_dataframe
 from lever.Candidates import Candidates
-from helper_scripts.misc_helpers.data_manipulation import expand_nested_fields_to_dataframe
 from time import time
 import collections
 from Candidates import Candidates
