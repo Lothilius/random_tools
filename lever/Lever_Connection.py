@@ -28,9 +28,9 @@ class LeverConnection(object):
 
         if offset != '':
             # Query values go in this json structure
-            querystring = {"offset": offset, "limit": "100"}
+            querystring = {"includeDeactivated": "true", "offset": offset, "limit": "100"}
         else:
-            querystring = {"limit": "100"}
+            querystring = {"includeDeactivated": "true", "limit": "100"}
 
         # Header information
         headers = {
