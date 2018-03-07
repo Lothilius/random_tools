@@ -157,20 +157,20 @@ class TDEAssembler (object):
         else:
             value_type = column_type
 
-        try:
-            if column_number != 35:
-                value = datetime.strptime(str(value), '%Y-%m-%d %H:%M:%S')
-                value_type = 'datetime64[ns]'
-        except ValueError:
-            try:
-                if column_number != 35:
-                    value = datetime.strptime(str(value), '%Y-%m-%d')
-                    value_type = 'datetime64[ns]'
-            except ValueError:
-                try:
-                    value = datetime.strptime(str(value), '%Y-%m-%d %H:%M:%S')
-                except:
-                    pass
+        # try:
+        #     if column_number != 35 and column_name != 'headline':
+        #         value = datetime.strptime(str(value), '%Y-%m-%d %H:%M:%S')
+        #         value_type = 'datetime64[ns]'
+        # except ValueError:
+        #     try:
+        #         if column_number != 35:
+        #             value = datetime.strptime(str(value), '%Y-%m-%d')
+        #             value_type = 'datetime64[ns]'
+        #     except ValueError:
+        #         try:
+        #             value = datetime.strptime(str(value), '%Y-%m-%d %H:%M:%S')
+        #         except:
+        #             pass
         try:
             if value == None or str(value) == str(np.nan):
                 value = 'NA'
