@@ -140,13 +140,14 @@ def expand_nested_fields_to_dataframe(df, id_column, feature_column, value_colum
     """
     # Create Copy of dataframe for changes
     content = df[[feature_column, value_column, id_column]].copy(deep=True)
-
-    # Convert a column in content to values in individual columns
-    feature_df = pd.DataFrame(data=[content[value_column].tolist()], columns=content[feature_column].tolist())
-    # Add the the index to the row
-    feature_df[id_column] = content[id_column].iloc[0]
+    content.fillna('-', inplace=True)
+    feature_df = pd.pivot_table(content, index=id_column, columns=feature_column, values=value_column, fill_value='-',
+                                aggfunc=lambda x: ', '.join(str(v) for v in x))
+    feature_df.reset_index(inplace=True)
+    feature_df.fillna('-', inplace=True)
 
     return feature_df
+
 
 def multiply_by_multiselect(dataframe, feature_index_column, feature_column):
     columns = dataframe.columns.tolist()
