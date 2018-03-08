@@ -1,7 +1,7 @@
 __author__ = 'Lothilius'
 
 import csv
-from sfdc.SFDC import SFDC
+from SFDC_Connection import SFDC_Connection
 from helper_scripts.misc_helpers.data_manipulation import create_feature_vector_dataframe
 import pandas as pd
 import collections
@@ -25,7 +25,7 @@ class SFDC_Permission_Sets(object):
 
     def get_permission_set_list(self):
         # Query SFDc for the assigned permissions sets and names
-        sf = SFDC.connect_to_SFDC('prod')
+        sf = SFDC_Connection.connect_to_SFDC('prod')
         results = sf.query_all("SELECT AssigneeId,PermissionSet.Id, PermissionSet.Name FROM PermissionSetAssignment")
 
         # Flatten the results from nested ordered dicts and convert to pandas dataframe

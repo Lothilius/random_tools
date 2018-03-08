@@ -1,7 +1,7 @@
 # coding: utf-8
 __author__ = 'Lothilius'
 
-from sfdc.SFDC import SFDC
+from SFDC_Connection import SFDC_Connection
 from SFDC_User_Licenses import SFDC_Package_Licenses
 from SFDC_Permission_Sets import SFDC_Permission_Sets
 import pandas as pd
@@ -26,7 +26,7 @@ class SFDC_Holidays(object):
         """ Get Active standard user list from Salesforce.
         :return: panda Dataframe of the users with the Username as the Email!!! ---Warning----
         """
-        sf = SFDC.connect_to_SFDC('prod')
+        sf = SFDC_Connection.connect_to_SFDC('prod')
         results = sf.query_all("SELECT Id, Description, LastModifiedDate,Name,RecurrenceDayOfMonth,"
                                "RecurrenceDayOfWeekMask,RecurrenceInstance,RecurrenceMonthOfYear,RecurrenceStartDate,"
                                "RecurrenceType,ActivityDate,CreatedDate FROM Holiday")
