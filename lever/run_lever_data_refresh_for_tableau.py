@@ -55,13 +55,14 @@ def main():
         stage_and_archive_reasons = pd.merge(left=stages, right=archive_reasons, how='outer', on='text',
                                              left_index=True, right_index=True)
 
+        # Get requisition_fields from Lever
+        requisition_fields = Requisition_Fields()
+        requisition_fields = requisition_fields.requisition_fields
+
         # Get users from Lever
         users = Lever_Users()
         users = users.users
 
-        # Get requisition_fields from Lever
-        requisition_fields = Requisition_Fields()
-        requisition_fields = requisition_fields.requisition_fields
 
         # Get posts from Lever
         posts = Postings()
@@ -74,6 +75,8 @@ def main():
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather supporting tables %s' % basename(__file__)
         print error_result
+
+        # TODO- Log errors in to table then send only one email to HD
         # outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
