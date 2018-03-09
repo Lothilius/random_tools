@@ -137,6 +137,7 @@ class Candidates(object):
         candidate_details['sources'] = candidate_details['sources'].apply(lambda x: ', '.join(x))
         # Move archived reason to main dataframe
         archived = create_feature_dataframe(candidate_details, "candidate_id", "archived")
+        archived.drop(columns=0, axis=1, inplace=True)
         candidate_details = pd.merge(candidate_details, archived, how='left', on='candidate_id')
 
         # Change Unix time to date time values.
@@ -172,4 +173,5 @@ if __name__ == '__main__':
     end = time()
     print (end - start) / 60
     # print candis.candidates
-    print candis.candidates
+    print candis.candidates.info()
+    print candis.stages.info()
