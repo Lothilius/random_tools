@@ -7,7 +7,7 @@ from bv_authenticate.Authentication import Authentication as auth
 import time
 import sys
 
-def wait(seconds=5):
+def wait(seconds=5.0):
     time.sleep(seconds)
 
 class LeverConnection(object):
