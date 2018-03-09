@@ -77,7 +77,8 @@ def main():
         print error_result
 
         # TODO- Log errors in to table then send only one email to HD
-        # outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+                             subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -109,7 +110,8 @@ def main():
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather candidates %s' % basename(__file__)
         print error_result
-        # outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+                             subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -129,7 +131,8 @@ def main():
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather applications%s' % basename(__file__)
         print error_result
-        # outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+                             subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -149,7 +152,8 @@ def main():
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather offers %s' % basename(__file__)
         print error_result
-        # outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+                             subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -167,7 +171,8 @@ def main():
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather requisitions %s' % basename(__file__)
         print error_result
-        # outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+                             subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -195,7 +200,8 @@ def main():
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather candidates wiht offers %s' % basename(__file__)
         print error_result
-        # outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+                             subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -229,16 +235,23 @@ def main():
         candidates_for_heatmap_with_offers_posts.drop_duplicates(subset=['post_id'], inplace=True)
 
         # Gather requisitions for joining with the candidates
-        requisitions_prep_for_heatmap = requisitions.requisitions[['team', 'postings_as_feature_column', 'requisition_id',
-                                                              'location', 'offerIds', 'createdAt', 'name', 'creator',
-                                                              'owner', 'status', 'hiringManager', 'requisitionCode']]
+        requisitions_prep_for_heatmap = requisitions.requisitions[['team',
+                                                                   'postings_as_feature_column',
+                                                                   'requisition_id',
+                                                                   'location',
+                                                                   'offerIds',
+                                                                   'createdAt',
+                                                                   'name',
+                                                                   'creator',
+                                                                   'owner',
+                                                                   'status',
+                                                                   'hiringManager',
+                                                                   'requisitionCode']].copy(deep=True)
 
         requisitions_prep_for_heatmap.rename(columns={'postings_as_feature_column': 'post_id'}, inplace=True)
-
         requisitions_prep_for_heatmap_candidates_offers_posts = pd.merge(left=requisitions_prep_for_heatmap,
                                             right=candidates_for_heatmap_with_offers_posts,
                                             how='left', on='post_id', suffixes=('_requisition', '_candidate'))
-
         requisitions_for_heatmap = requisitions_prep_for_heatmap_candidates_offers_posts.copy(deep=True)
         requisitions_for_heatmap.sort_values(by=['updatedAt_posts', 'tags', 'Type'], inplace=True)
         requisitions_for_heatmap.drop_duplicates(subset=['requisition_id'], inplace=True)
@@ -254,7 +267,8 @@ def main():
         subject = 'Error with Tableau refresh script, Failed to gather Requisitions for Heatmaps %s' \
                   % basename(__file__)
         print error_result
-        # outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+                             subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -294,7 +308,8 @@ def main():
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to create tableau extract, %s' % basename(__file__)
         print error_result
-        # outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+                             subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -310,16 +325,18 @@ def main():
             server_url, username, password, site_id, data_source_name, project = \
                 auth.tableau_publishing(datasource_type='PandT', data_source_name=table_name[1])
 
-            # publish_data(server_url, username, password, site_id, file_names_to_publish[table_name[1]], data_source_name, project, replace_data=True)
-        # outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
-        #                      subject='HDT-Data update complete', body='HDT-Data update complete')
+            publish_data(server_url, username, password, site_id, file_names_to_publish[table_name[1]],
+                         data_source_name, project, replace_data=True)
+        outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
+                             subject='Lever-Data update complete', body='Lever-Data update complete')
 
     except:
         error_result = "Error publishing tableau extracts. Unexpected Error: %s, %s"\
                        % (sys.exc_info()[0], sys.exc_info()[1])
         subject = 'Error with Tableau refresh script, %s' % basename(__file__)
         print error_result
-        # outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject, body=error_result)
+        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+                             subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
