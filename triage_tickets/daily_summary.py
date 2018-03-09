@@ -84,9 +84,10 @@ def main():
                                                'SUBJECT']
                                            )[['GROUP', 'TECHNICIAN', 'PRIORITY', 'WORKORDERID', 'SUBJECT']]
 
-        if date(2017, 10, 5) <= date.today() <= date(2017, 10, 13):
+        if date(2017, 10, 19) <= date.today() <= date(2017, 10, 19):
             to = ['theo.broxson@bazaarvoice.com',
-                  'daniel.parkhurst@bazaarvoice.com',
+                  'alex.newman@bazaarvoice.com',
+                  'ken.gibson@bazaarvoice.com',
                   'martin.valenzuela@bazaarvoice.com',
                   'dustin.dodson@bazaarvoice.com']
             print 'yes'
