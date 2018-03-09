@@ -27,7 +27,6 @@ import traceback
 
 def main():
     try:
-        testing_file_path = '/Users/martin.valenzuela/Box Sync/Documents/Austin Office/BizReqs/Lever_API_595101/'
         stage_ids = ['44015e45-bbf3-447c-8517-55fe4540acdc', 'offer']
 
         # Get stages from Lever
@@ -295,7 +294,6 @@ def main():
         for table in extract_name:
             # Package in to a tde file
             data_file = TDEAssembler(data_frame=table[0],
-                                     file_path=testing_file_path,
                                      extract_name=table[1])
             # Set values for publishing the data.
             file_names_to_publish[table[1]] = str(data_file)
