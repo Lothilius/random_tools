@@ -122,6 +122,7 @@ class Lever_Stages(object):
         :return: returns panda dataframe
         """
         stage_details = pd.DataFrame(stage_details)
+        # TODO-Check Time zone values are sent in
         stage_details = stage_details.applymap(Lever_Stages.convert_time)
 
         stage_details = correct_date_dtype(stage_details, date_time_format='%Y-%m-%d %H:%M:%S',

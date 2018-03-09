@@ -139,7 +139,8 @@ class Lever_Users(object):
         user_details = pd.DataFrame(user_details)
         user_details = user_details.applymap(Lever_Users.convert_time)
 
-        user_details = correct_date_dtype(user_details, date_time_format='%Y-%m-%d %H:%M:%S', date_time_columns={'createdAt'})
+        user_details = correct_date_dtype(user_details, date_time_format='%Y-%m-%d %H:%M:%S',
+                                          date_time_columns={'createdAt', 'deactivatedAt'})
 
 
         return user_details

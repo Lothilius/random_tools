@@ -9,6 +9,8 @@ import pandas as pd
 from Lever_Connection import LeverConnection as lhc
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from helper_scripts.misc_helpers.data_manipulation import create_feature_dataframe
+from helper_scripts.misc_helpers.data_manipulation import create_feature_vector_dataframe
+
 from lever.Candidates import Candidates
 from helper_scripts.misc_helpers.data_manipulation import expand_nested_fields_to_dataframe
 from time import time
@@ -161,11 +163,18 @@ class Offers(object):
         # offer_details.drop(labels=['content'], axis=1, inplace=True)
 
         # Convert extra fields nested in a dataframe column in to column with values
-        self.extra_fields = create_feature_dataframe(offer_details, "offer_id", "fields")
-        self.extra_fields = correct_date_dtype(self.extra_fields, date_time_format='%Y-%m-%d %H:%M:%S',
-                                               date_time_columns={'createdAt'})
+        feature_dataframe = create_feature_dataframe(offer_details, "offer_id", "fields")
+        feature_dataframe.drop(columns=0, axis=1, inplace=True)
+        feature_dataframe.drop(0, inplace=True)
+        feature_dataframe.fillna('-', inplace=True)
+        feature_dataframe = correct_date_dtype(feature_dataframe, date_time_format='%Y-%m-%d %H:%M:%S',
+                                               date_time_columns={'createdAt', "Today's date", 'Anticipated start date',
+                                                                  'End date (Intern/co-op or Contractor)',
+                                                                  'NHO date'})
 
-        # self.extra_fields = expand_nested_fields_to_dataframe(self.extra_fields, "id", "text", "value")
+        self.extra_fields = expand_nested_fields_to_dataframe(feature_dataframe, "offer_id", "text", "value")
+        self.extra_fields.rename(columns={'Type (new, rehire, internal, contractor/intern conversion)': 'Type'},
+                                 inplace=True)
 
         return offer_details
 
@@ -183,10 +192,13 @@ if __name__ == '__main__':
     # print len(candidates_with_offers)
     candidates_with_offers.drop_duplicates(inplace=True)
     candidates_with_offers = candidates_with_offers.tolist()
-    offers = Offers(candidate_id=candidates_with_offers)
+    offers = Offers(candidate_id=candidates_with_offers[:3])
 
     end = time()
     print (end - start) / 60
-    print offers.extra_fields.columns
     print offers.offer.columns
+    print offers.offer
+    print offers.extra_fields.columns
+    print offers.extra_fields
+    print offers.full_offer.columns
     print offers.full_offer

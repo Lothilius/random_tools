@@ -157,20 +157,20 @@ class TDEAssembler (object):
         else:
             value_type = column_type
 
-        try:
-            if column_number != 35:
-                value = datetime.strptime(str(value), '%Y-%m-%d %H:%M:%S')
-                value_type = 'datetime64[ns]'
-        except ValueError:
-            try:
-                if column_number != 35:
-                    value = datetime.strptime(str(value), '%Y-%m-%d')
-                    value_type = 'datetime64[ns]'
-            except ValueError:
-                try:
-                    value = datetime.strptime(str(value), '%Y-%m-%d %H:%M:%S')
-                except:
-                    pass
+        # try:
+        #     if column_number != 35 and column_name != 'headline':
+        #         value = datetime.strptime(str(value), '%Y-%m-%d %H:%M:%S')
+        #         value_type = 'datetime64[ns]'
+        # except ValueError:
+        #     try:
+        #         if column_number != 35:
+        #             value = datetime.strptime(str(value), '%Y-%m-%d')
+        #             value_type = 'datetime64[ns]'
+        #     except ValueError:
+        #         try:
+        #             value = datetime.strptime(str(value), '%Y-%m-%d %H:%M:%S')
+        #         except:
+        #             pass
         try:
             if value == None or str(value) == str(np.nan):
                 value = 'NA'
@@ -211,7 +211,8 @@ class TDEAssembler (object):
                 row_object.setString(column_number, str(value))
         except Exception as e:
             # Create pickle of the offending dataframe.
-            print "%s \n Value: %s, Value Type: %s, column name: %s, %s" % (e, value, value_type, column_name, type(value))
+            print "%s \n Value: %s, Value Type: %s, column name%s: %s, %s" % (e, value, value_type, column_number,
+                                                                              column_name, type(value))
             home = expanduser("~") + "/problem_dataframe"
             self.data_frame.to_pickle(path=home)
 

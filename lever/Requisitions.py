@@ -135,6 +135,7 @@ class Requisitions(object):
                                                  date_time_columns={'updatedAt', 'createdAt'})
 
         self.compensation_band = create_feature_dataframe(requisition_details, "requisition_id", "compensationBand")
+        self.compensation_band.drop(columns=0, axis=1, inplace=True)
         self.custom_fields = create_feature_dataframe(requisition_details, "requisition_id", "customFields")
 
         # Duplicate records by number of postings

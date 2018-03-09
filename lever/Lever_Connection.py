@@ -7,7 +7,7 @@ from bv_authenticate.Authentication import Authentication as auth
 import time
 import sys
 
-def wait(seconds=5):
+def wait(seconds=5.0):
     time.sleep(seconds)
 
 class LeverConnection(object):
@@ -28,9 +28,9 @@ class LeverConnection(object):
 
         if offset != '':
             # Query values go in this json structure
-            querystring = {"offset": offset, "limit": "100"}
+            querystring = {"includeDeactivated": "true", "offset": offset, "limit": "100"}
         else:
-            querystring = {"limit": "100"}
+            querystring = {"includeDeactivated": "true", "limit": "100"}
 
         # Header information
         headers = {

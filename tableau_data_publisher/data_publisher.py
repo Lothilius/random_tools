@@ -24,6 +24,7 @@ def publish_data(server_url, username, password, site_id, file_name,
     :param file_name:
     :param data_source_name:
     :param project:
+    :param replace_data:
     :return:
     """
     try:
