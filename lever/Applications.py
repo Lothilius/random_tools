@@ -90,7 +90,7 @@ class Applications(object):
 
     def get_all_applications(self, record_id=''):
         try:
-            # Gather the records for tall the submitted candidates
+            # Gather the records for all the submitted candidates
             lever_record_list, lever_records = self.gather_application()
             if lever_record_list != []:
                 try:
