@@ -112,7 +112,7 @@ class Postings(object):
                 elif len(str(unicode_series)) == 13:
                     unicode_series = str(unicode_series)[:10]
                 date_time_value = datetime.datetime.fromtimestamp(int(unicode_series)).strftime('%Y-%m-%d %H:%M:%S')
-                if int(date_time_value[:4]) > 2009:
+                if int(date_time_value[:4]) > 2004:
                     return date_time_value
                 else:
                     return str(unicode_series)
