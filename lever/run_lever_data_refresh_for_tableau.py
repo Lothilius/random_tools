@@ -88,7 +88,14 @@ def main():
         # Get candidates from Lever
         candidates = Candidates()
         candidate_stages_ids = candidates.stages[['candidate_id', 'toStageId']]
-        candidates_full = candidates.full_candidates
+        candidates_full = candidates.full_candidates[['applications', 'archived', 'createdAt',
+                                                      'emails', 'followers', 'headline', 'candidate_id',
+                                                      'lastAdvancedAt', 'lastInteractionAt', 'links', 'location',
+                                                      'name', 'origin', 'owner', 'phones', 'snoozedUntil',
+                                                      'sources', 'stage', 'stageChanges', 'tags', 'urls',
+                                                      'archivedAt', 'reason', 'applications_as_feature_column',
+                                                      'toStageId', 'toStageIndex', 'updatedAt', 'userId']]
+
         # Swap out if values with Label
         candidates_full['reason'] = candidates_full['reason'].apply(lambda x: stage_and_archive_reasons.loc[x])
         candidates_full['stage'] = candidates_full['stage'].apply(lambda x: stage_and_archive_reasons.loc[x])
@@ -287,7 +294,8 @@ def main():
                         [offers_full, 'Lever_Offers'],
                         [archive_reasons, 'Lever_Archieve_Reasons'],
                         [candidates_with_offers, 'Lever_Candidates_with_Offers_Posts'],
-                        [requisitions_for_heatmap, 'Lever_Requisitions_with_Candidates_data_for_Heatmap']]
+                        [requisitions_for_heatmap, 'Lever_Requisitions_with_Candidates_data_for_Heatmap']
+                        ]
 
         file_names_to_publish = {}
 
