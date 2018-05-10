@@ -88,7 +88,7 @@ def main():
         # Get candidates from Lever
         candidates = Candidates()
         candidate_stages_ids = candidates.stages[['candidate_id', 'toStageId']]
-        candidates_full = candidates.full_candidates[['applications', 'archived', 'createdAt',
+        candidates_full_columns = candidates.full_candidates[['applications', 'archived', 'createdAt',
                                                       'emails', 'followers', 'headline', 'candidate_id',
                                                       'lastAdvancedAt', 'lastInteractionAt', 'links', 'location',
                                                       'name', 'origin', 'owner', 'phones', 'snoozedUntil',
@@ -96,6 +96,7 @@ def main():
                                                       'archivedAt', 'reason', 'applications_as_feature_column',
                                                       'toStageId', 'toStageIndex', 'updatedAt', 'userId']]
 
+        candidates_full = candidates_full_columns.copy()
         # Swap out if values with Label
         candidates_full['reason'] = candidates_full['reason'].apply(lambda x: stage_and_archive_reasons.loc[x])
         candidates_full['stage'] = candidates_full['stage'].apply(lambda x: stage_and_archive_reasons.loc[x])
