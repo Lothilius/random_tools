@@ -3,7 +3,7 @@ __author__ = 'Lothilius'
 
 from sfdc.SFDC_Connection import SFDC_Connection
 import pandas as pd
-
+from datetime import date
 import json
 import sys
 
@@ -51,12 +51,13 @@ def alter_email(data_frame_row):
 
 def main():
     objects = ['Lead', 'Contact']
+    today = date.today().strftime('%Y-%m-%d')
     for each in objects:
         contact_data = refresh_object(each)
         contact_data.fillna(value='', inplace=True)
         contact_data = contact_data.apply(alter_email, axis=1)
 
-        contact_data.to_csv('/Users/martin.valenzuela/Desktop/SFDC_exports/%s_Refreshed_11_14_16_0_b.csv' % each,
+        contact_data.to_csv('/Users/martin.valenzuela/Desktop/SFDC_exports/%s_Refreshed_%s.csv' % (each, today),
                             index=False, encoding='utf-8')
         print contact_data
 
