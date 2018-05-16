@@ -28,6 +28,7 @@ class Candidates(object):
         self.stages = pd.DataFrame()
         self.last_candidate_id = record_id
         self.candidates = self.get_all_candidates(record_id)
+        print 'waiting for merge'
         self.full_candidates = pd.merge(self.candidates, self.stages, how='left', on='candidate_id')
 
     def __getitem__(self, item):
