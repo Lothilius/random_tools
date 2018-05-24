@@ -26,9 +26,14 @@ import traceback
 
 
 def main():
-    try:
-        stage_ids = ['44015e45-bbf3-447c-8517-55fe4540acdc', 'offer']
+    hired_and_offer_stage_ids = ['44015e45-bbf3-447c-8517-55fe4540acdc', 'offer']
 
+    today = datetime.today()
+    current_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    beginning_of_three_months_ago = current_month - pd.offsets.MonthBegin(3)
+    beginning_of_three_months_ago = beginning_of_three_months_ago.value / 1000000
+
+    try:
         # Get stages from Lever
         stages = Lever_Stages()
         stages = stages.stages
@@ -85,8 +90,9 @@ def main():
         give_notice.flow_the_light()
 
     try:
+
         # Get candidates from Lever
-        candidates = Candidates()
+        candidates = Candidates(date_limit=beginning_of_three_months_ago)
         candidate_stages_ids = candidates.stages[['candidate_id', 'toStageId']]
         candidates_full_columns = candidates.full_candidates[['applications', 'archived', 'createdAt',
                                                       'emails', 'followers', 'headline', 'candidate_id',
@@ -102,7 +108,8 @@ def main():
         candidates_full['stage'] = candidates_full['stage'].apply(lambda x: stage_and_archive_reasons.loc[x])
 
         # Narrow candidates to only those that reach stage_ids at some point for applications and offers
-        candidates_with_offers = candidate_stages_ids[candidate_stages_ids['toStageId'].isin(stage_ids)]['candidate_id']
+        candidates_with_offers = candidate_stages_ids[candidate_stages_ids['toStageId']
+            .isin(hired_and_offer_stage_ids)]['candidate_id']
         candidates_with_offers = candidates_with_offers.copy()
         candidates_with_offers.drop_duplicates(inplace=True)
         # Update stage tds with labels
@@ -147,7 +154,7 @@ def main():
         give_notice.flow_the_light()
 
     try:
-        # Get offers from Lever based on candidates with Stages in stage_ids
+        # Get offers from Lever based on candidates with Stages in hired_and_offer_stage_ids
         offers = Offers(candidate_id=candidates_with_offers)
         offers_full = offers.full_offer
         offers_full = correct_date_dtype(offers_full, date_time_format='%Y-%m-%d %H:%M:%S',
@@ -189,13 +196,13 @@ def main():
         # Left join candidates with offers
         candidates_and_offers = pd.merge(left=candidates_full,
                                          right=offers_full[['candidate_id', 'offer_id',
-                                                            'posting', 'Type']],
+                                                            'posting', 'Type', 'Commission amount']],
                                          how='left', on='candidate_id')
         candidates_with_offers = pd.merge(left=candidates_and_offers,
                                           right=postings[['post_id', 'team', 'location', 'owner', 'reqCode']],
                                           how='outer', left_on='posting', right_on='post_id',
                                           suffixes=('_candidate', '_posting'))
-        candidates_with_offers = correct_date_dtype(candidates_with_offers, date_time_format='%Y-%m-%d %H:%M:%S',
+        candidates_for_offers = correct_date_dtype(candidates_with_offers, date_time_format='%Y-%m-%d %H:%M:%S',
                                                     date_time_columns={'archivedAt', 'createdAt', 'updatedAt_posts',
                                                                        'createdAt_posts', 'lastAdvancedAt',
                                                                        'snoozedUntil', 'updatedAt',
@@ -290,13 +297,11 @@ def main():
                         [requisitions_full, 'Lever_Requisitions'],
                         [candidates_full, 'Lever_Candidates'],
                         [stages, 'Lever_Stages'],
-                        [applications, 'Lever_Applications'],
                         [requisition_fields, 'Lever_Req_Fields'],
                         [offers_full, 'Lever_Offers'],
                         [archive_reasons, 'Lever_Archieve_Reasons'],
-                        [candidates_with_offers, 'Lever_Candidates_with_Offers_Posts'],
-                        [requisitions_for_heatmap, 'Lever_Requisitions_with_Candidates_data_for_Heatmap']
-                        ]
+                        [candidates_for_offers, 'Lever_Candidates_with_Offers_Posts'],
+                        [requisitions_for_heatmap, 'Lever_Requisitions_with_Candidates_data_for_Heatmap']]
 
         file_names_to_publish = {}
 

@@ -7,6 +7,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
 from os.path import basename
+from os import environ
 import sys
 
 reload(sys)
@@ -134,8 +135,11 @@ class OutlookConnection(object):
         :param body: The message of the email
         :return:
         """
+        if environ['MY_ENVIRONMENT'] != 'prod':
+            subject = '--TESTING--' + subject
         to = 'helpdesk@bazaarvoice.com'
         OutlookConnection().send_email(to=to, cc=cc, bcc=bcc, subject=subject, body=body, html=html, files=files)
+
 
 
     @staticmethod
