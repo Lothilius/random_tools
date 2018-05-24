@@ -84,7 +84,7 @@ def main():
 
     try:
         # Get candidates from Lever
-        candidates = Candidates()
+        candidates = Candidates(date_limit=beginning_of_three_months_ago)
         candidate_stages_ids = candidates.stages[['candidate_id', 'toStageId', 'updatedAt']]
         candidates_full = candidates.full_candidates
         # Swap out if values with Label
@@ -102,15 +102,12 @@ def main():
             candidate_stages_ids['toStageId'].isin(funnel_stage_ids)]
         candidates_for_applications = candidates_for_applications.copy(deep=True)
         candidates_for_applications.drop_duplicates(inplace=True)
-        candidates_in_last_quarter = candidates_for_applications[
-            candidates_for_applications['updatedAt'] >= beginning_of_three_months_ago]['candidate_id']
-        candidates_in_last_quarter = candidates_in_last_quarter.copy()
-        candidates_in_last_quarter.drop_duplicates(inplace=True)
+
 
         # Update stage ids with labels
         candidates_full['toStageId'] = candidates_full['toStageId'].apply(lambda x: stage_and_archive_reasons.loc[x])
         # Split out a list for applications and offers
-        candidates_with_applications = candidates_in_last_quarter.tolist()
+        candidates_with_applications = candidates_for_applications['candidate_id'].tolist()
         candidates_with_offers = candidates_for_offers.tolist()
 
     except:
