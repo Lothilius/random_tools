@@ -3,7 +3,8 @@ bottle
 bs4
 pyprogressbar
 requests
-selenium==2.47
+selenium==2.47.3
+simple_salesforce
 pandas
 phue
 # Elasticsearch 6.x

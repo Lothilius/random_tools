@@ -43,7 +43,7 @@ class Notifier(object):
             if specific_light_bulbs is None:
                 specific_light_bulbs = self.specific_light_bulbs
             self.light_bridge.set_light(specific_light_bulbs, parameter={"effect": "none"})
-            self.light_bridge.set_light(specific_light_bulbs, parameter={"hue": 65280})
+            self.set_red(specific_light_bulbs)
             for each in range(blink_number):
                 self.light_bridge.set_light(specific_light_bulbs, parameter={"alert": "select"})
                 wait(.5)
@@ -120,4 +120,4 @@ class Notifier(object):
 
 if __name__ == '__main__':
     notify = Notifier()
-    notify.set_error_light(specific_light_bulbs="BizApps backlog")
+    notify.set_red(specific_light_bulbs="BizApps backlog")

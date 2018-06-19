@@ -11,6 +11,8 @@ from Lever_Connection import LeverConnection as lhc
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from helper_scripts.misc_helpers.data_manipulation import multiply_by_multiselect
 from helper_scripts.misc_helpers.data_manipulation import create_feature_dataframe
+from datetime import date
+from dateutil.parser import *
 from time import time
 from se_helpers.actions import wait
 
@@ -24,11 +26,18 @@ class Candidates(object):
 
     """
 
-    def __init__(self, record_id=''):
+    def __init__(self, record_id='', date_limit=''):
+        """
+        :param record_id:
+        :param datelimit:
+        """
+        self.date_limit = date_limit
         self.stages = pd.DataFrame()
         self.last_candidate_id = record_id
         self.candidates = self.get_all_candidates(record_id)
+        print 'waiting for merge'
         self.full_candidates = pd.merge(self.candidates, self.stages, how='left', on='candidate_id')
+
 
     def __getitem__(self, item):
         return self.candidates[item]
@@ -47,11 +56,14 @@ class Candidates(object):
 
         return candidate_list
 
-    def get_100_candidates(self, offset='', record_id=''):
+    def get_100_candidates(self, offset='', record_id='', **kwargs):
         """ Get lever records up to 100 at a time.
         :return: dict with lever requisition info {data, hasNext[, next]}
         """
-        url, querystring, headers = lhc.create_api_request(object='candidates', offset=offset, record_id=record_id)
+        url, querystring, headers = lhc.create_api_request(object='candidates',
+                                                           offset=offset,
+                                                           record_id=record_id,
+                                                           **kwargs)
 
         return lhc.fetch_from_lever(url, querystring, headers)
 
@@ -70,7 +82,7 @@ class Candidates(object):
     def get_all_candidates(self, record_id=''):
         try:
             # Get first 100 candidate from lever
-            lever_records = self.get_100_candidates(record_id=record_id)
+            lever_records = self.get_100_candidates(record_id=record_id, updated_at_start=self.date_limit)
             # print type(lever_records['data'])
             lever_record_list = lever_records['data']
 
@@ -169,7 +181,7 @@ class Candidates(object):
 if __name__ == '__main__':
     start = time()
     # try:
-    candis = Candidates()
+    candis = Candidates(date_limit='2018/04/01 12:00:00')
     end = time()
     print (end - start) / 60
     # print candis.candidates

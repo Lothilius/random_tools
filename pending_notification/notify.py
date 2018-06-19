@@ -8,11 +8,9 @@ from send_email.OutlookConnection import OutlookConnection as outlook
 import pandas as pd
 import sys
 
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 
-low_priority_message = """Please be aware that, due to capacity constraints on our team (Business Applications), we aren't able to respond to low priority issues at this time."""
+low_priority_message = """Please be aware that due to capacity constraints on our team (Business Applications)"""
 
 
 try:

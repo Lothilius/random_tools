@@ -6,6 +6,8 @@ import re
 import sys
 
 import pandas as pd
+from pyprogressbar import Bar
+
 from Lever_Connection import LeverConnection as lhc
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from helper_scripts.misc_helpers.data_manipulation import create_feature_dataframe
@@ -78,10 +80,12 @@ class Applications(object):
                 self.record_cursor = self.candidate_id.pop()
             else:
                 self.candidate_id = [self.candidate_id]
-                self.record_cursor = self.candidate_id.pop()
-            lever_records = self.get_the_application(offset=self.record_cursor)
-            lever_record_list = self.aggregate_applications(lever_record_list, lever_records['data'])
-            lever_record_list, lever_records = self.gather_application(lever_record_list, lever_records)
+
+            pbar = Bar(len(self.candidate_id))
+            for each in self.candidate_id:
+                lever_records = self.get_the_application(offset=each)
+                lever_record_list = self.aggregate_applications(lever_record_list, lever_records['data'])
+                pbar.passed()
         except IndexError:
             pass
 
@@ -149,7 +153,7 @@ class Applications(object):
         # application_details = application_details.applymap(TicketList.reduce_to_year)
         application_details = correct_date_dtype(application_details, date_time_format='%Y-%m-%d %H:%M:%S',
                                                  date_time_columns={'createdAt'})
-        # application_details.drop(labels=['content'], axis=1, inplace=True)
+        application_details['comments'] = application_details['comments'].replace('[^(\w|\s)]', ' ', regex=True)
 
         # Convert extra fields nested in a dataframe column in to column with values
         self.extra_fields = create_feature_dataframe(application_details, "application_id", "customQuestions")
@@ -172,10 +176,10 @@ if __name__ == '__main__':
     # candidates_with_applications = candidates[candidates['stage'].isin(stage_ids)]['candidate_id']
     # print len(candidates_with_applications)
     # candidates.to_pickle('/Users/martin.valenzuela/Box Sync/Documents/Austin Office/BizReqs/Lever_API_595101/Lever_Candidates_')
-    applications = Applications(candidate_id='9a5bca12-ef0e-42ba-bbb0-85e3155cc935')
+    applications = Applications(candidate_id='6ea79593-e5fc-43c3-bf6d-153668e4e870')
 
     end = time()
     print (end - start) / 60
     print applications.extra_fields.columns
     print applications.application.columns
-    print applications.full_application.columns
+    print applications.full_application.comments.iloc[0]

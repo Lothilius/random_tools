@@ -12,7 +12,7 @@ def wait(seconds=5.0):
 
 class LeverConnection(object):
     @staticmethod
-    def create_api_request(object='requisitions', offset='', record_id=''):
+    def create_api_request(object='requisitions', offset='', record_id='', **kwargs):
         """ Create the api request for Lever. At the moment very minimal
             but can be expanded in the future for creating more specific and different types of requests.
         :param object: This is the object name from the lever api
@@ -26,11 +26,16 @@ class LeverConnection(object):
         # Main Lever api URL
         url = "https://api.lever.co/v1/%s%s" % (object, record_id)
 
+        querystring = {"includeDeactivated": "true", "limit": "100"}
+
         if offset != '':
             # Query values go in this json structure
-            querystring = {"includeDeactivated": "true", "offset": offset, "limit": "100"}
+            querystring['offset'] = offset
         else:
-            querystring = {"includeDeactivated": "true", "limit": "100"}
+            pass
+
+        for key, value in kwargs.iteritems():
+            querystring[key] = value
 
         # Header information
         headers = {
@@ -79,5 +84,5 @@ class LeverConnection(object):
 
 if __name__ == '__main__':
     reqs = LeverConnection()
-    url, query, header = reqs.create_api_request()
+    url, query, header = reqs.create_api_request(updated_at_start='1520002556')
     reqs.fetch_from_lever(url, query, header)

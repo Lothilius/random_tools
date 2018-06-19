@@ -157,20 +157,6 @@ class TDEAssembler (object):
         else:
             value_type = column_type
 
-        # try:
-        #     if column_number != 35 and column_name != 'headline':
-        #         value = datetime.strptime(str(value), '%Y-%m-%d %H:%M:%S')
-        #         value_type = 'datetime64[ns]'
-        # except ValueError:
-        #     try:
-        #         if column_number != 35:
-        #             value = datetime.strptime(str(value), '%Y-%m-%d')
-        #             value_type = 'datetime64[ns]'
-        #     except ValueError:
-        #         try:
-        #             value = datetime.strptime(str(value), '%Y-%m-%d %H:%M:%S')
-        #         except:
-        #             pass
         try:
             if value == None or str(value) == str(np.nan):
                 value = 'NA'
@@ -208,7 +194,7 @@ class TDEAssembler (object):
                     frac = 0
                 row_object.setDateTime(column_number, year, month, day,	hour, min, sec, frac)
             else:
-                row_object.setString(column_number, str(value))
+                row_object.setString(column_number, unicode(str(value), "utf-8"))
         except Exception as e:
             # Create pickle of the offending dataframe.
             print "%s \n Value: %s, Value Type: %s, column name%s: %s, %s" % (e, value, value_type, column_number,

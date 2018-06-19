@@ -72,9 +72,12 @@ def concur_employee_deprovision(browser, employee_id='', employee_name='', termi
         alert = browser.switch_to_alert()
         alert.accept()
         wait(3)
-        browser.get('https://www.concursolutions.com/companyadmin/view_users.asp')
-        wait(4)
-        concur_employee_deprovision(browser, employee_id, employee_name, termination_date)
+        try:
+            concur_employee_deprovision(browser, employee_id, employee_name, termination_date)
+        except:
+            browser.get('https://www.concursolutions.com/companyadmin/view_users.asp')
+            wait(4)
+            concur_employee_deprovision(browser, employee_id, employee_name, termination_date)
     except:
          print employee_name, " Unexpected error 2:", sys.exc_info()[0]
 
@@ -239,7 +242,7 @@ def go_to_concur_user_page():
 
         return browser
     except:
-         print "Unexpected error login:", sys.exc_info()[0]
+         print "Unexpected error login:", sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]
 
 def go_to_sfdc_page(environment='', url_ending=''):
     """ Use as a quick way to deploy multiple windows in an environment.
@@ -357,7 +360,7 @@ def okta_fill_out_form(browser, first_name, last_name):
 
 def login_okta(browser, username, pw):
     #Write Username in Username TextBox
-    browser.find_element_by_name("username").send_keys(username)
+    browser.find_element_by_id("okta-signin-username").send_keys(username)
 
     #Write PW in Password TextBox
     browser.find_element_by_name("password").send_keys(pw)

@@ -171,9 +171,9 @@ class Ticket(object):
                   (self.hdt_id, re.sub('[^A-Za-z0-9\s]+', '', self.details['SUBJECT']))
         print subject
         reply_message = "Hi %s -<br><br>" \
-                        "Thanks for submitting a Helpdesk request. Please be aware that, due to capacity constraints on " \
-                        "our team (Business Applications), we aren\\'t able to respond to low priority issues at this time. If you " \
-                        "feel that this request has been inaccurately prioritized, please feel free to reply and state " \
+                        "Thanks for submitting a Helpdesk request. Please be aware that due to capacity constraints on " \
+                        "our team (Business Applications), low priority tickets may not receive immediate attention at this time. " \
+                        "If you feel that this request has been inaccurately prioritized, please feel free to reply and state " \
                         "the reason you\\'d like to place higher priority on a particular issue and we will definitely " \
                         "review your ticket and consider re-prioritizing." \
                         "<br><br>" \
