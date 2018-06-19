@@ -139,3 +139,5 @@ class Authentication(object):
     @staticmethod
     def aws_connect():
         aws_connector = AWS4Auth(environ['AWS_ACCESS_KEY'], environ['AWS_SECRET_KEY'], 'us-east-1', 'es')
+
+        return aws_connector
