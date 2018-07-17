@@ -26,7 +26,7 @@ class LeverConnection(object):
         # Main Lever api URL
         url = "https://api.lever.co/v1/%s%s" % (object, record_id)
 
-        querystring = {"includeDeactivated": "true", "limit": "100"}
+        querystring = {"includedeactivated": "true", "limit": "100"}
 
         if offset != '':
             # Query values go in this json structure
@@ -53,7 +53,7 @@ class LeverConnection(object):
         :return: Return a data frame of the
         """
         try:
-            wait(.1)
+            wait(.09)
             # print querystring
             # Create the request and capture the response.
             response = requests.request("GET", url, headers=headers, params=querystring)
@@ -65,14 +65,16 @@ class LeverConnection(object):
             # print lever_records['next']
         except AttributeError:
             error_result = "Unexpected error 2: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-
+            print "start errors"
             print error_result
-            print lever_records
-            # wait(3)
+            print querystring
+            print response.content
+            # wait(2)
             # LeverConnection.fetch_from_helpdesk(url, querystring, headers)
 
         # print(json.dumps(lever_records["operation"]["Details"], indent=4))
         try:
+            response.close()
             return lever_records
         except:
             error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
