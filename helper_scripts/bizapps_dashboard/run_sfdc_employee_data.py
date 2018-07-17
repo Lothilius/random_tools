@@ -27,7 +27,12 @@ def main():
         server_url, username, password, site_id, data_source_name, project = \
             auth.tableau_publishing(datasource_type='BizApps', data_source_name='SFDC_User_Permissions')
 
+        # Publish to BizTech
         publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
+        # Publish to the Default Tableau page.
+        publish_data(server_url, username, password, '', file_name,
+                     'SFDC_User_Permissions', 'Default', replace_data=True)
+
         outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
                            subject='SFDC_User_data compiling complete', body='SFDC_User_data compiling complete')
 
