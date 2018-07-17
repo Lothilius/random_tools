@@ -48,6 +48,9 @@ def publish_data(server_url, username, password, site_id, file_name,
 
         # Clean up Tableau Server API
         ServerAPI.cleanup();
+        if site_id == '':
+            site_id = 'Default'
+        print "Published %s to %s in %s" % (data_source_name, project, site_id)
 
     except TableauException, e:
         # Handle the exception depending on the type of exception received
