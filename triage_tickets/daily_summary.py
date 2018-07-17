@@ -92,9 +92,7 @@ def main():
                   'dustin.dodson@bazaarvoice.com']
             print 'yes'
         else:
-            to = ['martin.valenzuela@bazaarvoice.com',
-                  'theo.broxson@bazaarvoice.com',
-                  'dustin.dodson@bazaarvoice.com']
+            to = ['BizAppsTriage@bazaarvoice.com']
             print 'no'
 
         subject = 'Triage summary %s' % str(date.today())
