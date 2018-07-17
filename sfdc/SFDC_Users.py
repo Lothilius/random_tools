@@ -12,8 +12,8 @@ pd.set_option('display.width', 195)
 class SFDC_Users(object):
     """ Users from SFDC. When called, active internal users are retrieved from SFDC in a panda dataframe.
     """
-    def __init__(self, include_licenses=False, include_permissions=False):
-        self.users = self.get_user_list()
+    def __init__(self, user_type='Standard', include_licenses=False, include_permissions=False):
+        self.users = self.get_user_list(user_type)
         self.licenses = ''
         self.permissions = ''
         if include_licenses:
@@ -28,7 +28,7 @@ class SFDC_Users(object):
     def users_list(self):
         return self.users
 
-    def get_user_list(self):
+    def get_user_list(self, user_type='Standard'):
         """ Get Active standard user list from Salesforce.
         :return: panda Dataframe of the users with the Username as the Email!!! ---Warning----
         """
@@ -36,7 +36,7 @@ class SFDC_Users(object):
         results = sf.query_all("SELECT Id, Username, Email, Name, Employee_ID__c, Role__c, Profile.Name, ForecastEnabled, "
                                "UserPermissionsKnowledgeUser, UserPermissionsLiveAgentUser, "
                                "UserPermissionsMarketingUser, UserPermissionsSFContentUser, "
-                               "UserPermissionsSupportUser, isActive  FROM User Where UserType = 'Standard'")
+                               "UserPermissionsSupportUser, isActive  FROM User Where UserType = '%s'" % user_type)
         results_panda = self.flaten_dictionary(results_od=results['records'])
         results_panda.rename(columns={'Id': 'UserId', 'Name': 'Profile_Name', 'Email': 'true_email',
                                       'Username': 'Email', }, inplace=True)

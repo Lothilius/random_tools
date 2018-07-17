@@ -83,15 +83,16 @@ class Authentication(object):
         :param data_source_name:
         :return:
         """
+        username, password = Authentication.tableau__credentials()
+
         if environ['MY_ENVIRONMENT'] == 'prod':
             server_url = 'https://tableauserver.bazaarvoice.com/'
         else:
-            server_url = 'https://tableau.bazaarvoice.com/'
+            server_url = 'https://tableauserver.bazaarvoice.com/'
         if datasource_type == 'BizApps':
             project = 'Business Applications'
             site_id = 'BizTech'
             # Set values for publishing the data.
-            username, password = Authentication.tableau__credentials()
             # TODO - Move most of this trash to the publish data module
             if environ['MY_ENVIRONMENT'] == 'prod' and data_source_name == 'Helpdesk-Tickets':
                 data_source_name = 'Helpdesk-Tickets'
@@ -103,7 +104,6 @@ class Authentication(object):
             project = 'EUS'
             site_id = 'BizTech'
             # Set values for publishing the data.
-            username, password = Authentication.tableau__credentials()
             # TODO - Move most of this trash to the publish data module
             if environ['MY_ENVIRONMENT'] == 'prod' and data_source_name == 'EUS-Helpdesk-Tickets':
                 data_source_name = 'EUS-Helpdesk-Tickets'
@@ -115,7 +115,6 @@ class Authentication(object):
             project = 'Recruiting'
             site_id = 'PeopleandTalent'
             # Set values for publishing the data.
-            username, password = Authentication.tableau__credentials()
             # TODO - Move most of this trash to the publish data module
             if environ['MY_ENVIRONMENT'] == 'prod' and data_source_name != 'New_Extract':
                 pass
@@ -123,7 +122,6 @@ class Authentication(object):
                 data_source_name = 'PandT-test'
         else:
             # Set values for publishing the data.
-            username, password = Authentication.tableau__credentials()
             project = ''
             site_id = ''
 

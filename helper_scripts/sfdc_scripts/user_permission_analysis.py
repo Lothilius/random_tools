@@ -4,7 +4,7 @@ from sfdc.SFDC_Users import SFDC_Users
 from helper_scripts.misc_helpers.data_manipulation import create_feature_vector_dataframe
 import pandas as pd
 from okta.Okta_Application import Okta_Application
-from helper_scripts.notify_helpers import alert_homer, alert_the_light
+from helper_scripts.notify_helpers import Notifier
 import scipy.stats as s
 
 
@@ -90,14 +90,14 @@ class SFDC_User_Analysis(object):
         positive_columns = sum_df[sum_df == group_size]
         return positive_columns
 
-    def get_peer_group_by_manager(self, manager_name='dave.griffiths@bazaarvoice.com'):
+    def get_peer_group_by_manager(self, manager_name='inga.strimaitiene@bazaarvoice.com'):
         # Get nearest group according to manager
         nearest_group = self.full_user_vector[self.full_user_vector['managerUserName'].str.lower() == manager_name.lower()]
         # nearest_group = full_clean[full_clean['businessTitle'].str.contains('Client Success Director')]
 
         return nearest_group
 
-    def get_permissions_by_manager_peer_group(self, manager_name='dave.griffiths@bazaarvoice.com'):
+    def get_permissions_by_manager_peer_group(self, manager_name='inga.strimaitiene@bazaarvoice.com'):
         """
         :return:
         """
@@ -167,13 +167,14 @@ class SFDC_User_Analysis(object):
         work_day['email'] = work_day['email'].map(lambda x: x.lower())
 
         # print '---------------new DF---------------\n'
-        #  Merge the workday title and manager data with the SFDC permissions
+        # Merge the workday title and manager data with the SFDC permissions
         full_clean = cleaned_df.merge(work_day, how='left', left_on='Email', right_on='email')
         # print full_clean['managerUserName']
         full_clean = full_clean[~pd.isnull(full_clean['businessTitle'])]
 
-        alert_the_light()
-        alert_homer()
+        notify = Notifier()
+        notify.alert_the_light()
+        notify.alert_homer()
 
         return full_clean
 
@@ -182,4 +183,4 @@ if __name__ == '__main__':
     use_list = SFDC_User_Analysis()
     # print use_list
 
-    print use_list.get_permissions_by_manager_peer_group()
+    print use_list.get_permissions_by_manager_peer_group(manager_name='jason.tosney@bazaarvoice.com')
