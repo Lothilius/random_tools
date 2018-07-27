@@ -9,13 +9,12 @@ import pandas as pd
 from Lever_Connection import LeverConnection as lhc
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from helper_scripts.misc_helpers.data_manipulation import create_feature_dataframe
-from helper_scripts.misc_helpers.data_manipulation import create_feature_vector_dataframe
 
 from lever.Candidates import Candidates
 from helper_scripts.misc_helpers.data_manipulation import expand_nested_fields_to_dataframe
 from time import time
-import collections
-from Candidates import Candidates
+
+import traceback
 
 
 
@@ -63,15 +62,13 @@ class Offers(object):
 
         return offer_list
 
-    def get_the_offer(self, offset='', record_id=''):
+    def get_the_offer(self, record_id=''):
         """ Get lever records up to 100 at a time.
         :return: dict with lever offer info {data, hasNext[, next]}
         """
-        url, querystring, headers = lhc.create_api_request(object='candidates/%s/offers' % (offset),
-                                                           record_id=record_id)
+        url, querystring, headers = lhc.create_api_request(object='candidates/%s/offers' % record_id)
 
         return lhc.fetch_from_lever(url, querystring, headers)
-
 
     def gather_offer(self, lever_record_list='', lever_records=''):
         try:
@@ -83,7 +80,7 @@ class Offers(object):
             else:
                 self.candidate_id = [self.candidate_id]
                 self.record_cursor = self.candidate_id.pop()
-            lever_records = self.get_the_offer(offset=self.record_cursor)
+            lever_records = self.get_the_offer(record_id=self.record_cursor)
             if lever_records['data'] == []:
                 candidates_id = self.record_cursor
                 lever_records['data'] = [{'id': '-', 'candidate_id': candidates_id, 'fields': ['']}]
@@ -93,8 +90,19 @@ class Offers(object):
             if len(self.candidate_id) != 0:
                 lever_record_list, lever_records = self.gather_offer(lever_record_list, lever_records)
         except IndexError:
-            error_result = "Unexpected error 1go: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback)
+            error_result = "Unexpected error 1go: %s, %s, %s" % \
+                           (sys.exc_info()[0], sys.exc_info()[1], traceback.format_exc())
             print error_result
+        except KeyError:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback)
+            error_result = "Unexpected error 2gp_ke: %s, %s, %s" % \
+                           (sys.exc_info()[0], sys.exc_info()[1], traceback.format_exc())
+            print error_result
+            print lever_records
+
 
         return lever_record_list, lever_records
 
@@ -112,7 +120,10 @@ class Offers(object):
                     # print lever_df
                     return lever_df
                 except:
-                    error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    traceback.print_exception(exc_type, exc_value, exc_traceback)
+                    error_result = "Unexpected Error: %s, %s, %s" \
+                                   % (exc_type, exc_value, traceback.format_exc())
                     print error_result
             else:
                 pass
@@ -121,7 +132,10 @@ class Offers(object):
 
 
         except EOFError:
-            error_result = "Unexpected error 1TL: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback)
+            error_result = "Unexpected Error: %s, %s, %s" \
+                           % (exc_type, exc_value, traceback.format_exc())
             # TODO -Fix this issue so that error_message is populated!
             print error_result
 
@@ -164,16 +178,19 @@ class Offers(object):
 
         # Convert extra fields nested in a dataframe column in to column with values
         feature_dataframe = create_feature_dataframe(offer_details, "offer_id", "fields")
-        feature_dataframe.drop(columns=0, axis=1, inplace=True)
-        feature_dataframe.drop(0, inplace=True)
+        # print feature_dataframe
+        # feature_dataframe.drop(columns=0, axis=1, inplace=True)
+        # feature_dataframe.drop(0, inplace=True)
         feature_dataframe.fillna('-', inplace=True)
         feature_dataframe = correct_date_dtype(feature_dataframe, date_time_format='%Y-%m-%d %H:%M:%S',
                                                date_time_columns={'createdAt', "Today's date", 'Anticipated start date',
                                                                   'End date (Intern/co-op or Contractor)',
                                                                   'NHO date'})
-
-        self.extra_fields = expand_nested_fields_to_dataframe(feature_dataframe, "offer_id", "text", "value")
-        self.extra_fields.rename(columns={'Type (new, rehire, internal, contractor/intern conversion)': 'Type'},
+        if feature_dataframe.empty:
+            pass
+        else:
+            self.extra_fields = expand_nested_fields_to_dataframe(feature_dataframe, "offer_id", "text", "value")
+            self.extra_fields.rename(columns={'Type (new, rehire, internal, contractor/intern conversion)': 'Type'},
                                  inplace=True)
 
         return offer_details
@@ -183,20 +200,23 @@ if __name__ == '__main__':
     start = time()
     # try:
     stage_ids = ['44015e45-bbf3-447c-8517-55fe4540acdc', 'offer']
-    # candidates = [u'eebcaa40-3fb7-40f8-b699-1068f9311d59', u'70b35a0c-30c3-445c-b477-caac7b69a1ce', u'35940644-7c21-472b-8645-9bd015f5d266', u'44a7b15e-9ac0-4939-81a8-b749409d9967']
-    # candidates = candidates.candidates
-    candidates = Candidates()
+    today = datetime.datetime.today()
+    current_month = today.replace(day=31, hour=0, minute=0, second=0, microsecond=0)
+    beginning_of_three_months_ago = current_month - pd.offsets.MonthBegin(1)
+    beginning_of_three_months_ago = beginning_of_three_months_ago.value / 1000000
+
+    candidates = Candidates(date_limit=beginning_of_three_months_ago)
     candidate_stages_ids = candidates.stages[['candidate_id', 'toStageId']]
     candidates_with_offers = candidate_stages_ids[candidate_stages_ids['toStageId'].isin(stage_ids)]['candidate_id']
     candidates_with_offers = candidates_with_offers.copy()
     # print len(candidates_with_offers)
     candidates_with_offers.drop_duplicates(inplace=True)
     candidates_with_offers = candidates_with_offers.tolist()
-    offers = Offers(candidate_id=candidates_with_offers[:3])
+    offers = Offers(candidate_id=candidates_with_offers)
 
     end = time()
     print (end - start) / 60
-    print offers.offer.columns
+    # print offers.offer.columns
     print offers.offer
     print offers.extra_fields.columns
     print offers.extra_fields

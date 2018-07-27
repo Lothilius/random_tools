@@ -70,7 +70,7 @@ class Candidates(object):
     def gather_candidates(self, lever_record_list, lever_records):
         try:
             self.record_cursor = lever_records['next']
-            lever_records = self.get_100_candidates(offset=self.record_cursor)
+            lever_records = self.get_100_candidates(offset=self.record_cursor, updated_at_start=self.date_limit)
             lever_record_list = self.aggregate_candidates(lever_record_list, lever_records['data'])
 
             lever_record_list, lever_records = self.gather_candidates(lever_record_list, lever_records)
@@ -181,7 +181,7 @@ class Candidates(object):
 if __name__ == '__main__':
     start = time()
     # try:
-    candis = Candidates(date_limit='2018/04/01 12:00:00')
+    candis = Candidates(date_limit='1522540800000')
     end = time()
     print (end - start) / 60
     # print candis.candidates
