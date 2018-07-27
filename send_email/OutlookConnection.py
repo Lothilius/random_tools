@@ -129,15 +129,17 @@ class OutlookConnection(object):
             print error_result
 
     @staticmethod
-    def create_helpdesk_ticket(subject, body, cc='', bcc='', html='', files=''):
+    def create_helpdesk_ticket(subject, body, cc='', bcc='', html='', files='', send_test=''):
         """ Use to quickly email Helpdesk
         :param subject: The subject of the email
         :param body: The message of the email
         :return:
         """
-        if environ['MY_ENVIRONMENT'] != 'prod':
+        if environ['MY_ENVIRONMENT'] != 'prod' and send_test != '':
             subject = '--TESTING--' + subject
-        to = 'helpdesk@bazaarvoice.com'
+            to = 'martin.valenzuela@bazaarvoice.com'
+        else:
+            to = 'helpdesk@bazaarvoice.com'
         OutlookConnection().send_email(to=to, cc=cc, bcc=bcc, subject=subject, body=body, html=html, files=files)
 
 
