@@ -6,6 +6,7 @@ import json
 from bv_authenticate.Authentication import Authentication as auth
 import time
 import sys
+import traceback
 
 def wait(seconds=5.0):
     time.sleep(seconds)
@@ -53,24 +54,45 @@ class LeverConnection(object):
         :return: Return a data frame of the
         """
         try:
-            wait(.09)
+            wait(.11)
             # print querystring
             # Create the request and capture the response.
             response = requests.request("GET", url, headers=headers, params=querystring)
+            # print response.status_code
+            # print response.url
+            # print response.content
+            # print type(response.text)
+            # print "before"
 
-            # print response.txt
             # Load the response to the request as a json object.
-            lever_records = json.loads(response.text.encode(encoding='utf-8'))
+            lever_records = json.loads(response.text.encode(encoding='utf-8', errors="replace"))
+
+            # print "after"
             # print(json.dumps(lever_records, indent=4))
             # print lever_records['next']
-        except AttributeError:
-            error_result = "Unexpected error 2: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-            print "start errors"
+        # except ValueError:
+        #     exc_type, exc_value, exc_traceback = sys.exc_info()
+        #     traceback.print_exception(exc_type, exc_value, exc_traceback)
+        #     error_result = "Unexpected Error: %s, %s, %s" \
+        #                    % (exc_type, exc_value, traceback.format_exc())
+        #     print error_result
+        #     print querystring
+        #     print response.content
+            # wait(2)
+            # LeverConnection.fetch_from_helpdesk(url, querystring, headers)
+        except:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback)
+            error_result = "Unexpected Error: %s, %s, %s" \
+                           % (exc_type, exc_value, traceback.format_exc())
             print error_result
             print querystring
             print response.content
-            # wait(2)
-            # LeverConnection.fetch_from_helpdesk(url, querystring, headers)
+            if response.status_code != 200:
+                wait(3)
+                print "Encountered error code: %s - %s" % (response.status_code, error_result)
+                response.close()
+                response = requests.request("GET", url, headers=headers, params=querystring)
 
         # print(json.dumps(lever_records["operation"]["Details"], indent=4))
         try:
@@ -79,7 +101,6 @@ class LeverConnection(object):
         except:
             error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
-            print lever_records
             # wait(2)
             # LeverConnection.fetch_from_helpdesk(url, querystring, headers)
 

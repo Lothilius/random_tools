@@ -81,7 +81,7 @@ def main():
         print error_result
 
         # TODO- Log errors in to table then send only one email to HD
-        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+        outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
                              subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
@@ -115,7 +115,6 @@ def main():
         # Update stage tds with labels
         candidates_full['toStageId'] = candidates_full['toStageId'].apply(lambda x: stage_and_archive_reasons.loc[x])
         # Split out a list for applications and offers
-        candidates_with_applications = candidates_with_offers.tolist()
         candidates_with_offers = candidates_with_offers.tolist()
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -124,28 +123,7 @@ def main():
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather candidates %s' % basename(__file__)
         print error_result
-        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
-                             subject=subject, body=error_result)
-        give_notice = Notifier()
-        give_notice.set_red()
-        give_notice.wait(3)
-        give_notice.set_error_light()
-        give_notice.flow_the_light()
-
-    try:
-        # Get applications from Lever based on candidates having been in stages that are in stage_ids
-        applications = Applications(candidate_id=candidates_with_applications)
-        applications = applications.full_application
-        applications = correct_date_dtype(applications, date_time_format='%Y-%m-%d %H:%M:%S',
-                                          date_time_columns={'createdAt_application', 'createdAt__fields'})
-    except:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        traceback.print_exception(exc_type, exc_value, exc_traceback)
-        error_result = "Unexpected Error: %s, %s, %s"\
-                       % (exc_type, exc_value, traceback.format_exc())
-        subject = 'Error with Tableau refresh script, Failed to gather applications%s' % basename(__file__)
-        print error_result
-        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+        outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
                              subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
@@ -166,7 +144,7 @@ def main():
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather offers %s' % basename(__file__)
         print error_result
-        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+        outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
                              subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
@@ -185,7 +163,7 @@ def main():
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather requisitions %s' % basename(__file__)
         print error_result
-        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+        outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
                              subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
@@ -214,7 +192,7 @@ def main():
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather candidates wiht offers %s' % basename(__file__)
         print error_result
-        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+        outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
                              subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
@@ -281,7 +259,7 @@ def main():
         subject = 'Error with Tableau refresh script, Failed to gather Requisitions for Heatmaps %s' \
                   % basename(__file__)
         print error_result
-        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+        outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
                              subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
@@ -320,7 +298,7 @@ def main():
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to create tableau extract, %s' % basename(__file__)
         print error_result
-        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+        outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
                              subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
@@ -347,7 +325,7 @@ def main():
                        % (sys.exc_info()[0], sys.exc_info()[1])
         subject = 'Error with Tableau refresh script, %s' % basename(__file__)
         print error_result
-        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+        outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
                              subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()

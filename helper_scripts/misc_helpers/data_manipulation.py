@@ -34,11 +34,16 @@ def array_from_file(filename):
 
 def correct_datetime_format(value):
     try:
+        value = value.replace('T', ' ')
+    except:
+        pass
+    try:
         # print value, type(value)
         value = parse(value).strftime('%Y-%m-%d %H:%M:%S')
         return value
     except:
         return value
+
 
 
 # Set Date columns as the datetime dtype
@@ -129,6 +134,15 @@ def create_feature_dataframe(df, id_column, feature_column):
     return feature_df
 
 
+def aggregate_for_table_pivot(value_list):
+    for i, values in enumerate(value_list):
+        if isinstance(values, (int, long, float)):
+            value_list[i] = str(values)
+        else:
+            value_list[i] = values.encode("utf-8", errors="replace")
+    return ', '.join(value_list)
+
+
 def expand_nested_fields_to_dataframe(df, id_column, feature_column, value_column):
     """Create a dataframe of the id and feature column of a data frame.
     The elements in the feature column are expected to contain a dict.
@@ -141,8 +155,10 @@ def expand_nested_fields_to_dataframe(df, id_column, feature_column, value_colum
     # Create Copy of dataframe for changes
     content = df[[feature_column, value_column, id_column]].copy(deep=True)
     content.fillna('-', inplace=True)
+
+    # Create a pivoted table of values in columns form.
     feature_df = pd.pivot_table(content, index=id_column, columns=feature_column, values=value_column, fill_value='-',
-                                aggfunc=lambda x: ', '.join(str(v) for v in x))
+                                aggfunc=aggregate_for_table_pivot)
     feature_df.reset_index(inplace=True)
     feature_df.fillna('-', inplace=True)
 
@@ -157,6 +173,15 @@ def multiply_by_multiselect(dataframe, feature_index_column, feature_column):
     dataframe_reformated = dataframe.join(dataframe_reformated)
     # dataframe_reformated.name = feature_column
     return dataframe_reformated
+
+
+def convert_sfdc_datetime_to_datetime(the_datetime):
+    if the_datetime is not None:
+        the_datetime = the_datetime.split('T')
+        the_datetime = dt.datetime.strptime(the_datetime[0], '%Y-%m-%d').date()
+        return the_datetime
+    else:
+        return dt.datetime.strptime('2000-01-01', '%Y-%m-%d').date()
 
 
 if __name__ == '__main__':
