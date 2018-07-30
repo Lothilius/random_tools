@@ -92,7 +92,7 @@ class LeverConnection(object):
                 wait(3)
                 print "Encountered error code: %s - %s" % (response.status_code, error_result)
                 response.close()
-                response = requests.request("GET", url, headers=headers, params=querystring)
+                LeverConnection.fetch_from_lever(url, querystring, headers)
 
         # print(json.dumps(lever_records["operation"]["Details"], indent=4))
         try:

@@ -185,7 +185,9 @@ class Offers(object):
         feature_dataframe = correct_date_dtype(feature_dataframe, date_time_format='%Y-%m-%d %H:%M:%S',
                                                date_time_columns={'createdAt', "Today's date", 'Anticipated start date',
                                                                   'End date (Intern/co-op or Contractor)',
-                                                                  'NHO date'})
+                                                                  'NHO date', 'Vesting commencement (Date)',
+                                                                  'Vesting commencement date (MM/DD/YYYY)',
+                                                                  "Today's date", 'Anticipated start date', 'NHO date'})
         if feature_dataframe.empty:
             pass
         else:
