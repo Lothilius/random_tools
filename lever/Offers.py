@@ -126,7 +126,7 @@ class Offers(object):
                                    % (exc_type, exc_value, traceback.format_exc())
                     print error_result
             else:
-                pass
+                print 'Offers List empty'
                 # self.offer = pd.DataFrame(data=[{'offer_id': '-', 'candidate_id': self.candidate_id}])
 
 

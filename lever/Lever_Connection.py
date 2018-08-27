@@ -82,7 +82,6 @@ class LeverConnection(object):
             # LeverConnection.fetch_from_helpdesk(url, querystring, headers)
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            traceback.print_exception(exc_type, exc_value, exc_traceback)
             error_result = "Unexpected Error: %s, %s, %s" \
                            % (exc_type, exc_value, traceback.format_exc())
             print error_result
@@ -92,7 +91,7 @@ class LeverConnection(object):
                 wait(3)
                 print "Encountered error code: %s - %s" % (response.status_code, error_result)
                 response.close()
-                LeverConnection.fetch_from_lever(url, querystring, headers)
+                lever_records = LeverConnection.fetch_from_lever(url, querystring, headers)
 
         # print(json.dumps(lever_records["operation"]["Details"], indent=4))
         try:
