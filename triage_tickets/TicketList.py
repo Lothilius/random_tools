@@ -194,7 +194,7 @@ class TicketList(object):
 if __name__ == '__main__':
     start = time()
     try:
-        tickets = TicketList('Testing-HDT', with_detail=False)
+        tickets = TicketList('Testing-HDT', with_detail=True)
     except AttributeError as e:
         tickets = e.args[0]
 
