@@ -37,7 +37,7 @@ class HelpdeskConnection(object):
         return url, querystring, headers
 
     @staticmethod
-    def fetch_from_helpdesk(url, querystring, headers):
+    def fetch_from_helpdesk(url, querystring, headers, attempts=3):
         """ Makes the actual call to the help desk server.
         :param url: Send in the base url for the REST Call
         :param querystring:
@@ -53,24 +53,39 @@ class HelpdeskConnection(object):
             # Load the response to the request as a json object.
             helpdesk_tickets = json.loads(response.text.encode(encoding='utf-8'))
         except AttributeError:
+            attempts -= 1
             error_result = "Unexpected error 2: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
 
             print error_result
             print helpdesk_tickets["operation"]
             wait(3)
-            HelpdeskConnection.fetch_from_helpdesk(url, querystring, headers)
+            if attempts >= 0:
+                helpdesk_tickets = HelpdeskConnection.fetch_from_helpdesk(url, querystring, headers, attempts=attempts)
+                return helpdesk_tickets
+        except requests.exceptions.ConnectionError:
+            attempts -= 1
+            print attempts
+            error_result = "Unexpected error 3: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
+
+            print error_result
+            wait(3)
+            if attempts >= 0:
+                helpdesk_tickets = HelpdeskConnection.fetch_from_helpdesk(url, querystring, headers, attempts=attempts)
+
+                return helpdesk_tickets
 
         # print(json.dumps(helpdesk_tickets["operation"]["Details"], indent=4))
         try:
             return helpdesk_tickets["operation"]["Details"]
         except KeyError:
+            print helpdesk_tickets.keys()
             return helpdesk_tickets["operation"]["result"]
         except:
             error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
-            print helpdesk_tickets["operation"]
+            # print helpdesk_tickets["operation"]
             wait(2)
-            HelpdeskConnection.fetch_from_helpdesk(url, querystring, headers)
+            # helpdesk_tickets = HelpdeskConnection.fetch_from_helpdesk(url, querystring, headers)
 
     # @staticmethod
     # def get_view_id(view_name=''):

@@ -195,11 +195,11 @@ class Ticket(object):
         return get_conversation_detail
 
 if __name__ == '__main__':
-    ticket = Ticket()
-    data = {'REQUESTEREMAIL':'Martin.Valenzuela@bazaarvoice.com',
-            'REQUESTER':'MartinValenzuela',
-            'DESCRIPTION':'System- SFDC Time frame- Tomorrow Some description that is long ',
-            'SUBJECT':'It hurts'}
-    ticket.create_ticket(data)
+    ticket = Ticket(hdt_id='49912')
+    # data = {'REQUESTEREMAIL':'Martin.Valenzuela@bazaarvoice.com',
+    #         'REQUESTER':'MartinValenzuela',
+    #         'DESCRIPTION':'System- SFDC Time frame- Tomorrow Some description that is long ',
+    #         'SUBJECT':'It hurts'}
+    # ticket.create_ticket(data)
     print ticket.details['WORKORDERID']
 
