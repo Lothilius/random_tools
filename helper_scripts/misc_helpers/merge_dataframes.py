@@ -7,7 +7,7 @@ import sys
 
 import pandas as pd
 
-from helper_scripts.misc_helpers import correct_date_dtype
+from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from helper_scripts.notify_helpers import *
 
 pd.set_option('display.width', 250)
