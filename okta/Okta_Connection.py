@@ -19,6 +19,8 @@ class Okta_Connection(object):
                       "filter": filter}
         if self.query['filter'] == '':
             del self.query['filter']
+        if self.query['limit'] == '':
+            del self.query['limit']
         self.api_url = 'https://bazaarvoice.okta.com/api/v1/' + self.primary_object
 
     def get_url(self):
@@ -34,29 +36,35 @@ class Okta_Connection(object):
     def set_url(self, url):
         self.api_url = url
 
-    def query_okta(self):
+    def query_okta(self, query_type='GET'):
         # Send the request
-        response = requests.request("GET", url=self.api_url, headers=self.headers, params=self.query)
-        data = response.text
-        # Place response in to a json object
-        okta_json = json.loads(data)
-        if 'next' in response.links.keys():
-            next_page = response.links['next']['url']
-            self.set_url(next_page)
-            self.query = ''
-            # print okta_json
-            okta_json.extend(self.query_okta())
+        response = requests.request(query_type, url=self.api_url, headers=self.headers, params=self.query)
+        print response.url
+        if response.status_code == 204:
+            print response.headers
+            print query_type
+            return 'Success! -- No Content.'
+        else:
+            data = response.text
+            # Place response in to a json object
+            okta_json = json.loads(data)
+            if 'next' in response.links.keys():
+                next_page = response.links['next']['url']
+                self.set_url(next_page)
+                self.query = ''
+                # print okta_json
+                okta_json.extend(self.query_okta())
 
 
-        return okta_json
+            return okta_json
 
 
-    def fetch_from_okta(self):
+    def fetch_from_okta(self, query_type='GET'):
         """ Create the main Okta connecting object.
         :return: Okta query result as json object.
         """
         # Send the request
-        data = self.query_okta()
+        data = self.query_okta(query_type)
         # print okta_json[11]['profile']
         # print json.dumps(okta_json, indent=4, sort_keys=True)
         return data
