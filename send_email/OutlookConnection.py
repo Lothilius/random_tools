@@ -14,7 +14,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 class OutlookConnection(object):
-    def __init__(self, to='', cc='', bcc='', subject='', body=' ', html='', files=None, reply_to=''):
+    def __init__(self, to='', cc='', bcc='', subject='', body=' ', html='', files=None, reply_to='', account=''):
         try:
             self.html = html.encode("utf-8")
             self.files = files
@@ -26,7 +26,8 @@ class OutlookConnection(object):
                 self.msg = MIMEMultipart()
                 self.msg.attach(MIMEText(body.encode("utf-8"), 'plain', _charset="utf-8"))
 
-            username, password = auth.smtp_login()
+            self.account = account
+            username, password = auth.smtp_login(account=self.account)
             self.msg['From'] = username
 
             self.build(to, cc=cc, bcc=bcc, reply_to=reply_to, subject=subject)
@@ -92,7 +93,7 @@ class OutlookConnection(object):
                 part['Content-Disposition'] = 'attachment; filename="%s"' % basename(f)
                 self.msg.attach(part)
 
-    def send_email(self, to='', cc='', bcc='', subject='', body=' ', html='', files='', reply_to=''):
+    def send_email(self, to='', cc='', bcc='', subject='', body=' ', html='', files='', reply_to='', account=''):
         """ Send email with or without variables passed in initiation.
         :param to: list or comma separated string of To emails addresses
         :param cc: list or comma separated string of CC emails addresses
@@ -107,10 +108,10 @@ class OutlookConnection(object):
         # TODO - create user interactive section here.
 
         if body != ' ':
-            self.__init__(to, cc, bcc, subject, body, html, files, reply_to)
+            self.__init__(to, cc, bcc, subject, body, html, files, reply_to, account=account)
 
         try:
-            username, password = auth.smtp_login()
+            username, password = auth.smtp_login(account=self.account)
             self.msg['From'] = username
 
             all_emails = self.to + self.cc + self.bcc + self.reply_to
@@ -155,7 +156,6 @@ class OutlookConnection(object):
             smtp_object = smtplib.SMTP('smtp.office365.com', 587)
             smtp_object.ehlo()
             smtp_object.starttls()
-            username, password = auth.smtp_login()
             smtp_object.login(username, password)
             return smtp_object
         except Exception, e:
@@ -170,5 +170,5 @@ if __name__ == '__main__':
     cc = ['martin.valenzuela@bazaarvoice.com']#, 'Lindsey.Fivecoat@bazaarvoice.com', 'Dustin.Dodson@bazaarvoice.com']
     # oc = OutlookConnection()
     # oc.send_email(to=to, subject=subject, body=body, html=body)
-    oc = OutlookConnection()
+    oc = OutlookConnection(account='helpdesk@bazaarvoice.com')
     oc.send_email(to=to, cc=cc, subject=subject, body=body, html=body)

@@ -41,8 +41,13 @@ class Authentication(object):
         return username, password
 
     @staticmethod
-    def smtp_login():
-        username, password = Authentication.bv_credentials()
+    def smtp_login(account=''):
+        # if account == '':
+        #     username, password = Authentication.bv_credentials()
+        # else:
+        username = 'helpdesk@bazaarvoice.com'
+        password = environ['HD_EMAIL_PW']
+
 
         return username, password
 

@@ -1,0 +1,88 @@
+Hello %s,
+    Your account is now enabled for Okta Verify MFA, and you’ll need to complete the steps outlined below.
+    Please follow the instructions below to prepare for this change so you're ready to complete the setup after IT puts this change into effect at the aforementioned date/time. For any issues, please create a ticket by emailing helpdesk@bazaarvoice.com<mailto:helpdesk@bazaarvoice.com>.
+
+What's MFA?
+To sum it up, MFA is "multifactor authentication" and it's a small app we'll need you to install on another device, like your phone, that will allow you access to Okta portal applications and the VPN.
+
+[image001.jpg]
+
+What if I don't install the App?
+Unfortunately, you'll no longer be able to access any application or VPN.
+
+Pease install the Okta Verify application
+From your phones app store install the "Okta Verify" application.
+
+[image002.jpg]
+
+Once The App is Installed, and IT has enabled your account for MFA, you're ready for the final setup.
+Log into https://bazaarvoice.okta.com
+
+
+
+
+
+
+[image003.jpg]
+
+
+
+1.      After signing into OKTA you'll be prompted to select the phone type you have. Click on the image and hit "Next".
+
+
+
+
+
+
+[image004.jpg]
+
+
+ For this next step have the OKTA Verify app open and select "Add Account"
+
+2.      You will be asked to all camera access to the OKTA app, select OK to continue.
+
+
+
+
+
+
+[image005.jpg]
+
+
+3.      Next, hold your phone's camera up to your computer screen. Focus it on the image as shown below.
+
+
+
+[image006.jpg]
+
+
+
+4.      Once complete you will see a green check box on the setup OKTA verify app, like shown below. Select "done" to complete the setup.
+
+
+
+
+
+
+[image007.jpg]
+
+
+
+You're now ready to use MFA, and there's a few helpful things below you should check out.
+
+On an Airplane while using OKTA, you'll need to enter the "Code" option instead.
+This can be found by using the OKTA app on your phone, just enter the code that appears and you're good to go.
+
+[image008.jpg]
+
+VPN will also require MFA authentication
+Press 1 to enter the "Code" that rotates on your OKTA app, or 2 to push a notification to your phone and then approve.
+
+How it looks on a Mac
+[image009.jpg]
+
+How it looks on a PC
+[image010.jpg]
+
+Having Problems after the Install?
+Please email helpdesk@bazaarvoice.com<mailto:helpdesk@bazaarvoice.com>, or call the IT support line 512-551-6060 and select option "2" for MFA support and someone will assist you.
