@@ -12,6 +12,8 @@ from okta.Okta_Group_Members import Okta_Group_Members
 from os.path import basename
 from time import time
 from datetime import datetime
+from HTMLParser import HTMLParser
+from static.static_files import get_static_file
 from helper_scripts.notify_helpers import wait
 import pandas as pd
 import os
@@ -43,7 +45,7 @@ def mfa_notify(user_info=('martin.valenzuela@bazaarvoice.com', 'Martin')):
                          html=html,
                          files=file_names)
     except Exception, e:
-        error_result = "Unexpected AttributeError: %s, %s, %s" \
+        error_result = "Unexpected Error: %s, %s, %s" \
                        % (sys.exc_info()[0], sys.exc_info()[1], e)
         subject = 'Error with MFA true up script. Not able to send Email. %s' % basename(__file__)
         print error_result
@@ -77,49 +79,66 @@ def main():
 
         # Any Null in login_mfa column are not in MFA group.
         employees_without_mfa = left_wd_join[left_wd_join['login_mfa'].isnull()].copy()  # type: pd.DataFrame
-        print employees_without_mfa
-        try:
-            # Package in to a tde file
-            data_file = TDEAssembler(data_frame=left_wd_join, extract_name='MFA_Employee_data')
-            # Set values for publishing the data.
-            file_name = str(data_file)
-            server_url, username, password, site_id, data_source_name, project = \
-                auth.tableau_publishing(datasource_type='BizApps', data_source_name='MFA_Employee_data')
-            # Publish the data
-            publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
-        except Exception, e:
-            error_result = "Unexpected AttributeError: %s, %s, %s" \
-                           % (sys.exc_info()[0], sys.exc_info()[1], e)
-            subject = 'Error with MFA true up script. Could not publish user list to Tableau. %s' % basename(__file__)
-            print error_result
-            outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
-                                 subject=subject, body=error_result)
-            give_notice = Notifier()
-            give_notice.set_red()
-            give_notice.wait(30)
-            give_notice.flow_the_light()
 
-        # Apply mfa group to each user without mfa
-        employees_without_mfa['result'] = 'Success' # employees_without_mfa['email'].apply(mfa_users.add_user_to_group)
+        # If employees_without_mfa is not Empty then apply mfa group to users missing the group and publish full list.
+        if not employees_without_mfa.empty:
+            # Apply mfa group to each user without mfa
+            employees_without_mfa['result'] = employees_without_mfa['email'].apply(mfa_users.add_user_to_group)
 
-        # Reduce to Success list
-        employees_success = employees_without_mfa[
-            employees_without_mfa['result'].str.contains('Success')][['email', 'firstName']]
+            # Reduce to Success list
+            employees_success = employees_without_mfa[
+                employees_without_mfa['result'].str.contains('Success')][['email', 'firstName']]
 
-        # Send Email notifiying user of the change
-        for each in employees_success.values.tolist():
-            mfa_notify(each)
-            wait(1)
+            # Send Email notifiying user of the change
+            for each in employees_success.values.tolist():
+                mfa_notify(each)
+                wait(1)
+
+            left_wd_join = pd.merge(left=left_wd_join, right=employees_without_mfa[['email', 'result']],
+                                    how='left', on='email', suffixes=('_wd', '_results'))
+
+            try:
+                # Package in to a tde file
+                data_file = TDEAssembler(data_frame=left_wd_join, extract_name='MFA_Employee_data')
+                # Set values for publishing the data.
+                file_name = str(data_file)
+                server_url, username, password, site_id, data_source_name, project = \
+                    auth.tableau_publishing(datasource_type='BizApps', data_source_name='MFA_Employee_data')
+                # Publish the data
+                publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
+            except Exception, e:
+                error_result = "Unexpected Error: %s, %s, %s" \
+                               % (sys.exc_info()[0], sys.exc_info()[1], e)
+                subject = 'Error with MFA true up script. Could not publish user list to Tableau. %s' % basename(__file__)
+                print error_result
+                outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+                                     subject=subject, body=error_result)
+                give_notice = Notifier()
+                give_notice.set_red()
+                give_notice.wait(30)
+                give_notice.flow_the_light()
+
+        # Get Style sheet for the email.
+        html = HTMLParser()
+        f = open(get_static_file('styleTags.html'), 'r')
+        style = f.readlines()
+        style = ' '.join(style)
+        style = html.unescape(style)
+        employees_without_mfa = employees_without_mfa[['id', 'email', 'result']].to_html(index=False,
+                                                                                         show_dimensions=True)
+        body = '<html><head>%s</head><body>' % style + '<h2>MFA_User_application compiling complete</h2><br><br>' \
+               '<h2>List of Users Below</h2>' + html.unescape(employees_without_mfa) + \
+               '<br><br></body></html>'
 
         outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
-                             subject='MFA_User_application compiling complete',
-                             body='MFA_User_application compiling complete')
+                             subject='MFA_User_application Complete',
+                             body=body, html=body)
 
 
     except KeyboardInterrupt:
         pass
     except Exception, e:
-        error_result = "Unexpected AttributeError: %s, %s, %s" \
+        error_result = "Unexpected Error: %s, %s, %s" \
                        % (sys.exc_info()[0], sys.exc_info()[1], e)
         subject = 'Error with MFA true up script. Major error. ' \
                   'Might have prevented mfa Provisioning. %s' % basename(__file__)
