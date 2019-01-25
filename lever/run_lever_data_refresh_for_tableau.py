@@ -70,7 +70,10 @@ def main():
 
         # Get posts from Lever
         posts = Postings()
-        postings = posts.full_postings
+        postings = posts.full_postings[['categories', 'content', 'createdAt', 'followers', 'hiringManager', 'post_id',
+                                        'owner', 'reqCode', 'state', 'tags', 'text', 'updatedAt', 'urls', 'user',
+                                        'commitment', 'department', 'level', 'location', 'team', 'closing',
+                                        'closingHtml', 'customQuestions', 'description', 'descriptionHtml', 'lists']]
         final_posts = postings.copy(deep=True)
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
