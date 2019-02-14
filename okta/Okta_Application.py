@@ -36,7 +36,7 @@ class Okta_Application(object):
             if app_name == '':
                 return primary_object
             else:
-                apps_list= okta_connect(primary_object, limit=200, filter='').fetch_from_okta()
+                apps_list = okta_connect(primary_object=primary_object, limit=200).fetch_from_okta()
                 id_label_list = pd.read_json(path_or_buf=json.dumps(apps_list), encoding='str')[['id', 'label']]
                 apps_id_label = id_label_list[id_label_list['label'].str.lower() == app_name.lower()]
                 primary_object = primary_object + str(apps_id_label.id.iloc[0])
