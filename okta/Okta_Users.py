@@ -27,17 +27,6 @@ class Okta_Users(object):
     def __str__(self):
         return str(self.users)
 
-    @staticmethod
-    def get_okta_id_from_email(query=''):
-        if query != '':
-            query = '?q=' + query
-        user_data = Okta_Users(query=query)
-
-        try:
-            return user_data.users['id'][0]
-        except Exception, e:
-            return e
-
     def create_panda(self, primary_object):
         users = okta_connect(primary_object=primary_object, limit=500, filter='').fetch_from_okta()
         users_profile_list = pd.read_json(path_or_buf=json.dumps(users), encoding='str')
@@ -57,6 +46,33 @@ class Okta_Users(object):
 
     def okta_users(self):
         return self.users
+
+    @staticmethod
+    def get_okta_id_from_email(query=''):
+        if query != '':
+            query = '?q=' + query
+        user_data = Okta_Users(query=query)
+        if user_data.empty():
+            return 'User Not found'
+        try:
+            if len(user_data.users['id']) == 1:
+                return user_data.users['id'][0]
+            else:
+                raise Exception("More than one user ID found with same Email.")
+        except Exception, e:
+            return e
+
+    @staticmethod
+    def deactivate_user(user_id):
+        try:
+            if '@' in user_id:
+                    user_id = Okta_Users.get_okta_id_from_email(query=user_id)
+            else:
+                user_id = user_id
+            primary_object = 'users/' + user_id + '/lifecycle/deactivate'
+            return okta_connect(primary_object=primary_object, limit='', filter='').fetch_from_okta(query_type='POST')
+        except Exception, e:
+            return e
 
 
 if __name__ == '__main__':
