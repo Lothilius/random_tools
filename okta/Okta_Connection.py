@@ -10,7 +10,7 @@ import ast
 pd.set_option('display.width', 260)
 
 class Okta_Connection(object):
-    """ Okta connector that help create the okta connection and the query.
+    """ Okta connector that helps create the okta connection and the query.
     """
     def __init__(self, primary_object='', limit='100', filter='status eq \"ACTIVE\"'):
         self.headers = auth.okta_authentication()
@@ -40,10 +40,14 @@ class Okta_Connection(object):
         # Send the request
         response = requests.request(query_type, url=self.api_url, headers=self.headers, params=self.query)
         print response.url
-        if response.status_code == 204:
-            print response.headers
-            print query_type
-            return 'Success! -- No Content.'
+        if response.status_code == 204 or response.text == '{}':
+            try:
+                request_id = response.headers['X-Okta-Request-Id']
+                return 'Success! -- Request ID: %s' % request_id
+            except ValueError:
+                return 'Fail! -- %s' % response.headers
+        elif response.status_code != 200:
+            return 'Fail! -- %s' % response.text
         else:
             data = response.text
             # Place response in to a json object
