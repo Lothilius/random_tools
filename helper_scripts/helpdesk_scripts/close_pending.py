@@ -13,9 +13,9 @@ if __name__ == '__main__':
         for each in ticket_list.WORKORDERID.tolist():
             result = Ticket.set_status(each, status='Resolved')
             try:
-                print result['STATUS'] + '\n'
+                print result['STATUS'] + "-" + result['message'] + '\n'
             except KeyError:
-                print result['status'] + '\n'
+                print result['status'] + "-" + result['message'] + '\n'
             # print Ticket.set_status(each)
     except:
         error_result = "Unexpected error 1CP: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
