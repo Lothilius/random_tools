@@ -78,7 +78,9 @@ class HelpdeskConnection(object):
         try:
             return helpdesk_tickets["operation"]["Details"]
         except KeyError:
-            print helpdesk_tickets.keys()
+            print response
+            # print(json.dumps(helpdesk_tickets["operation"], indent=4))
+            # print type(helpdesk_tickets["operation"]["result"])
             return helpdesk_tickets["operation"]["result"]
         except:
             error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
