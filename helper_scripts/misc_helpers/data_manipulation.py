@@ -178,10 +178,10 @@ def multiply_by_multiselect(dataframe, feature_index_column, feature_column):
 def convert_sfdc_datetime_to_datetime(the_datetime):
     if the_datetime is not None:
         the_datetime = the_datetime.split('T')
-        the_datetime = dt.datetime.strptime(the_datetime[0], '%Y-%m-%d').date()
+        the_datetime = datetime.strptime(the_datetime[0], '%Y-%m-%d').date()
         return the_datetime
     else:
-        return dt.datetime.strptime('2000-01-01', '%Y-%m-%d').date()
+        return datetime.strptime('2000-01-01', '%Y-%m-%d').date()
 
 
 if __name__ == '__main__':
