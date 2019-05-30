@@ -10,7 +10,7 @@ import collections
 pd.set_option('display.width', 295)
 # ToDo - Everything!!!!!!
 class SFDC_Holidays(object):
-    """ Users from SFDC. When called, active internal users are retrieved from SFDC in a panda dataframe.
+    """ Users from SFDC. When called, active internal user are retrieved from SFDC in a panda dataframe.
     """
     def __init__(self):
         self.holidays = self.get_holiday_list()
@@ -24,7 +24,7 @@ class SFDC_Holidays(object):
 
     def get_holiday_list(self):
         """ Get Active standard user list from Salesforce.
-        :return: panda Dataframe of the users with the Username as the Email!!! ---Warning----
+        :return: panda Dataframe of the user with the Username as the Email!!! ---Warning----
         """
         sf = SFDC_Connection.connect_to_SFDC('prod')
         results = sf.query_all("SELECT Id, Description, LastModifiedDate,Name,RecurrenceDayOfMonth,"

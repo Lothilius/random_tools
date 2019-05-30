@@ -318,7 +318,7 @@ def open_new_tab(browser, web_url):
 
 def okta_load(first_name, last_name):
     username, pw = auth.bv_credentials()
-    baseurl = "https://bazaarvoice-admin.okta.com/admin/users"
+    baseurl = "https://bazaarvoice-admin.okta.com/admin/user"
 
     browser = get_se_browser()
     browser.get(baseurl)

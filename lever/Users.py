@@ -47,7 +47,7 @@ class Lever_Users(object):
         """ Get lever records up to 100 at a time.
         :return: dict with lever user info {data, hasNext[, next]}
         """
-        url, querystring, headers = lhc.create_api_request(object='users', offset=offset, record_id=record_id)
+        url, querystring, headers = lhc.create_api_request(object='user', offset=offset, record_id=record_id)
 
         return lhc.fetch_from_lever(url, querystring, headers)
 
@@ -155,5 +155,5 @@ if __name__ == '__main__':
 
     end = time()
     print (end - start) / 60
-    # print type(reqs.users)
+    # print type(reqs.user)
     print users.users

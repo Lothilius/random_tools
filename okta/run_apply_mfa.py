@@ -37,6 +37,7 @@ def mfa_notify(user_info=('martin.valenzuela@bazaarvoice.com', 'Martin')):
         with open(html_file_name, 'r') as html_file:
             html = html_file.read()
 
+        # Create list for attaching images to the html for the email
         html = html % user_first_name
         file_names = ['%simage%03d.jpg' % (instructions_path, number) for number in range(1, 11)]
 
@@ -80,7 +81,7 @@ def main():
         # Any Null in login_mfa column are not in MFA group.
         employees_without_mfa = left_wd_join[left_wd_join['login_mfa'].isnull()].copy()  # type: pd.DataFrame
 
-        # If employees_without_mfa is not Empty then apply mfa group to users missing the group and publish full list.
+        # If employees_without_mfa is not Empty then apply mfa group to user missing the group and publish full list.
         if not employees_without_mfa.empty:
             # Apply mfa group to each user without mfa
             employees_without_mfa['result'] = employees_without_mfa['email'].apply(mfa_users.add_user_to_group)

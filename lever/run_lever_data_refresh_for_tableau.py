@@ -63,7 +63,7 @@ def main():
         requisition_fields = Requisition_Fields()
         requisition_fields = requisition_fields.requisition_fields
 
-        # Get users from Lever
+        # Get user from Lever
         users = Lever_Users()
         users = users.users
 

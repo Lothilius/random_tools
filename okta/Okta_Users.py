@@ -11,11 +11,11 @@ import pandas as pd
 
 
 class Okta_Users(object):
-    """ User list from Okta. When called, list of users are retrieved from Okta in a panda dataframe.
+    """ User list from Okta. When called, list of user are retrieved from Okta in a panda dataframe.
         """
 
     def __init__(self, app_id='', query=''):
-        """ Creation of instance of Okta users
+        """ Creation of instance of Okta user
         :param app_id: Should be in the format of 'app/<id>'
         """
         if query != '' and '?' not in query:
@@ -69,7 +69,7 @@ class Okta_Users(object):
                     user_id = Okta_Users.get_okta_id_from_email(query=user_id)
             else:
                 user_id = user_id
-            primary_object = 'users/' + user_id + '/lifecycle/deactivate'
+            primary_object = 'user/' + user_id + '/lifecycle/deactivate'
             return okta_connect(primary_object=primary_object, limit='', filter='').fetch_from_okta(query_type='POST')
         except Exception, e:
             return e
