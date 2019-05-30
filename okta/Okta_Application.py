@@ -3,8 +3,8 @@ __author__ = 'Lothilius'
 
 import requests
 import json
-from Okta_Connection import Okta_Connection as okta_connect
-from Okta_Users import Okta_Users as okta_users
+from okta.Okta_Connection import Okta_Connection as okta_connect
+from okta.Okta_Users import Okta_Users as okta_users
 from bv_authenticate.Authentication import Authentication as auth
 from send_email.OutlookConnection import OutlookConnection as outlook
 import smtplib
