@@ -36,8 +36,14 @@ class Okta_Users(object):
             okta_id = pd.DataFrame(self.raw_users['id'])
             okta_status = pd.DataFrame(self.raw_users['status'])
 
+
             self.users = pd.DataFrame(users_profile_list['profile'].tolist()).join(okta_id)
             self.users = self.users.join(okta_status)
+            try:
+                okta_credentials = pd.DataFrame(self.raw_users['credentials'].tolist())
+                self.users = self.users.join(okta_credentials)
+            except:
+                pass
 
             return self.users
         except Exception, e:
@@ -52,7 +58,7 @@ class Okta_Users(object):
         if query != '':
             query = '?q=' + query
         user_data = Okta_Users(query=query)
-        if user_data.empty():
+        if user_data == []:
             return 'User Not found'
         try:
             if len(user_data.users['id']) == 1:
