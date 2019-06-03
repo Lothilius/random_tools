@@ -29,11 +29,12 @@ class HelpdeskConnection(object):
                            "'get_total_count':'true'," \
                            "'row_count':100," \
                            "'fields_required':['id','display_id','subject', 'status','attachments'," \
-                           "'has_notes','site', 'responded_time','deleted_on','time_elapsed ','created_time'," \
-                           "'category', 'group','approval_status','first_response_due_by_time'," \
+                           "'has_notes','site','responded_time','deleted_on','time_elapsed ','created_time'," \
+                           "'category','group','approval_status','first_response_due_by_time'," \
                            "'created_by','priority','due_by_time','template','department'," \
                            "'display_id','description','completed_time','has_attachments'," \
-                           "'requester','technician','mode','sla','udf_fields']," % from_value
+                           "'requester','technician','mode','sla', 'resolution', 'resolved_time', " \
+                           "'level','item','subcategory','udf_fields']," % from_value
 
         query_for_email = "'field':'requester.email_id'," \
                           "'condition':'is'," \

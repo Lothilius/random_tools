@@ -108,15 +108,22 @@ class TicketList(object):
         try:
             # Get first 100 ticket from helpdesk
             helpdesk_tickets = self.get_100_tickets(helpdesk_que=helpdesk_que)
+            if self.total_count > 0 and self.total_count > 100:
+                print "Retrieving list of Tickets: \n"
+                pbar = Bar(self.total_count / 100)
 
             # Check if more than 100 exist and need to be aggregated.
             if len(helpdesk_tickets) == 100 and not self.count_only:
+
                 # TODO - Make this a recursive method!!!
                 while len(helpdesk_tickets) % 100 == 0:
                     self.ticket_cursor = self.ticket_cursor + 100
                     helpdesk_tickets = self.aggregate_tickets(
                         helpdesk_tickets, self.get_100_tickets(helpdesk_que=helpdesk_que,
                                                                from_value=self.ticket_cursor))
+                    if self.total_count != 0:
+                        pbar.passed()
+
             if with_detail and self.version != 3:
                 ticket_details = []
                 try:
@@ -218,11 +225,13 @@ class TicketList(object):
 
         # Split columns that have sub-columns in the form of a dict with lists
         column_replacements = {'udf_fields': ['udf_char1', 'udf_char2', 'udf_char11'], 'mode': ['name'],
-                               'template': ['name'], 'requester': ['name'], 'technician': ['name'], 'status': ['name'],
-                               'sla': ['name'], 'site': ['name'], 'responded_time': ['value'], 'priority': ['name'],
+                               'template': ['name'], 'requester': ['email_id', 'name'], 'technician': ['name'],
+                               'status': ['name'], 'sla': ['name'], 'site': ['name'],
+                               'responded_time': ['value'], 'priority': ['name'],
                                'group': ['name'], 'first_response_due_by_time': ['value'], 'due_by_time': ['value'],
                                'department': ['name'], 'created_time': ['value'], 'created_by': ['value'],
-                               'completed_time': ['value'], 'category': ['name']}
+                               'completed_time': ['value'], 'category': ['name'], 'resolved_time': ['value'],
+                               'item': ['name'], 'level': ['name'], 'subcategory': ['name']}
 
         for column in column_replacements.keys():
             for subcolumn in column_replacements[column]:
@@ -234,25 +243,39 @@ class TicketList(object):
                         lambda x: TicketList.version3_null_filler(x, subcolumn))
 
         # Remove the field containing custom fields and approval status
-        ticket_details.drop(columns=['udf_fields', 'approval_status'], inplace=True)
+        ticket_details.drop(columns=['udf_fields', 'approval_status', 'first_response_due_by_time'], inplace=True)
+
+        # Add missing columns that are supposed to come through v3
+        if 'resolution' not in ticket_details.columns.tolist():
+            ticket_details['resolution'] = np.nan
+        if 'item' not in ticket_details.columns.tolist():
+            ticket_details['item'] = np.nan
+        if 'level' not in ticket_details.columns.tolist():
+            ticket_details['level'] = np.nan
+        if 'subcategory' not in ticket_details.columns.tolist():
+            ticket_details['subcategory'] = np.nan
+
         # Rename columns to v1 naming schema
         ticket_details = ticket_details.rename(columns={'created_by': 'CREATEDBY', 'created_time': 'CREATEDTIME',
                                                         'description': 'SHORTDESCRIPTION', 'display_id': 'WORKORDERID',
-                                                        'due_by_time': 'DUEBYTIME', 'first_response_due_by_time': '',
-                                                        'group': 'GROUP', 'has_attachments': 'HASATTACHMENTS',
+                                                        'due_by_time': 'DUEBYTIME', 'group': 'GROUP',
+                                                        'has_attachments': 'HASATTACHMENTS',
                                                         'id': 'LONG_REQUESTID', 'attachments': 'ATTACHMENTS',
                                                         'category': 'CATEGORY', 'completed_time': 'COMPLETEDTIME',
                                                         'deleted_on': 'DELETED_TIME', 'department': 'DEPARTMENT',
                                                         'has_notes': 'HASNOTES', 'mode': 'MODE', 'priority': 'PRIORITY',
-                                                        'requester': 'REQUESTER', 'template': 'REQUESTTEMPLATE',
-                                                        'responded_time': 'RESPONDEDTIME', 'site': 'SITE', 'sla': 'SLA',
+                                                        'requester': 'REQUESTER', 'level': 'LEVEL', 'item': 'ITEM',
+                                                        'responded_time': 'RESPONDEDTIME', 'email_id': 'REQUESTEREMAIL',
+                                                        'site': 'SITE', 'sla': 'SLA',
                                                         'status': 'STATUS', 'technician': 'TECHNICIAN',
-                                                        "template": 'TEMPLATEID', 'time_elapsed ': 'TIMESPENTONREQ',
+                                                        'template': 'TEMPLATEID', 'time_elapsed ': 'TIMESPENTONREQ',
                                                         'udf_char1': 'UDF_CHAR1', 'udf_char2': 'UDF_CHAR2',
-                                                        'subject': 'SUBJECT', 'udf_char11': 'UDF_CHAR11'})
+                                                        'resolved_time': 'RESOLUTIONLASTUPDATEDTIME',
+                                                        'subject': 'SUBJECT', 'resolution': 'RESOLUTION',
+                                                        'subcategory': 'SUBCATEGORY', 'udf_char11': 'UDF_CHAR11'})
 
-        missing_columns = ['DELETED_TIME', 'HASCONVERSATION', 'ISPENDING', 'REQUESTEREMAIL', 'REQUESTTEMPLATE',
-                           'STOPTIMER', 'SUBJECT', 'TIMESPENTONREQ']
+        missing_columns = ['DELETED_TIME', 'HASCONVERSATION', 'ISPENDING', 'REQUESTTEMPLATE',
+                           'STOPTIMER', 'TIMESPENTONREQ', 'RESOLVER']
         ticket_details = ticket_details.assign(**dict.fromkeys(missing_columns, np.nan))
 
         return ticket_details
@@ -270,7 +293,7 @@ class TicketList(object):
 if __name__ == '__main__':
     start = time()
     try:
-        test_tickets = TicketList(version=3, query="martin.valenzuela@bazaarvoice.com", count_only=True)
+        test_tickets = TicketList(version=3, query=["BizApps - Technical"], count_only=False)
     except AttributeError as e:
         tickets = e.args[0]
 
@@ -281,4 +304,4 @@ if __name__ == '__main__':
     # tickets.drop('ATTACHMENTS', axis=1, inplace=True)
     end = time()
     print (end - start) / 60
-    print test_tickets.columns
+    print test_tickets
