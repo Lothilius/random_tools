@@ -1,3 +1,5 @@
+scipy
+MySQLdb
 lxml
 bottle
 bs4
