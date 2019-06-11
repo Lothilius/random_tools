@@ -268,6 +268,24 @@ def go_to_sfdc_page(environment='', url_ending=''):
 
     return browser
 
+def go_to_jira_login_page(environment='dev2'):
+    """ Use as a quick way to jump to the User Administration in Concur.
+    :return: This function provides selenium initiated browsers.
+    """
+    try:
+        browser = get_se_browser()
+        if environment == 'prod':
+            baseurl = 'https://bits.bazaarvoice.com/jira/secure/Dashboard.jspa'
+        else:
+            baseurl = "https://atl-" + environment + ".bazaarvoice.io/jira/secure/Dashboard.jspa"
+
+        browser.get(baseurl)
+        wait(2)
+
+        return browser
+    except:
+         print "Unexpected error:", sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]
+
 def add_permission_sfdc(browser='', user_id=''):
     """
     :param browser:
@@ -379,6 +397,22 @@ def login(browser, username, pw):
     #Click Login button
     browser.find_element_by_css_selector("#Login").click()
 
+# Login function
+def jira_login(browser, username, pw):
+    #Write Username in Username TextBox
+    browser.find_element_by_id("login-form-username").send_keys(username)
+
+    #Write PW in Password TextBox
+    browser.find_element_by_id("login-form-password").send_keys(pw)
+
+    #Click Login button
+    browser.find_element_by_id("login").click()
+
+def jira_check_login(browser):
+    print browser.find_element_by_xpath(
+        "//p[contains(.,'Sorry, your username and password are incorrect - please try again.')]").is_displayed()
+
+
 # Open the Form to create a new user.
 def open_new_record(browser):
     browser.implicitly_wait(4)
@@ -475,5 +509,4 @@ def create_user(browser, first_name, last_name, email, user_name, title, manager
 
 
 if __name__ == '__main__':
-    browser = go_to_concur_user_page()
-    concur_set_request_rule(browser=browser, employee_id='105220', employee_name='Valenzuela, Martin')
+    browser = go_to_jira_login_page()
