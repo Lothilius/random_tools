@@ -15,10 +15,10 @@ class Ticket(object):
         self.hdt_id = hdt_id
         if with_resolution:
             self.resolution = self.get_resolution()
-        self.details = self.get_ticket_details()
+        if self.hdt_id != '':
+            self.details = self.get_ticket_details()
         if with_conversations:
             self.conversations = self.get_conversations()
-
 
     def __getitem__(self, item):
         details = list(dict(self.details))
@@ -129,16 +129,20 @@ class Ticket(object):
                                         "Details:{" \
                                         "STATUS:%s}}}" % status
             # print querystring
-            helpdesk_ticket_details = hdc.fetch_from_helpdesk(url, querystring, headers)
+            response, helpdesk_ticket_details = hdc.fetch_from_helpdesk(url, querystring, headers)
 
-            return helpdesk_ticket_details
+            return response, helpdesk_ticket_details
         except:
             error_result = "Unexpected error 1T: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-            print error_result
+            raise Exception(error_result)
 
     def create_ticket(self, data_dictionary):
         """ Create a ticket.
-        :data_dictionary: Dictionary of ticket with theo following values.
+        :data_dictionary: Dictionary of ticket with the following values.
+            eg: data = {'REQUESTEREMAIL':'Martin.Valenzuela@bazaarvoice.com',
+                    'REQUESTER':'MartinValenzuela',
+                    'DESCRIPTION':'System- SFDC Time frame- Tomorrow Some description that is long ',
+                    'SUBJECT':'It hurts'}
         :return: Dictionary of the ticket details once the status has been changed.
         """
 
@@ -156,6 +160,7 @@ class Ticket(object):
         except:
             error_result = "Unexpected error 1T: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
+            raise Exception(error_result)
 
 
     def send_priority_reply(self):
@@ -195,11 +200,11 @@ class Ticket(object):
         return get_conversation_detail
 
 if __name__ == '__main__':
-    ticket = Ticket(hdt_id='49912')
-    # data = {'REQUESTEREMAIL':'Martin.Valenzuela@bazaarvoice.com',
-    #         'REQUESTER':'MartinValenzuela',
-    #         'DESCRIPTION':'System- SFDC Time frame- Tomorrow Some description that is long ',
-    #         'SUBJECT':'It hurts'}
-    # ticket.create_ticket(data)
-    print ticket.details['WORKORDERID']
+    # ticket = Ticket(hdt_id='49912')
+    data = {'REQUESTEREMAIL': 'Martin.Valenzuela@bazaarvoice.com',
+            'REQUESTER': 'MartinValenzuela',
+            'DESCRIPTION': 'System- SFDC Time frame- Tomorrow Some description that is long ',
+            'SUBJECT': 'Testing ---- Please delete'}
+    ticket = Ticket().create_ticket(data)
+    # print ticket.details['WORKORDERID']
 
