@@ -52,6 +52,13 @@ class HelpdeskConnection(object):
             # print response.txt
             # Load the response to the request as a json object.
             helpdesk_tickets = json.loads(response.text.encode(encoding='utf-8'))
+            try:
+                if 'ADD_REQUEST' == querystring['OPERATION_NAME']:
+                    print querystring['OPERATION_NAME']
+                    print helpdesk_tickets['operation']['result']['status'] + ': ' + \
+                          helpdesk_tickets['operation']['result']['message']
+            except Exception, e:
+                pass
         except AttributeError:
             attempts -= 1
             error_result = "Unexpected error 2: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
