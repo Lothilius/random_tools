@@ -85,8 +85,8 @@ class HelpdeskConnection(object):
         try:
             return helpdesk_tickets["operation"]["Details"]
         except KeyError:
-            print response
-            # print(json.dumps(helpdesk_tickets["operation"], indent=4))
+            print response.url
+            print(json.dumps(helpdesk_tickets["operation"], indent=4))
             # print type(helpdesk_tickets["operation"]["result"])
             return helpdesk_tickets["operation"]["result"]
         except:
