@@ -5,9 +5,9 @@ import json
 import requests
 from bv_authenticate.Authentication import Authentication as auth
 import pandas as pd
-import ast
 
 pd.set_option('display.width', 260)
+
 
 class Okta_Connection(object):
     """ Okta connector that helps create the okta connection and the query.
@@ -26,8 +26,8 @@ class Okta_Connection(object):
     def get_url(self):
         return self.api_url
 
-    def set_primary_object(self, object):
-        self.primary_object = object
+    def set_primary_object(self, primary_object):
+        self.primary_object = primary_object
         self.api_url = 'https://bazaarvoice.okta.com/api/v1/' + self.primary_object
 
     def set_query(self, query):
@@ -61,7 +61,6 @@ class Okta_Connection(object):
 
 
             return okta_json
-
 
     def fetch_from_okta(self, query_type='GET'):
         """ Create the main Okta connecting object.
