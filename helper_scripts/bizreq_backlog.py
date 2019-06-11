@@ -29,7 +29,8 @@ def get_sfdc_data(environment='prod'):
     sf = SFDC.connect_to_SFDC(environment)
     build_query = "Select Id, Status, CreatedDate, Department_Requesting__c, Project__c, Release_Date__c, ClosedDate, " \
                   "Sub_Status__c, Priority, (select OldValue, NewValue, CreatedDate from Histories) FROM Case WHERE RecordTypeId = '01250000000Hnex' " \
-                  "AND (Project__c = 'a8B50000000Kyq8' OR Project__c = 'a8B50000000Kyqr')"
+                  "AND (Project__c = 'a8B50000000Kyq8' OR Project__c = 'a8B50000000Kyqr') " \
+                  "AND (Status = 'Approved Backlog' OR Status = 'Prioritized' )"
     result = sf.query_all(build_query)
 
     return result
