@@ -99,8 +99,8 @@ class Authentication(object):
 
     @staticmethod
     def hue_bridge():
-        hue_ip = environ['HUE_IP']
-        hue_token = environ['HUE_TOKEN']
+        hue_ip = environ['HUE_BIZTECH_IP']
+        hue_token = environ['HUE_BIZTECH_TOKEN']
 
         return hue_ip, hue_token
 
