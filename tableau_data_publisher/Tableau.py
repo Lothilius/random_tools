@@ -61,12 +61,18 @@ class Tableau(object):
             testing_datasource.tags(tags)
         try:
             self.server.datasources.publish(datasource_item=testing_datasource, file_path=file_path, mode=mode)
-            print "Published %s to %s in %s" % (name, project, self.site_id)
+            print "Published %s to %s in %s -- Mode: %s" % (name, project, self.site_id, mode)
         except Exception, e:
             # Handle the exception depending on the type of exception received
             error_message = "Error: " + e.args[0]
-
-            raise error_message
+            try:
+                if 'Resource Not Found' in error_message and mode == 'Append':
+                    self.publish_datasource(project=project, file_path=file_path, mode='CreateNew',
+                                            name=name, tags=tags)
+                else:
+                    raise Exception(error_message)
+            except:
+                raise Exception(error_message)
 
     def set_url(self, url):
         self.server_url = url
@@ -74,6 +80,6 @@ class Tableau(object):
 
 
 if __name__ == '__main__':
-    tableau_title = Tableau(server_url='https://tableau.bazaarvoice.com/', site_id='BizTech')
-    tableau_title.publish_datasource(project='Testing', mode='CreateNew',
-                                     file_path='/Users/martin.valenzuela/Downloads/BizApps_HDT_.hyper')
+    tableau_title = Tableau(server_url='https://tableau.bazaarvoice.com/', site_id='PeopleandTalent')
+    tableau_title.publish_datasource(project='Testing', mode='Append',
+                                     file_path='/Users/martin.valenzuela/Downloads/Lever_Users_.hyper')

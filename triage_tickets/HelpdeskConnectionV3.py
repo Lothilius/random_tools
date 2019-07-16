@@ -14,9 +14,10 @@ def wait(seconds=5):
 
 class HelpdeskConnection(object):
     @staticmethod
-    def create_api_request(from_value=1, query=''):
+    def create_api_request(from_value=1, query='', open_only=False):
         """ Create the api request for HD. At the moment very minimal
             but can be expanded in the future for creating more specific and different types of requests.
+        :param open_only: boolean for open only ticket or all tickets.
         :param query: This is email that is being serached for.
         :param from_value: Sets the beginning value in the list returned
         :return: string of the URL, dict of the query, and a dict of the header
@@ -36,18 +37,22 @@ class HelpdeskConnection(object):
                            "'requester','technician','mode','sla', 'resolution', 'resolved_time', " \
                            "'level','item','subcategory','udf_fields']," % from_value
 
-        query_for_email = "'field':'requester.email_id'," \
-                          "'condition':'is'," \
-                          "'values':['%s']," \
-                          "'logical_operator': 'AND'," \
-                          "'children':[{'field':'status.in_progress','condition': 'is','value': 'true'," \
-                          "'logical_operator': 'AND'}]}]}}" % query
-
-        query_for_group = "'field':'group.name','condition':'is','values':%s}]}}" % str(query)
+        if open_only:
+            query_in_progress = ",'logical_operator': 'AND'," \
+                                "'children':[{'field':'status.in_progress','condition': 'is','value': 'true'," \
+                                "'logical_operator': 'AND'}]}]"
+        else:
+            query_in_progress = "}]"
 
         if '@' in query:
+            query_for_email = "'field':'requester.email_id'," \
+                              "'condition':'is'," \
+                              "'values':['%s']%s" \
+                              "}}" % (query, query_in_progress)
+
             search_criteria = query_for_email
         else:
+            query_for_group = "'field':'group.name','condition':'is','values':%s%s}}" % (str(query), query_in_progress)
             search_criteria = query_for_group
 
         # Query values go in this json structure

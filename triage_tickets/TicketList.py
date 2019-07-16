@@ -25,7 +25,7 @@ class TicketList(object):
         gather the tickets.
     """
     def __init__(self, helpdesk_que='Triage', with_resolution=False, with_conversations=False,
-                 with_detail=True, last_id=0, version=1, query='', count_only=False):
+                 with_detail=True, last_id=0, version=1, query=None, count_only=False, open_only=False):
         self.ticket_cursor = 1
         self.total_count = 0
         self.last_ticket_id = last_id
@@ -34,6 +34,7 @@ class TicketList(object):
         self.version = version
         self.query = query
         self.count_only = count_only
+        self.open_only = open_only
         if version == 3:
             self.tickets = list(self.get_all_tickets(with_detail=False))
         else:
@@ -94,7 +95,7 @@ class TicketList(object):
         :return: list of dicts - helpdesk_tickets
         """
         if self.version == 3:
-            url, querystring, headers = hdc3.create_api_request(from_value, query=self.query)
+            url, querystring, headers = hdc3.create_api_request(from_value, query=self.query, open_only=self.open_only)
             helpdesk_tickets, ticket_info = hdc3.fetch_from_helpdesk(url, querystring, headers)
             self.total_count = ticket_info['total_count']
             return helpdesk_tickets
@@ -236,8 +237,11 @@ class TicketList(object):
         for column in column_replacements.keys():
             for subcolumn in column_replacements[column]:
                 if subcolumn in ['name', 'value']:
-                    ticket_details[column] = ticket_details[column].apply(
-                        lambda x: TicketList.version3_null_filler(x, subcolumn))
+                    try:
+                        ticket_details[column] = ticket_details[column].apply(
+                            lambda x: TicketList.version3_null_filler(x, subcolumn))
+                    except:
+                        pass
                 else:
                     ticket_details[subcolumn] = ticket_details[column].apply(
                         lambda x: TicketList.version3_null_filler(x, subcolumn))
@@ -293,7 +297,8 @@ class TicketList(object):
 if __name__ == '__main__':
     start = time()
     try:
-        test_tickets = TicketList(version=3, query=["BizApps - Technical"], count_only=False)
+        test_tickets = TicketList(version=3, query='martin.valenzuela@bazaarvoice.com', count_only=False,
+                                  open_only=True)
     except AttributeError as e:
         tickets = e.args[0]
 
@@ -304,4 +309,4 @@ if __name__ == '__main__':
     # tickets.drop('ATTACHMENTS', axis=1, inplace=True)
     end = time()
     print (end - start) / 60
-    print test_tickets
+    print test_tickets.shape

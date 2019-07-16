@@ -58,7 +58,7 @@ class HyperAssembler (object):
             print error_result
 
     def __str__(self):
-        return self.extract_file()
+        return self.file_name
 
     def assess_type(self):
         data_meta = pd.DataFrame(self.data_frame.dtypes)
@@ -83,7 +83,7 @@ class HyperAssembler (object):
                     table_definition = table.getTableDefinition()
                 else:
                     table_definition = TableDefinition()
-                    for each in self.data_types.reset_index(level=0).as_matrix():
+                    for each in self.data_types.reset_index(level=0).values:
                         # Add the column info to the table definition
                         table_definition.addColumn(str(each[0]), schema_type_map[str(each[1])])
                     # Create the Table with the table definition
@@ -133,9 +133,10 @@ class HyperAssembler (object):
         :return: File name and path to the tde extract file
         """
         # Create filename with path, name a time stamp
+        now = datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
         if self.extract_name == '':
             self.extract_name = 'tableau_extract_file'
-        file_name = '%s%s_.hyper' % (self.file_path, self.extract_name)
+        file_name = '%s%s_%s.hyper' % (self.file_path, self.extract_name, now)
 
         return file_name
 
@@ -192,7 +193,10 @@ class HyperAssembler (object):
                     frac = 0
                 row_object.setDateTime(column_number, year, month, day,	hour, min, sec, frac)
             else:
-                row_object.setString(column_number, unicode(str(value), "utf-8"))
+                if isinstance(value, str):
+                    row_object.setCharString(column_number, value.encode(encoding='ascii', errors='ignore'))
+                else:
+                    row_object.setCharString(column_number, str(value).encode(encoding='ascii', errors='ignore'))
         except Exception as e:
             # Create pickle of the offending dataframe.
             print "%s \n Value: %s, Value Type: %s, column name%s: %s, %s" % (e, value, value_type, column_number,
@@ -202,6 +206,6 @@ class HyperAssembler (object):
 
 if __name__ == '__main__':
     ticket_list = pd.read_pickle('/Users/martin.valenzuela/Downloads/BizApps_HDT__pickle')
-    data_file = TDEAssembler(data_frame=ticket_list, extract_name='EUS_testing_fixxxxed')
+    # data_file = TDEAssembler(data_frame=ticket_list, extract_name='EUS_testing_fixxxxed')
 
 

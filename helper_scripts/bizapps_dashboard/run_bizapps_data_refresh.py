@@ -13,13 +13,14 @@ from datetime import datetime
 from time import time
 from os import environ
 import socket
-import boto3
 
 
 if environ['MY_ENVIRONMENT'] == 'prod':
     file_path = '/var/shared_folder/BizApps/Tableau_data/'
+    project = 'Business Applications'
 else:
     file_path = '/Users/%s/Downloads/' % environ['USER']
+    project = 'Testing'
     # file_path = 'Testing/BizApps/Tableau_data/'
 
 extract_name = 'BizApps_HDT'
@@ -54,7 +55,7 @@ def main():
         # Set values for publishing the data.
         file_name = str(data_file)
         tableau_server = Tableau(server_url='https://tableau.bazaarvoice.com/', site_id='BizTech')
-        tableau_server.publish_datasource(project='Business Applications',
+        tableau_server.publish_datasource(project=project,
                                           file_path=file_name,
                                           mode='Append', name=data_source_name)
 

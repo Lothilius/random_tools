@@ -4,7 +4,7 @@ __author__ = 'Lothilius'
 import sys
 
 from send_email.OutlookConnection import OutlookConnection as outlook
-from tableau_data_publisher.data_assembler import TDEAssembler
+from tableau_data_publisher.data_assembler_hyper import HyperAssembler
 from triage_tickets.TicketList import TicketList
 from triage_tickets.TicketList import Ticket
 from helper_scripts.notify_helpers import Notifier
@@ -19,11 +19,14 @@ import socket
 
 if environ['MY_ENVIRONMENT'] == 'prod':
     file_path = '/var/shared_folder/EUS/Tableau_data/'
+    project = 'EUS'
 else:
     file_path = '/Users/%s/Downloads/' % environ['USER']
+    project = 'Testing'
     # file_path = 'Testing/BizApps/Tableau_data/'
 
-extract_name = 'Escalations_HDT'
+extract_name = 'EUS_HDT'
+data_source_name = 'EUS-Helpdesk-Tickets'
 
 give_notice = Notifier()
 
@@ -31,7 +34,7 @@ give_notice = Notifier()
 def main():
     try:
         # Get tickets for BizApps queues
-        tickets = TicketList(version=3, query=["IT Escalations"],
+        tickets = TicketList(version=3, query=["Helpdesk", "IT Escalations"],
                              count_only=False)
         tickets = tickets.reformat_as_dataframe(tickets)
         try:
@@ -49,20 +52,20 @@ def main():
                            'TEMPLATEID', 'TIMESPENTONREQ', 'Department_Group', 'System Component',
                            'System', 'WORKORDERID']].copy()
 
-        # Package in to a tde file
-        data_file = TDEAssembler(data_frame=tickets, file_path=file_path, extract_name=extract_name)
+        # Package in to a hyper file
+        data_file = HyperAssembler(data_frame=tickets, extract_name=extract_name, file_path=file_path)
         # Set values for publishing the data.
         file_name = str(data_file)
         tableau_server = Tableau(server_url='https://tableau.bazaarvoice.com/', site_id='BizTech')
-        tableau_server.publish_datasource(project='Testing',
+        tableau_server.publish_datasource(project=project,
                                           file_path=file_name,
-                                          mode='CreateNew', name='EUS-Helpdesk-Tickets')
+                                          mode='Append', name=data_source_name)
         # server_url, username, password, site_id, data_source_name, project = \
         #     auth.tableau_publishing(datasource_type='EUS', data_source_name='EUS-Helpdesk-Tickets')
         #
         # publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
-        # outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
-        #                      subject='EUS-HDT-Data update complete', body='EUS-HDT-Data update complete')
+        outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
+                             subject='EUS-HDT-Data update complete', body='EUS-HDT-Data update complete')
 
     except:
         error_result = "Unexpected AttributeError: %s, %s" \

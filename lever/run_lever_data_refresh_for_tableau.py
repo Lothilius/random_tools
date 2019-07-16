@@ -18,6 +18,17 @@ from triage_tickets.Ticket import Ticket
 import traceback
 import socket
 
+if environ['MY_ENVIRONMENT'] == 'prod':
+    file_path = '/var/shared_folder/PandT/Tableau_data/'
+else:
+    file_path = '/Users/%s/Downloads/' % environ['USER']
+    # file_path = 'Testing/BizApps/Tableau_data/'
+
+try:
+    give_notice = Notifier()
+except:
+    pass
+
 
 def main():
     hired_and_offer_stage_ids = ['44015e45-bbf3-447c-8517-55fe4540acdc', 'offer']
@@ -61,7 +72,6 @@ def main():
         users = Lever_Users()
         users = users.users
 
-
         # Get posts from Lever
         posts = Postings()
         postings = posts.full_postings[['categories', 'content', 'createdAt', 'followers', 'hiringManager', 'post_id',
@@ -72,14 +82,14 @@ def main():
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_traceback)
-        error_result = "Unexpected Error: %s, %s, %s"\
+        error_result = "Unexpected Error: %s, %s, %s" \
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather supporting tables %s' % basename(__file__)
         print error_result
 
         # TODO- Log errors in to table then send only one email to HD
         outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
-                             subject=subject, body=error_result)
+                                         subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -92,12 +102,13 @@ def main():
         candidates = Candidates(date_limit=beginning_of_three_months_ago)
         candidate_stages_ids = candidates.stages[['candidate_id', 'toStageId']]
         candidates_full_columns = candidates.full_candidates[['applications', 'archived', 'createdAt',
-                                                      'emails', 'followers', 'headline', 'candidate_id',
-                                                      'lastAdvancedAt', 'lastInteractionAt', 'links', 'location',
-                                                      'name', 'origin', 'owner', 'phones', 'snoozedUntil',
-                                                      'sources', 'stage', 'stageChanges', 'tags', 'urls',
-                                                      'archivedAt', 'reason', 'applications_as_feature_column',
-                                                      'toStageId', 'toStageIndex', 'updatedAt', 'userId']]
+                                                              'emails', 'followers', 'headline', 'candidate_id',
+                                                              'lastAdvancedAt', 'lastInteractionAt', 'links',
+                                                              'location',
+                                                              'name', 'origin', 'owner', 'phones', 'snoozedUntil',
+                                                              'sources', 'stage', 'stageChanges', 'tags', 'urls',
+                                                              'archivedAt', 'reason', 'applications_as_feature_column',
+                                                              'toStageId', 'toStageIndex', 'updatedAt', 'userId']]
 
         candidates_full = candidates_full_columns.copy()
         # Swap out if values with Label
@@ -116,12 +127,12 @@ def main():
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_traceback)
-        error_result = "Unexpected Error: %s, %s, %s"\
+        error_result = "Unexpected Error: %s, %s, %s" \
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather candidates %s' % basename(__file__)
         print error_result
         outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
-                             subject=subject, body=error_result)
+                                         subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -134,15 +145,17 @@ def main():
         offers_full = offers.full_offer
         offers_full = correct_date_dtype(offers_full, date_time_format='%Y-%m-%d %H:%M:%S',
                                          date_time_columns={'createdAt', 'approvedAt', 'sentAt'})
+
+        print offers_full.columns
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_traceback)
-        error_result = "Unexpected Error: %s, %s, %s"\
+        error_result = "Unexpected Error: %s, %s, %s" \
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather offers %s' % basename(__file__)
         print error_result
         outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
-                             subject=subject, body=error_result)
+                                         subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -156,12 +169,12 @@ def main():
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_traceback)
-        error_result = "Unexpected Error: %s, %s, %s"\
+        error_result = "Unexpected Error: %s, %s, %s" \
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather requisitions %s' % basename(__file__)
         print error_result
         outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
-                             subject=subject, body=error_result)
+                                         subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -178,19 +191,19 @@ def main():
                                           how='outer', left_on='posting', right_on='post_id',
                                           suffixes=('_candidate', '_posting'))
         candidates_for_offers = correct_date_dtype(candidates_with_offers, date_time_format='%Y-%m-%d %H:%M:%S',
-                                                    date_time_columns={'archivedAt', 'createdAt', 'updatedAt_posts',
-                                                                       'createdAt_posts', 'lastAdvancedAt',
-                                                                       'snoozedUntil', 'updatedAt',
-                                                                       'lastInteractionAt'})
+                                                   date_time_columns={'archivedAt', 'createdAt', 'updatedAt_posts',
+                                                                      'createdAt_posts', 'lastAdvancedAt',
+                                                                      'snoozedUntil', 'updatedAt',
+                                                                      'lastInteractionAt'})
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_traceback)
-        error_result = "Unexpected Error: %s, %s, %s"\
+        error_result = "Unexpected Error: %s, %s, %s" \
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather candidates wiht offers %s' % basename(__file__)
         print error_result
         outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
-                             subject=subject, body=error_result)
+                                         subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
@@ -239,41 +252,45 @@ def main():
 
         requisitions_prep_for_heatmap.rename(columns={'postings_as_feature_column': 'post_id'}, inplace=True)
         requisitions_prep_for_heatmap_candidates_offers_posts = pd.merge(left=requisitions_prep_for_heatmap,
-                                            right=candidates_for_heatmap_with_offers_posts,
-                                            how='left', on='post_id', suffixes=('_requisition', '_candidate'))
+                                                                         right=candidates_for_heatmap_with_offers_posts,
+                                                                         how='left', on='post_id',
+                                                                         suffixes=('_requisition', '_candidate'))
         requisitions_for_heatmap = requisitions_prep_for_heatmap_candidates_offers_posts.copy(deep=True)
         requisitions_for_heatmap.sort_values(by=['updatedAt_posts', 'tags', 'Type'], inplace=True)
         requisitions_for_heatmap.drop_duplicates(subset=['requisition_id'], inplace=True)
 
         # Clean up date columns
         requisitions_for_heatmap = correct_date_dtype(requisitions_for_heatmap, date_time_format='%Y-%m-%d %H:%M:%S',
-                                date_time_columns={'archivedAt', 'createdAt', 'updatedAt_posts', 'createdAt_posts'})
+                                                      date_time_columns={'archivedAt', 'createdAt', 'updatedAt_posts',
+                                                                         'createdAt_posts'})
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_traceback)
-        error_result = "Unexpected Error: %s, %s, %s"\
+        error_result = "Unexpected Error: %s, %s, %s" \
                        % (exc_type, exc_value, traceback.format_exc())
         subject = 'Error with Tableau refresh script, Failed to gather Requisitions for Heatmaps %s' \
                   % basename(__file__)
         print error_result
         outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
-                             subject=subject, body=error_result)
+                                         subject=subject, body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
         give_notice.set_error_light()
         give_notice.flow_the_light()
 
-
     try:
+
+        offers_full.drop(columns=[''], axis=1, inplace=True)
+
         # Create table array to iterate through for creation and publishing.
-        extract_name = [[users, 'Lever_Users'],
+        extract_name = [[offers_full, 'Lever_Offers'],
+                        [users, 'Lever_Users'],
                         [final_posts, 'Lever_Posts'],
                         [requisitions_full, 'Lever_Requisitions'],
                         [candidates_full, 'Lever_Candidates'],
                         [stages, 'Lever_Stages'],
                         [requisition_fields, 'Lever_Req_Fields'],
-                        [offers_full, 'Lever_Offers'],
                         [archive_reasons, 'Lever_Archieve_Reasons'],
                         [candidates_for_offers, 'Lever_Candidates_with_Offers_Posts'],
                         [requisitions_for_heatmap, 'Lever_Requisitions_with_Candidates_data_for_Heatmap']]
@@ -282,53 +299,68 @@ def main():
 
         for table in extract_name:
             # Package in to a tde file
-            data_file = TDEAssembler(data_frame=table[0],
-                                     extract_name=table[1])
+            data_file = HyperAssembler(data_frame=table[0], extract_name=table[1], file_path=file_path)
+
             # Set values for publishing the data.
-            file_names_to_publish[table[1]] = str(data_file)
+            file_names_to_publish[table[1]] = data_file.file_name
 
             print table[1], "\n", str(data_file), "\n-------------\n\n"
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_traceback)
-        error_result = "Unexpected Error: %s, %s, %s"\
+        error_result = "Unexpected Error: %s, %s, %s" \
                        % (exc_type, exc_value, traceback.format_exc())
-        subject = 'Error with Tableau refresh script, Failed to create tableau extract, %s' % basename(__file__)
+        subject = 'Error creating Extracts in Tableau refresh script, %s on Server %s' % (basename(__file__),
+                                                                                          socket.gethostname())
+        error_result += subject
+
         print error_result
-        outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
-                             subject=subject, body=error_result)
+        try:
+            data = {'REQUESTEREMAIL': 'martin.valenzuela@bazaarvoice.com',
+                    'REQUESTER': 'Martin Valenzuela',
+                    'DESCRIPTION': error_result,
+                    'SUBJECT': subject}
+            Ticket().create_ticket(data)
+        except:
+            outlook().send_email('martin.valenzuela@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject,
+                                 body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(3)
         give_notice.set_error_light()
         give_notice.flow_the_light()
 
-
-
-
     try:
-
+        tableau_server = Tableau(server_url='https://tableau.bazaarvoice.com/', site_id='PeopleandTalent')
         for table_name in extract_name:
-            server_url, username, password, site_id, data_source_name, project = \
-                auth.tableau_publishing(datasource_type='PandT', data_source_name=table_name[1])
+            tableau_server.publish_datasource(project='Testing',
+                                              file_path=file_names_to_publish[table_name[1]],
+                                              mode='Append', name=table_name[1])
 
-            publish_data(server_url, username, password, site_id, file_names_to_publish[table_name[1]],
-                         data_source_name, project, replace_data=True)
         outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
                              subject='Lever-Data update complete', body='Lever-Data update complete')
 
     except:
-        error_result = "Error publishing tableau extracts. Unexpected Error: %s, %s"\
+        error_result = "Unexpected AttributeError: %s, %s" \
                        % (sys.exc_info()[0], sys.exc_info()[1])
-        subject = 'Error with Tableau refresh script, %s' % basename(__file__)
+        subject = 'Error with Tableau refresh script, %s on Server %s' % (basename(__file__), socket.gethostname())
+        error_result += subject
         print error_result
-        outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
-                             subject=subject, body=error_result)
-        give_notice = Notifier()
-        give_notice.set_red()
-        give_notice.wait(3)
-        give_notice.set_error_light()
-        give_notice.flow_the_light()
+        try:
+            data = {'REQUESTEREMAIL': 'martin.valenzuela@bazaarvoice.com',
+                    'REQUESTER': 'Martin Valenzuela',
+                    'DESCRIPTION': error_result,
+                    'SUBJECT': subject}
+            Ticket().create_ticket(data)
+        except:
+            outlook().send_email('martin.valenzuela@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject,
+                                 body=error_result)
+            give_notice = Notifier()
+            give_notice.set_red()
+            give_notice.wait(3)
+            give_notice.set_error_light()
+            give_notice.flow_the_light()
+
 
 if __name__ == '__main__':
     start = time()
