@@ -129,9 +129,9 @@ class Ticket(object):
                                         "Details:{" \
                                         "STATUS:%s}}}" % status
             # print querystring
-            response, helpdesk_ticket_details = hdc.fetch_from_helpdesk(url, querystring, headers)
+            helpdesk_ticket_details = hdc.fetch_from_helpdesk(url, querystring, headers)
 
-            return response, helpdesk_ticket_details
+            return helpdesk_ticket_details
         except:
             error_result = "Unexpected error 1T: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             raise Exception(error_result)
