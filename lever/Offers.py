@@ -6,7 +6,7 @@ import re
 import sys
 
 import pandas as pd
-from Lever_Connection import LeverConnection as lhc
+from lever.Lever_Connection import LeverConnection as lhc
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from helper_scripts.misc_helpers.data_manipulation import create_feature_dataframe
 
@@ -83,7 +83,7 @@ class Offers(object):
             lever_records = self.get_the_offer(record_id=self.record_cursor)
             if lever_records['data'] == []:
                 candidates_id = self.record_cursor
-                lever_records['data'] = [{'id': '-', 'candidate_id': candidates_id, 'fields': ['']}]
+                lever_records['data'] = [{'id': '-', 'candidate_id': candidates_id, 'fields': ['No fields']}]
             else:
                 lever_records['data'][0]['candidate_id'] = self.record_cursor
             lever_record_list = self.aggregate_offers(lever_record_list, lever_records['data'])
@@ -179,7 +179,7 @@ class Offers(object):
         # Convert extra fields nested in a dataframe column in to column with values
         feature_dataframe = create_feature_dataframe(offer_details, "offer_id", "fields")
         # print feature_dataframe
-        # feature_dataframe.drop(columns=0, axis=1, inplace=True)
+        # feature_dataframe.drop(columns=[''], axis=1, inplace=True)
         # feature_dataframe.drop(0, inplace=True)
         feature_dataframe.fillna('-', inplace=True)
         feature_dataframe = correct_date_dtype(feature_dataframe, date_time_format='%Y-%m-%d %H:%M:%S',
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     # try:
     stage_ids = ['44015e45-bbf3-447c-8517-55fe4540acdc', 'offer']
     today = datetime.datetime.today()
-    current_month = today.replace(day=31, hour=0, minute=0, second=0, microsecond=0)
+    current_month = today.replace(day=28, hour=0, minute=0, second=0, microsecond=0)
     beginning_of_three_months_ago = current_month - pd.offsets.MonthBegin(1)
     beginning_of_three_months_ago = beginning_of_three_months_ago.value / 1000000
 
