@@ -150,7 +150,14 @@ class Ticket(object):
             url, querystring, headers = hdc.create_api_request()
 
             url = url + "/"
-            data = str(data_dictionary).replace("'", "")
+            # Remove any unsafe characters fof the data.
+            regex_pattern = r"[\'\"\<\>]"
+            for key in data_dictionary.keys():
+                data_dictionary[key] = re.sub(r"[,:]", '', data_dictionary[key])
+            data_dictionary = str(data_dictionary)
+            data = re.sub(pattern=regex_pattern, repl='', string=data_dictionary, count=0)
+
+            #Start building Query String.
             querystring['OPERATION_NAME'] = "ADD_REQUEST"
             querystring['INPUT_DATA'] = "{operation:{" \
                                         "Details:%s}}" % data
