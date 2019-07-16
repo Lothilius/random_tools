@@ -14,7 +14,7 @@ class Okta_Users(object):
     """ User list from Okta. When called, list of user are retrieved from Okta in a panda dataframe.
         """
 
-    def __init__(self, app_id='', query=''):
+    def __init__(self, app_id='', query='', filter=''):
         """ Creation of instance of Okta user
         :param app_id: Should be in the format of 'app/<id>'
         """
@@ -22,20 +22,19 @@ class Okta_Users(object):
             query = '?' + query
         self.primary_object = app_id + '/users' + query
         self.raw_users = None
-        self.users = self.create_panda(self.primary_object)
+        self.users = self.create_panda(self.primary_object, filter=filter)
 
     def __str__(self):
         return str(self.users)
 
-    def create_panda(self, primary_object):
-        users = okta_connect(primary_object=primary_object, limit=500, filter='').fetch_from_okta()
+    def create_panda(self, primary_object, filter=''):
+        users = okta_connect(primary_object=primary_object, limit=500, filter=filter).fetch_from_okta()
         users_profile_list = pd.read_json(path_or_buf=json.dumps(users), encoding='str')
         # print json.dumps([reponse_headers], indent=4, sort_keys=True)
         self.raw_users = users_profile_list
         try:
             okta_id = pd.DataFrame(self.raw_users['id'])
             okta_status = pd.DataFrame(self.raw_users['status'])
-
 
             self.users = pd.DataFrame(users_profile_list['profile'].tolist()).join(okta_id)
             self.users = self.users.join(okta_status)
@@ -47,17 +46,17 @@ class Okta_Users(object):
 
             return self.users
         except Exception, e:
-            print e
+            # print e
             return pd.DataFrame()
 
     def okta_users(self):
         return self.users
 
     @staticmethod
-    def get_okta_id_from_email(query=''):
+    def get_okta_id_from_email(query='', filter=''):
         if query != '':
             query = '?q=' + query
-        user_data = Okta_Users(query=query)
+        user_data = Okta_Users(query=query, filter=filter)
         if user_data == []:
             return 'User Not found'
         try:
@@ -82,7 +81,7 @@ class Okta_Users(object):
 
 
 if __name__ == '__main__':
-    user = Okta_Users.get_okta_id_from_email(query='martin.valenzuela@bazaarvoice.com')
+    user = Okta_Users.get_okta_id_from_email(filter='active')
     # reduced_user_info = user[['lastName', 'firstName', 'employeeID', 'email', 'businessTitle', 'managerUserName',
     #                           'supervisoryOrg', 'accountType']]
 

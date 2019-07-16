@@ -12,7 +12,14 @@ pd.set_option('display.width', 260)
 class Okta_Connection(object):
     """ Okta connector that helps create the okta connection and the query.
     """
-    def __init__(self, primary_object='', limit='100', filter='status eq \"ACTIVE\"'):
+    def __init__(self, primary_object='', limit='100', filter='', data=None):
+        if data is None:
+            self.data = {}
+        else:
+            self.data = data
+        if filter in ['active', 'Active']:
+            filter = 'status eq \"ACTIVE\"'
+
         self.headers = auth.okta_authentication()
         self.primary_object = primary_object
         self.query = {"limit": limit,
@@ -38,8 +45,12 @@ class Okta_Connection(object):
 
     def query_okta(self, query_type='GET'):
         # Send the request
-        response = requests.request(query_type, url=self.api_url, headers=self.headers, params=self.query)
-        print response.url
+        if self.data is None:
+            response = requests.request(query_type, url=self.api_url, headers=self.headers, params=self.query)
+        else:
+            response = requests.request(query_type, url=self.api_url, headers=self.headers, params=self.query,
+                                        data=self.data)
+
         if response.status_code == 204 or response.text == '{}':
             try:
                 request_id = response.headers['X-Okta-Request-Id']
