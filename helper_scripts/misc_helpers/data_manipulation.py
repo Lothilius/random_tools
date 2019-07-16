@@ -129,7 +129,7 @@ def create_feature_dataframe(df, id_column, feature_column):
 
         df_feature_values[id_column] = row[1][id_column]
 
-        feature_df = pd.concat([feature_df, df_feature_values])
+        feature_df = pd.concat([feature_df, df_feature_values], sort=False)
 
     return feature_df
 
