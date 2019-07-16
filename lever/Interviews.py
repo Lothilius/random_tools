@@ -25,7 +25,8 @@ class Interviews(object):
         The list view will need to be specified from the list of view available to the person running the quarry to
         gather the tickets.
     """
-    def __init__(self, record_id=''):
+    def __init__(self, record_id='', candidate_id=''):
+        self.candidate_id = candidate_id
         self.last_interview_id = record_id
         self.inteview = self.get_all_interviews(record_id)
 
@@ -184,9 +185,3 @@ if __name__ == '__main__':
     end = time()
     print (end - start) / 60
     # print candis.candidates
-
-    # candis.candidates.to_csv(
-    #     "/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Tickets/Lever_Testing/postings.csv",
-    #     encoding='utf-8',
-    #     escapechar='\\',
-    #     index=False)
