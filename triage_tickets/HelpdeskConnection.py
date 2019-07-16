@@ -83,7 +83,14 @@ class HelpdeskConnection(object):
 
         # print(json.dumps(helpdesk_tickets["operation"]["Details"], indent=4))
         try:
-            return helpdesk_tickets["operation"]["Details"]
+            try:
+                if 'EDIT_REQUEST' == querystring['OPERATION_NAME']:
+                    return helpdesk_tickets["operation"]["result"]
+                else:
+                    return helpdesk_tickets["operation"]["Details"]
+            except Exception, e:
+                pass
+
         except KeyError:
             print response.url
             print(json.dumps(helpdesk_tickets["operation"], indent=4))
