@@ -5,11 +5,13 @@ import sys
 
 from bv_authenticate.Authentication import Authentication as auth
 from send_email.OutlookConnection import OutlookConnection as outlook
-from tableau_data_publisher.data_assembler import TDEAssembler
-from tableau_data_publisher.data_publisher import publish_data
+from triage_tickets.TicketList import Ticket
+from tableau_data_publisher.data_assembler_hyper import HyperAssembler
+from tableau_data_publisher.Tableau import Tableau
 from helper_scripts.notify_helpers import Notifier
 from okta.Okta_Group_Members import Okta_Group_Members
 from os.path import basename
+from os import environ
 from time import time
 from datetime import datetime
 from HTMLParser import HTMLParser
@@ -17,11 +19,22 @@ from static.static_files import get_static_file
 from helper_scripts.notify_helpers import wait
 import pandas as pd
 import os
+from os import remove
+import socket
 
 
 work_day_groups = Okta_Group_Members(query='WD-Active')
 m_f_group = '00gcy0wldkSLIQJLRDDU'
 today = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+
+if environ['MY_ENVIRONMENT'] == 'prod':
+    file_path = '/var/shared_folder/EUS/Tableau_data/'
+    project = 'EUS'
+else:
+    file_path = '/Users/%s/Downloads/' % environ['USER']
+    project = 'Testing'
+
+extract_name = 'MFA_Employee_data'
 
 
 def mfa_notify(user_info=('martin.valenzuela@bazaarvoice.com', 'Martin')):
@@ -50,8 +63,16 @@ def mfa_notify(user_info=('martin.valenzuela@bazaarvoice.com', 'Martin')):
                        % (sys.exc_info()[0], sys.exc_info()[1], e)
         subject = 'Error with MFA true up script. Not able to send Email. %s' % basename(__file__)
         print error_result
-        outlook().create_helpdesk_ticket(cc='BizAppsIntegrations@bazaarvoice.com',
-                             subject=subject, body=error_result)
+        try:
+            data = {'REQUESTEREMAIL': 'martin.valenzuela@bazaarvoice.com',
+                    'REQUESTER': 'Martin Valenzuela',
+                    'DESCRIPTION': error_result,
+                    'SUBJECT': subject}
+            Ticket().create_ticket(data)
+        except:
+            outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+                                 subject=subject,
+                                 body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(30)
@@ -99,21 +120,34 @@ def main():
                                     how='left', on='email', suffixes=('_wd', '_results'))
 
             try:
-                # Package in to a tde file
-                data_file = TDEAssembler(data_frame=left_wd_join, extract_name='MFA_Employee_data')
+                # Package in to a hyper file
+                data_file = HyperAssembler(data_frame=left_wd_join, extract_name=extract_name, file_path=file_path)
                 # Set values for publishing the data.
                 file_name = str(data_file)
-                server_url, username, password, site_id, data_source_name, project = \
-                    auth.tableau_publishing(datasource_type='BizApps', data_source_name='MFA_Employee_data')
-                # Publish the data
-                publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
+                tableau_server = Tableau(server_url='https://tableau.bazaarvoice.com/', site_id='BizTech')
+                tableau_server.publish_datasource(project=project,
+                                                  file_path=file_name,
+                                                  mode='Append', name=extract_name)
+
+                remove(file_name)
+
             except Exception, e:
                 error_result = "Unexpected Error: %s, %s, %s" \
                                % (sys.exc_info()[0], sys.exc_info()[1], e)
-                subject = 'Error with MFA true up script. Could not publish user list to Tableau. %s' % basename(__file__)
+                subject = 'Error with MFA true up script. Could not publish user list to Tableau. %s on %s' % \
+                          (basename(__file__), socket.gethostname())
+                error_result += subject
                 print error_result
-                outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
-                                     subject=subject, body=error_result)
+                try:
+                    data = {'REQUESTEREMAIL': 'martin.valenzuela@bazaarvoice.com',
+                            'REQUESTER': 'Martin Valenzuela',
+                            'DESCRIPTION': error_result,
+                            'SUBJECT': subject}
+                    Ticket().create_ticket(data)
+                except:
+                    outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
+                                         subject=subject,
+                                         body=error_result)
                 give_notice = Notifier()
                 give_notice.set_red()
                 give_notice.wait(30)
@@ -139,13 +173,21 @@ def main():
     except KeyboardInterrupt:
         pass
     except Exception, e:
-        error_result = "Unexpected Error: %s, %s, %s" \
-                       % (sys.exc_info()[0], sys.exc_info()[1], e)
+        error_result = "Unexpected AttributeError: %s, %s" \
+                       % (sys.exc_info()[0], sys.exc_info()[1])
         subject = 'Error with MFA true up script. Major error. ' \
-                  'Might have prevented mfa Provisioning. %s' % basename(__file__)
+                  'Might have prevented mfa Provisioning. %s on %s' % (basename(__file__), socket.gethostname())
+        error_result += subject
         print error_result
-        outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com',
-                             subject=subject, body=error_result)
+        try:
+            data = {'REQUESTEREMAIL': 'martin.valenzuela@bazaarvoice.com',
+                    'REQUESTER': 'Martin Valenzuela',
+                    'DESCRIPTION': error_result,
+                    'SUBJECT': subject}
+            Ticket().create_ticket(data)
+        except:
+            outlook().send_email('helpdesk@bazaarvoice.com', cc='BizAppsIntegrations@bazaarvoice.com', subject=subject,
+                                 body=error_result)
         give_notice = Notifier()
         give_notice.set_red()
         give_notice.wait(30)
