@@ -12,3 +12,4 @@ phue
 # Elasticsearch 6.x
 elasticsearch>=6.0.0,<7.0.0
 requests-aws4auth
+tableauserverclient
