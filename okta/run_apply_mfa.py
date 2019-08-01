@@ -89,7 +89,7 @@ def main():
             all_wd_employees.append(mfa_employees)
 
         # Union all data frames
-        all_wd_employees = pd.concat(all_wd_employees, ignore_index=True)
+        all_wd_employees = pd.concat(all_wd_employees, ignore_index=True, sort=False)
 
         # Get Users from Okta that are in mfa-everywhere group
         mfa_users = Okta_Group_Members(group_id=m_f_group)
@@ -101,6 +101,8 @@ def main():
 
         # Any Null in login_mfa column are not in MFA group.
         employees_without_mfa = left_wd_join[left_wd_join['login_mfa'].isnull()].copy()  # type: pd.DataFrame
+
+        employees_without_mfa['result'] = ''
 
         # If employees_without_mfa is not Empty then apply mfa group to user missing the group and publish full list.
         if not employees_without_mfa.empty:
