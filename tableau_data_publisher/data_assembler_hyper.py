@@ -8,8 +8,8 @@ __author__ = 'Lothilius'
 import pandas as pd
 from os import environ
 from datetime import datetime
-from tableausdk2 import *
-from tableausdk2.HyperExtract import *
+from tableausdk import *
+from tableausdk.HyperExtract import *
 import numpy as np
 from pyprogressbar import Bar
 from os.path import expanduser
