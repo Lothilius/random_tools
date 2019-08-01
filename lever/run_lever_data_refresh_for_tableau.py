@@ -12,6 +12,7 @@ from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from lever import *
 from os.path import basename
 from os import environ
+from os import remove
 from datetime import datetime
 from time import time
 from triage_tickets.Ticket import Ticket
@@ -20,9 +21,10 @@ import socket
 
 if environ['MY_ENVIRONMENT'] == 'prod':
     file_path = '/var/shared_folder/PandT/Tableau_data/'
+    project = 'Recruiting'
 else:
     file_path = '/Users/%s/Downloads/' % environ['USER']
-    # file_path = 'Testing/BizApps/Tableau_data/'
+    project = 'Testing'
 
 try:
     give_notice = Notifier()
@@ -332,10 +334,16 @@ def main():
 
     try:
         tableau_server = Tableau(server_url='https://tableau.bazaarvoice.com/', site_id='PeopleandTalent')
+        tableau_old = Tableau(server_url='https://tableauserver.bazaarvoice.com/', site_id='PeopleandTalent')
         for table_name in extract_name:
-            tableau_server.publish_datasource(project='Testing',
+            tableau_server.publish_datasource(project=project,
                                               file_path=file_names_to_publish[table_name[1]],
                                               mode='Append', name=table_name[1])
+            tableau_old.publish_datasource(project=project,
+                                              file_path=file_names_to_publish[table_name[1]],
+                                              mode='Append', name=table_name[1])
+
+            remove(file_names_to_publish[table_name[1]])
 
         outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
                              subject='Lever-Data update complete', body='Lever-Data update complete')
