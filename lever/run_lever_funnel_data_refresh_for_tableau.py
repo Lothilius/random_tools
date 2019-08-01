@@ -6,7 +6,7 @@ import pandas as pd
 from bv_authenticate.Authentication import Authentication as auth
 from send_email.OutlookConnection import OutlookConnection as outlook
 from tableau_data_publisher.data_assembler import TDEAssembler
-from tableau_data_publisher.data_publisher import publish_data
+from tableau_data_publisher.Tableau import Tableau
 from helper_scripts.notify_helpers import Notifier
 from helper_scripts.misc_helpers.data_manipulation import correct_date_dtype
 from se_helpers.actions import wait
@@ -20,10 +20,18 @@ from lever.Applications import Applications
 from lever.Requisition_Fields import Requisition_Fields
 from lever.Archive_Reasons import Archive_Reasons
 from os import path
+from os import environ
 from datetime import datetime
 from time import time
 import traceback
 
+
+if environ['MY_ENVIRONMENT'] == 'prod':
+    file_path = '/var/shared_folder/PandT/Tableau_data/'
+    project = 'Recruiting'
+else:
+    file_path = '/Users/%s/Downloads/' % environ['USER']
+    project = 'Testing'
 
 def main():
     hired_and_offer_stage_ids = ['44015e45-bbf3-447c-8517-55fe4540acdc', 'offer']
@@ -236,12 +244,11 @@ def main():
 
 
     try:
+        tableau_server = Tableau(server_url='https://tableau.bazaarvoice.com/', site_id='PeopleandTalent')
         for table_name in extract_name:
-            server_url, username, password, site_id, data_source_name, project = \
-                auth.tableau_publishing(datasource_type='PandT', data_source_name=table_name[1])
-
-            publish_data(server_url, username, password, site_id, file_names_to_publish[table_name[1]],
-                         data_source_name, project, replace_data=True)
+            tableau_server.publish_datasource(project=project,
+                                              file_path=file_names_to_publish[table_name[1]],
+                                              mode='Append', name=table_name[1])
         outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
                              subject='Lever-Data update complete', body='Lever-Data update complete')
 
