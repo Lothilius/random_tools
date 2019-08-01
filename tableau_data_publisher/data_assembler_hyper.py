@@ -2,7 +2,7 @@
 __author__ = 'Lothilius'
 
 # The primary purpose of this script is to return data from a csv or api source and package it as
-# a tde file so that it can be used within Tableau.
+# a hyper file so that it can be used within Tableau.
 # The script converts the data in to a panda Dataframe in order to analyze and maintain data structure.
 
 import pandas as pd
@@ -14,6 +14,7 @@ import numpy as np
 from pyprogressbar import Bar
 from os.path import expanduser
 import pandas as pd
+from os import remove
 import boto3
 
 
@@ -43,6 +44,7 @@ class HyperAssembler (object):
         self.time_of_extract = datetime.now()
         self.extract_name = extract_name
         self.last_data_row_extracted = None
+        self.error = None
 
         # Check the type of data passed to the assembler
         try:
@@ -53,9 +55,10 @@ class HyperAssembler (object):
 
                 self.data_types = self.assess_type()
                 self.assemble_extract()
-        except:
-            error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-            print error_result
+        except Exception as e:
+            the_errors = e
+            error_result = "Unexpected error 1: %s, %s, %s" % (sys.exc_info()[0], sys.exc_info()[1], str(the_errors))
+            raise Exception(error_result)
 
     def __str__(self):
         return self.file_name
@@ -107,6 +110,9 @@ class HyperAssembler (object):
 
             data_extract.close()
             ExtractAPI.cleanup()
+
+            if self.error is not None:
+                raise Exception
         except:
             file_name = self.extract_file()
 
@@ -114,13 +120,25 @@ class HyperAssembler (object):
             Extract(file_name).close()
             ExtractAPI.cleanup()
 
-            # Create csv and pickle of the data
-            self.data_frame.to_pickle(file_name.replace('.tde', '_pickle'))
-            self.data_frame.to_csv(file_name.replace('.tde', '.csv'), index=False, encoding='utf-8')
-            raise Exception("Error in creating tde file please consult data files. \n%s\n%s. \n%s, %s, %s"
-                            % (file_name.replace('.tde', '_pickle'), file_name.replace('.tde', '.csv'),
-                               'Error on line {}'.format(sys.exc_info()[-1].tb_lineno),
-                            sys.exc_info()[0], sys.exc_info()[1]))
+            # Create pickle of the data
+            full_filename = self.file_name.replace('.hyper', '_pickle')
+            print full_filename
+            # offending_dataf
+            self.data_frame.to_pickle(path=full_filename)
+
+            # Load File to S3
+            # Create an S3 client
+            s3 = boto3.client('s3')
+            bucket_name = 'biztech-tableau-data-files'
+            s3_file_path = 'BizApps/Tableau_data/%s' % self.extract_name
+            # Uploads the given file using a managed uploader, which will split up large
+            # files automatically and upload parts in parallel.
+            s3.upload_file(full_filename, bucket_name, s3_file_path)
+            remove(full_filename)
+
+            raise Exception("Error in creating hyper file please consult data files. \n%s. \n%s, \n%s, \n%s. \n%s"
+                            % (full_filename, sys.exc_info()[0], sys.exc_info()[1],
+                               'Error on line {}'.format(sys.exc_info()[-1].tb_lineno), self.error))
 
     def add_timestamp(self, time_of_extract):
         """ Create a column stamping all the tickets with the date and time of the extract.
@@ -130,7 +148,7 @@ class HyperAssembler (object):
 
     def extract_file(self):
         """ Use this in conjuction with the data publisher in order to publish the data.
-        :return: File name and path to the tde extract file
+        :return: File name and path to the hyper extract file
         """
         # Create filename with path, name a time stamp
         now = datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
@@ -197,12 +215,14 @@ class HyperAssembler (object):
                     row_object.setCharString(column_number, value.encode(encoding='ascii', errors='ignore'))
                 else:
                     row_object.setCharString(column_number, str(value).encode(encoding='ascii', errors='ignore'))
-        except Exception as e:
+        except:
+            if self.error is None:
+                self.error = ''
+            value = value.encode(encoding="ascii", errors='ignore')
             # Create pickle of the offending dataframe.
-            print "%s \n Value: %s, Value Type: %s, column name%s: %s, %s" % (e, value, value_type, column_number,
-                                                                              column_name, type(value))
-            home = expanduser("~") + "/problem_dataframe"
-            self.data_frame.to_pickle(path=home)
+            self.error += "Value: %s, Value Type: %s, column name%s: %s, %s \n" \
+                          % (value, value_type, column_number, column_name, type(value))
+
 
 if __name__ == '__main__':
     ticket_list = pd.read_pickle('/Users/martin.valenzuela/Downloads/BizApps_HDT__pickle')
