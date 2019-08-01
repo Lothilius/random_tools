@@ -12,6 +12,7 @@ from os.path import basename
 from datetime import datetime
 from time import time
 from os import environ
+from os import remove
 import socket
 
 
@@ -58,6 +59,8 @@ def main():
         tableau_server.publish_datasource(project=project,
                                           file_path=file_name,
                                           mode='Append', name=data_source_name)
+
+        remove(file_name)
 
         outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
                            subject='HDT-Data update complete', body='HDT-Data update complete')

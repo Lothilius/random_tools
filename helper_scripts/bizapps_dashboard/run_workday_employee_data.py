@@ -2,8 +2,6 @@
 __author__ = 'Lothilius'
 
 import sys
-
-from bv_authenticate.Authentication import Authentication as auth
 from send_email.OutlookConnection import OutlookConnection as outlook
 from tableau_data_publisher.data_assembler_hyper import HyperAssembler
 from tableau_data_publisher.Tableau import Tableau

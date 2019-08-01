@@ -2,7 +2,6 @@
 __author__ = 'Lothilius'
 
 import sys
-
 from send_email.OutlookConnection import OutlookConnection as outlook
 from tableau_data_publisher.data_assembler_hyper import HyperAssembler
 from triage_tickets.TicketList import TicketList
@@ -13,6 +12,7 @@ from os import environ
 from os.path import basename
 from datetime import datetime
 from time import time
+from os import remove
 import socket
 
 
@@ -60,10 +60,9 @@ def main():
         tableau_server.publish_datasource(project=project,
                                           file_path=file_name,
                                           mode='Append', name=data_source_name)
-        # server_url, username, password, site_id, data_source_name, project = \
-        #     auth.tableau_publishing(datasource_type='EUS', data_source_name='EUS-Helpdesk-Tickets')
-        #
-        # publish_data(server_url, username, password, site_id, file_name, data_source_name, project, replace_data=True)
+
+        remove(file_name)
+
         outlook().send_email(to='BizAppsIntegrations@bazaarvoice.com',
                              subject='EUS-HDT-Data update complete', body='EUS-HDT-Data update complete')
 

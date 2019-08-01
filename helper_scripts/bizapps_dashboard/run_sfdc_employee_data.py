@@ -2,7 +2,6 @@
 __author__ = 'Lothilius'
 
 import sys
-from bv_authenticate.Authentication import Authentication as auth
 from send_email.OutlookConnection import OutlookConnection as outlook
 from tableau_data_publisher.Tableau import Tableau
 from triage_tickets.Ticket import Ticket
@@ -33,7 +32,7 @@ give_notice = Notifier()
 
 def main():
     try:
-        # Get SFDC_users from the Salesforcewith permissions and licenses
+        # Get SFDC_users from the Salesforce with permissions and licenses
         the_list = SFDC_Users(include_licenses=True, include_permissions=True)
         sfdc_users = the_list.users_with_licenses_permissions()
 
