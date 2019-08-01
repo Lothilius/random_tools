@@ -334,12 +334,8 @@ def main():
 
     try:
         tableau_server = Tableau(server_url='https://tableau.bazaarvoice.com/', site_id='PeopleandTalent')
-        tableau_old = Tableau(server_url='https://tableauserver.bazaarvoice.com/', site_id='PeopleandTalent')
         for table_name in extract_name:
             tableau_server.publish_datasource(project=project,
-                                              file_path=file_names_to_publish[table_name[1]],
-                                              mode='Append', name=table_name[1])
-            tableau_old.publish_datasource(project=project,
                                               file_path=file_names_to_publish[table_name[1]],
                                               mode='Append', name=table_name[1])
 
