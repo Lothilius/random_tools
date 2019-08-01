@@ -5,13 +5,23 @@ import datetime as dt
 from sfdc.SFDC import SFDC
 from pyprogressbar import Bar
 from helper_scripts.notify_helpers import *
-from tableau_data_publisher.data_assembler import TDEAssembler
+from os import environ
+from tableau_data_publisher.data_assembler_hyper import HyperAssembler
+from tableau_data_publisher.Tableau import Tableau
 from tableau_data_publisher.data_publisher import publish_data
 
 
 
 pd.set_option('display.width', 290)
 
+if environ['MY_ENVIRONMENT'] == 'prod':
+    file_path = '/var/shared_folder/EUS/Tableau_data/'
+    project = 'Business Applications'
+else:
+    file_path = '/Users/%s/Downloads/' % environ['USER']
+    project = 'Testing'
+
+extract_name = 'BizApps_BizReqs'
 
 def convert_datetime_to_date(the_datetime):
     # print the_datetime
@@ -156,7 +166,15 @@ def main():
         print open_list
 
         # Package in to a tde file
-        data_file = TDEAssembler(data_frame=open_list, extract_name='BizApps_BizReqs')
+        # Package in to a hyper file
+        data_file = HyperAssembler(data_frame=open_list, extract_name=extract_name, file_path=file_path)
+        # Set values for publishing the data.
+        file_name = str(data_file)
+        tableau_server = Tableau(server_url='https://tableau.bazaarvoice.com/', site_id='BizTech')
+        global project
+        tableau_server.publish_datasource(project=project,
+                                          file_path=file_name,
+                                          mode='Append', name=extract_name)
         file_name = str(data_file)
 
         # Set values for publishing the data.
