@@ -85,7 +85,7 @@ class TDEAssembler (object):
                     table_definition = table.getTableDefinition()
                 else:
                     table_definition = TableDefinition()
-                    for each in self.data_types.reset_index(level=0).as_matrix():
+                    for each in self.data_types.reset_index(level=0).values:
                         # Add the column info to the table definition
                         table_definition.addColumn(str(each[0]), schema_type_map[str(each[1])])
                     # Create the Table with the table definition
