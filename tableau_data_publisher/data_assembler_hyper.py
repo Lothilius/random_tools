@@ -2,20 +2,20 @@
 __author__ = 'Lothilius'
 
 # The primary purpose of this script is to return data from a csv or api source and package it as
-# a tde file so that it can be used within Tableau.
+# a hyper file so that it can be used within Tableau.
 # The script converts the data in to a panda Dataframe in order to analyze and maintain data structure.
 
 import pandas as pd
 from os import environ
 from datetime import datetime
 from tableausdk import *
-from tableausdk.Extract import *
+from tableausdk.HyperExtract import *
 import numpy as np
 from pyprogressbar import Bar
 from os.path import expanduser
 import pandas as pd
-
-# df = pd.read_csv()
+from os import remove
+import boto3
 
 
 # Define type maps
@@ -29,7 +29,7 @@ schema_type_map = {
 }
 
 
-class TDEAssembler (object):
+class HyperAssembler (object):
     def __init__(self, data_frame, file_path='', extract_name=''):
         """ Initialize new assembler
         :return: None
@@ -41,26 +41,27 @@ class TDEAssembler (object):
             self.file_path = '/Users/%s/Downloads/' % environ['USER']
         else:
             self.file_path = file_path
-
         self.time_of_extract = datetime.now()
         self.extract_name = extract_name
         self.last_data_row_extracted = None
+        self.error = None
 
         # Check the type of data passed to the assembler
         try:
             if isinstance(self.data_frame, pd.DataFrame):
                 # Create time stamp and Apply the time of extract to the data frame and the name of the file
                 self.add_timestamp(self.time_of_extract)
-                self.file_name = self.tde_file()
+                self.file_name = self.extract_file()
 
                 self.data_types = self.assess_type()
-                self.assemble_tde()
-        except:
-            error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
-            print error_result
+                self.assemble_extract()
+        except Exception as e:
+            the_errors = e
+            error_result = "Unexpected error 1: %s, %s, %s" % (sys.exc_info()[0], sys.exc_info()[1], str(the_errors))
+            raise Exception(error_result)
 
     def __str__(self):
-        return self.tde_file()
+        return self.file_name
 
     def assess_type(self):
         data_meta = pd.DataFrame(self.data_frame.dtypes)
@@ -68,7 +69,7 @@ class TDEAssembler (object):
 
         return data_meta
 
-    def assemble_tde(self):
+    def assemble_extract(self):
         """ Gather the data information and create the Tde.
         :return:
         """
@@ -109,20 +110,35 @@ class TDEAssembler (object):
 
             data_extract.close()
             ExtractAPI.cleanup()
+
+            if self.error is not None:
+                raise Exception
         except:
-            file_name = self.tde_file()
+            file_name = self.extract_file()
 
             # Clean up resources
             Extract(file_name).close()
             ExtractAPI.cleanup()
 
-            # Create csv and pickle of the data
-            self.data_frame.to_pickle(file_name.replace('.tde', '_pickle'))
-            self.data_frame.to_csv(file_name.replace('.tde', '.csv'), index=False, encoding='utf-8')
-            raise Exception("Error in creating tde file please consult data files. \n%s\n%s. \n%s, %s, %s"
-                            % (file_name.replace('.tde', '_pickle'), file_name.replace('.tde', '.csv'),
-                               'Error on line {}'.format(sys.exc_info()[-1].tb_lineno),
-                            sys.exc_info()[0], sys.exc_info()[1]))
+            # Create pickle of the data
+            full_filename = self.file_name.replace('.hyper', '_pickle')
+            print full_filename
+            # offending_dataf
+            self.data_frame.to_pickle(path=full_filename)
+
+            # Load File to S3
+            # Create an S3 client
+            s3 = boto3.client('s3')
+            bucket_name = 'biztech-tableau-data-files'
+            s3_file_path = 'BizApps/Tableau_data/%s' % self.extract_name
+            # Uploads the given file using a managed uploader, which will split up large
+            # files automatically and upload parts in parallel.
+            s3.upload_file(full_filename, bucket_name, s3_file_path)
+            remove(full_filename)
+
+            raise Exception("Error in creating hyper file please consult data files. \n%s. \n%s, \n%s, \n%s. \n%s"
+                            % (full_filename, sys.exc_info()[0], sys.exc_info()[1],
+                               'Error on line {}'.format(sys.exc_info()[-1].tb_lineno), self.error))
 
     def add_timestamp(self, time_of_extract):
         """ Create a column stamping all the tickets with the date and time of the extract.
@@ -130,14 +146,15 @@ class TDEAssembler (object):
         """
         self.data_frame['Extract_Timestamp'] = time_of_extract
 
-    def tde_file(self):
+    def extract_file(self):
         """ Use this in conjuction with the data publisher in order to publish the data.
-        :return: File name and path to the tde extract file
+        :return: File name and path to the hyper extract file
         """
         # Create filename with path, name a time stamp
+        now = datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
         if self.extract_name == '':
             self.extract_name = 'tableau_extract_file'
-        file_name = '%s%s_.tde' % (self.file_path, self.extract_name)
+        file_name = '%s%s_%s.hyper' % (self.file_path, self.extract_name, now)
 
         return file_name
 
@@ -194,16 +211,21 @@ class TDEAssembler (object):
                     frac = 0
                 row_object.setDateTime(column_number, year, month, day,	hour, min, sec, frac)
             else:
-                row_object.setString(column_number, unicode(str(value), "utf-8"))
-        except Exception as e:
+                if isinstance(value, str):
+                    row_object.setCharString(column_number, value.encode(encoding='ascii', errors='ignore'))
+                else:
+                    row_object.setCharString(column_number, str(value).encode(encoding='ascii', errors='ignore'))
+        except:
+            if self.error is None:
+                self.error = ''
+            value = value.encode(encoding="ascii", errors='ignore')
             # Create pickle of the offending dataframe.
-            print "%s \n Value: %s, Value Type: %s, column name%s: %s, %s" % (e, value, value_type, column_number,
-                                                                              column_name, type(value))
-            home = expanduser("~") + "/problem_dataframe"
-            self.data_frame.to_pickle(path=home)
+            self.error += "Value: %s, Value Type: %s, column name%s: %s, %s \n" \
+                          % (value, value_type, column_number, column_name, type(value))
+
 
 if __name__ == '__main__':
-    ticket_list = pd.read_pickle('/Users/martin.valenzuela/Box Sync/Documents/Austin Office/Data/EUS_HDT__pickle_2017_9_12')
-    data_file = TDEAssembler(data_frame=ticket_list, extract_name='EUS_testing_fixxxxed')
+    ticket_list = pd.read_pickle('/Users/martin.valenzuela/Downloads/BizApps_HDT__pickle')
+    # data_file = TDEAssembler(data_frame=ticket_list, extract_name='EUS_testing_fixxxxed')
 
 

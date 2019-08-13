@@ -12,6 +12,7 @@
 from tableausdk import *
 from tableausdk.Server import *
 from send_email.OutlookConnection import OutlookConnection
+from triage_tickets.Ticket import Ticket
 
 
 def publish_data(server_url, username, password, site_id, file_name,
@@ -82,4 +83,17 @@ def publish_data(server_url, username, password, site_id, file_name,
             error_message += "An unknown error occured."
 
         print error_message
-        OutlookConnection().send_email(to='helpdesk@bazaarvoice.com', subject='Error Creating HDT Tableau export', body=error_message)
+        try:
+            data = {'REQUESTEREMAIL': 'martin.valenzuela@bazaarvoice.com',
+                    'REQUESTER': 'Martin Valenzuela',
+                    'DESCRIPTION': error_message,
+                    'SUBJECT': 'Error Creating HDT Tableau export'}
+            Ticket().create_ticket(data)
+        except:
+            OutlookConnection().send_email(to='helpdesk@bazaarvoice.com',
+                                           subject='Error Publishing Extract to server Tableau export',
+                                           body=error_message)
+
+
+if __name__ == '__main__':
+    tableau_extract = '/Users/martin.valenzuela/Downloads/BizApps_HDT_.tde'

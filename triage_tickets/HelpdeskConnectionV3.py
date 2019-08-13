@@ -7,38 +7,70 @@ from bv_authenticate.Authentication import Authentication as auth
 import time
 import sys
 
+
 def wait(seconds=5):
     time.sleep(seconds)
 
+
 class HelpdeskConnection(object):
     @staticmethod
-    def create_api_request(helpdesk_que='7256000001457777_MyView_7256000001457775', from_value=1):
+    def create_api_request(from_value=1, query='', open_only=False):
         """ Create the api request for HD. At the moment very minimal
             but can be expanded in the future for creating more specific and different types of requests.
-        :param helpdesk_que: This is the view name that can be created in the requests page
+        :param open_only: boolean for open only ticket or all tickets.
+        :param query: This is email that is being serached for.
         :param from_value: Sets the beginning value in the list returned
-        :param filter_request: Defines if the request is for the list of filters.
         :return: string of the URL, dict of the query, and a dict of the header
         """
+        # print from_value
         # Main HDT api URL
-        url = "https://sdpondemand.manageengine.com/api/json/request"
+        url = "https://sdpondemand.manageengine.com/app/itdesk/api/v3/requests"
+
+        query_first_part = "{'list_info':{""'start_index':%s," \
+                           "'get_total_count':'true'," \
+                           "'row_count':100," \
+                           "'fields_required':['id','display_id','subject', 'status','attachments'," \
+                           "'has_notes','site','responded_time','deleted_on','time_elapsed ','created_time'," \
+                           "'category','group','approval_status','first_response_due_by_time'," \
+                           "'created_by','priority','due_by_time','template','department'," \
+                           "'display_id','description','completed_time','has_attachments'," \
+                           "'requester','technician','mode','sla', 'resolution', 'resolved_time', " \
+                           "'level','item','subcategory','udf_fields']," % from_value
+
+        if open_only:
+            query_in_progress = ",'logical_operator': 'AND'," \
+                                "'children':[{'field':'status.in_progress','condition': 'is','value': 'true'," \
+                                "'logical_operator': 'AND'}]}]"
+        else:
+            query_in_progress = "}]"
+
+        if '@' in query:
+            query_for_email = "'field':'requester.email_id'," \
+                              "'condition':'is'," \
+                              "'values':['%s']%s" \
+                              "}}" % (query, query_in_progress)
+
+            search_criteria = query_for_email
+        else:
+            query_for_group = "'field':'group.name','condition':'is','values':%s%s}}" % (str(query), query_in_progress)
+            search_criteria = query_for_group
+
         # Query values go in this json structure
-        querystring = {"scope":"sdpodapi",
-                       "authtoken": auth.hdt_token(),
-                       "OPERATION_NAME": "GET_REQUESTS",
-                       "INPUT_DATA": "{operation:{"
-                                    "Details:{"
-                                    "FILTERBY:'%s', FROM:%s, LIMIT:100}}}" % (helpdesk_que, from_value) }
+        query_string = {
+            "input_data": query_first_part + "'search_criteria':[{" + search_criteria
+        }
 
         # Header information
         headers = {
-            'cache-control': "no-cache",
-            }
-        return url, querystring, headers
+            'Accept': "application/vnd.manageengine.sdp.v3+json",
+            'Authorization': auth.hdt_token()
+        }
+        return url, query_string, headers
 
     @staticmethod
     def fetch_from_helpdesk(url, querystring, headers, attempts=3):
         """ Makes the actual call to the help desk server.
+        :param attempts: Number of attempts before giving up.
         :param url: Send in the base url for the REST Call
         :param querystring:
         :param headers:
@@ -47,24 +79,17 @@ class HelpdeskConnection(object):
         try:
             wait(1)
             # Create the request and capture the response.
-            response = requests.request("POST", url, headers=headers, params=querystring)
+            response = requests.request("GET", url, headers=headers, params=querystring)
 
-            # print response.txt
+            # print response.url
             # Load the response to the request as a json object.
             helpdesk_tickets = json.loads(response.text.encode(encoding='utf-8'))
-            try:
-                if 'ADD_REQUEST' == querystring['OPERATION_NAME']:
-                    print querystring['OPERATION_NAME']
-                    print helpdesk_tickets['operation']['result']['status'] + ': ' + \
-                          helpdesk_tickets['operation']['result']['message']
-            except Exception, e:
-                pass
         except AttributeError:
             attempts -= 1
             error_result = "Unexpected error 2: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
 
             print error_result
-            print helpdesk_tickets["operation"]
+            # print helpdesk_tickets["operation"]
             wait(3)
             if attempts >= 0:
                 helpdesk_tickets = HelpdeskConnection.fetch_from_helpdesk(url, querystring, headers, attempts=attempts)
@@ -83,19 +108,15 @@ class HelpdeskConnection(object):
 
         # print(json.dumps(helpdesk_tickets["operation"]["Details"], indent=4))
         try:
-            try:
-                if 'EDIT_REQUEST' == querystring['OPERATION_NAME']:
-                    return helpdesk_tickets["operation"]["result"]
-                else:
-                    return helpdesk_tickets["operation"]["Details"]
-            except Exception, e:
-                pass
-
+            return helpdesk_tickets["requests"], helpdesk_tickets['list_info']
         except KeyError:
-            print response.url
-            print(json.dumps(helpdesk_tickets["operation"], indent=4))
+            print response
+            # print(json.dumps(helpdesk_tickets["operation"], indent=4))
             # print type(helpdesk_tickets["operation"]["result"])
-            return helpdesk_tickets["operation"]["result"]
+            try:
+                return helpdesk_tickets["list_info"]
+            except KeyError:
+                return helpdesk_tickets["response_status"]
         except:
             error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
             print error_result
@@ -117,4 +138,3 @@ class HelpdeskConnection(object):
     #     except:
     #         error_result = "Unexpected error 1: %s, %s" % (sys.exc_info()[0], sys.exc_info()[1])
     #         print error_result
-

@@ -8,7 +8,7 @@ import sys
 pd.set_option('display.width', 290)
 
 if __name__ == '__main__':
-    # file_location = raw_input('Hello where is the file of users: ')
+    # file_location = raw_input('Hello where is the file of user: ')
     # employee_list = pd.read_csv(file_location)
     # file_location = raw_input('Where is the file: ')
     # employee_term = pd.read_csv(file_location)

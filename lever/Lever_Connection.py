@@ -65,7 +65,7 @@ class LeverConnection(object):
             # print "before"
 
             # Load the response to the request as a json object.
-            lever_records = json.loads(response.text.encode(encoding='utf-8', errors="replace"))
+            lever_records = json.loads(response.text.encode(encoding='utf-8', errors="ignore"))
 
             # print "after"
             # print(json.dumps(lever_records, indent=4))

@@ -42,12 +42,11 @@ class Authentication(object):
 
     @staticmethod
     def smtp_login(account=''):
-        # if account == '':
-        #     username, password = Authentication.bv_credentials()
-        # else:
-        username = 'helpdesk@bazaarvoice.com'
-        password = environ['HD_EMAIL_PW']
-
+        if account == '':
+            username, password = Authentication.bv_credentials()
+        else:
+            username = 'helpdesk@bazaarvoice.com'
+            password = environ['HD_EMAIL_PW']
 
         return username, password
 
@@ -82,60 +81,25 @@ class Authentication(object):
 
 
     @staticmethod
-    def tableau_publishing(datasource_type='BizTech', data_source_name='New_Extract'):
+    def tableau_publishing(env=environ['MY_ENVIRONMENT'], url=''):
         """ Method prodives the data needed to publish a data source to the Tableau server.
-        :param datasource_type: The department that will be using the data source
-        :param data_source_name:
-        :return:
+        :return: server_url, username, password,
         """
         username, password = Authentication.tableau__credentials()
-
-        if environ['MY_ENVIRONMENT'] == 'prod':
-            server_url = 'https://tableauserver.bazaarvoice.com/'
+        # TODO -- Re do this part it's dumb
+        if url != '' and env != 'prod':
+            server_url = url
+        elif env == 'prod':
+            server_url = 'https://tableau.bazaarvoice.com/'
         else:
             server_url = 'https://tableauserver.bazaarvoice.com/'
-        if datasource_type == 'BizApps':
-            project = 'Business Applications'
-            site_id = 'BizTech'
-            # Set values for publishing the data.
-            # TODO - Move most of this trash to the publish data module
-            if environ['MY_ENVIRONMENT'] == 'prod' and data_source_name == 'Helpdesk-Tickets':
-                data_source_name = 'Helpdesk-Tickets'
-            elif environ['MY_ENVIRONMENT'] == 'prod' and data_source_name != 'New_Extract':
-                pass
-            else:
-                data_source_name = 'BizTech-test'
-        elif datasource_type =='EUS':
-            project = 'EUS'
-            site_id = 'BizTech'
-            # Set values for publishing the data.
-            # TODO - Move most of this trash to the publish data module
-            if environ['MY_ENVIRONMENT'] == 'prod' and data_source_name == 'EUS-Helpdesk-Tickets':
-                data_source_name = 'EUS-Helpdesk-Tickets'
-            elif environ['MY_ENVIRONMENT'] == 'prod' and data_source_name != 'New_Extract':
-                pass
-            else:
-                data_source_name = 'EUS-test'
-        elif datasource_type =='PandT':
-            project = 'Recruiting'
-            site_id = 'PeopleandTalent'
-            # Set values for publishing the data.
-            # TODO - Move most of this trash to the publish data module
-            if environ['MY_ENVIRONMENT'] == 'prod' and data_source_name != 'New_Extract':
-                pass
-            else:
-                data_source_name = 'PandT-test'
-        else:
-            # Set values for publishing the data.
-            project = ''
-            site_id = ''
 
-        return server_url, username, password, site_id, data_source_name, project
+        return server_url, username, password
 
     @staticmethod
     def hue_bridge():
-        hue_ip = environ['HUE_IP']
-        hue_token = environ['HUE_TOKEN']
+        hue_ip = environ['HUE_BIZTECH_IP']
+        hue_token = environ['HUE_BIZTECH_TOKEN']
 
         return hue_ip, hue_token
 

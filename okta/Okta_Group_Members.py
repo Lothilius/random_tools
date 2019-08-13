@@ -17,15 +17,17 @@ class Okta_Group_Members(object):
         """
 
     def __init__(self, group_id='00gcy0wldkSLIQJLRDDU', query=''):
-        """ Creation of instance of Okta users
-        :param app_id: Should be in the format of 'app/<id>'
+        """ Creation of instance of Okta user
+        :param group_id: Should ba a string
+        :param query:
         """
+        self.group_id = group_id
         if query != '' and '?' not in query:
             query = '?q=' + query
             self.primary_object = 'groups' + query
             self.groups = self.create_panda(self.primary_object)
-        elif group_id != '':
-            self.primary_object = 'groups/' + group_id + '/users'
+        elif self.group_id != '':
+            self.primary_object = 'groups/' + self.group_id + '/users'
             self.group_members = self.create_panda(self.primary_object)
 
     def __str__(self):
@@ -78,6 +80,7 @@ class Okta_Group_Members(object):
 
 
 if __name__ == '__main__':
-    user = Okta_Group_Members(query='WD-Active')
+    user = Okta_Group_Members(query='Lucidchart Licensed Users')
     # data = pd.read_csv("/Users/martin.valenzuela/Downloads/mfa-users.csv")
-    print user.group_members
+    lucidchart = Okta_Group_Members(group_id=user.groups.id[0])
+    print lucidchart.group_members

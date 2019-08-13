@@ -155,5 +155,5 @@ if __name__ == '__main__':
 
     end = time()
     print (end - start) / 60
-    # print type(reqs.users)
+    # print type(reqs.user)
     print users.users

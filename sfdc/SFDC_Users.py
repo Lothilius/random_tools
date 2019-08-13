@@ -10,7 +10,7 @@ import collections
 pd.set_option('display.width', 195)
 
 class SFDC_Users(object):
-    """ Users from SFDC. When called, active internal users are retrieved from SFDC in a panda dataframe.
+    """ Users from SFDC. When called, active internal user are retrieved from SFDC in a panda dataframe.
     """
     def __init__(self, user_type='Standard', include_licenses=False, include_permissions=False):
         self.users = self.get_user_list(user_type)
@@ -30,7 +30,7 @@ class SFDC_Users(object):
 
     def get_user_list(self, user_type='Standard'):
         """ Get Active standard user list from Salesforce.
-        :return: panda Dataframe of the users with the Username as the Email!!! ---Warning----
+        :return: panda Dataframe of the user with the Username as the Email!!! ---Warning----
         """
         sf = SFDC_Connection.connect_to_SFDC('prod')
         results = sf.query_all("SELECT Id, Username, Email, Name, Employee_ID__c, Role__c, Profile.Name, ForecastEnabled, "

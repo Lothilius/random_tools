@@ -90,7 +90,7 @@ def main():
         sys.exit("mail failed1; %s" % str(exc))
 
     try:
-        # Get Active SFDC users
+        # Get Active SFDC user
         sfdc_users = sf_users().get_user_list()
         sfdc_users.rename(columns={'Id': 'UserId'}, inplace=True)
         sfdc_users['Email'] = sfdc_users['Email'].apply(lambda x: x.lower())
@@ -108,7 +108,7 @@ def main():
     except IOError, error:
         print 'Try Again ' + str(error)  # give a error message
 
-    # Get list of licenses with users.
+    # Get list of licenses with user.
     licensed_users = sfdc_licenses().get_license_list()
 
     # print licensed_users
@@ -127,7 +127,7 @@ def main():
     body = create_deprovisioning_body(deprovision_list[['UserName', 'Email', 'UserId']])
     # outlook.create_helpdesk_ticket(subject='Users not found as active employees.', body=body, html=body)
 
-    # Gather users with E2CP licenses.
+    # Gather user with E2CP licenses.
     e2cp_users = users_and_license[['PackageLicenseId', 'UserId', 'Email', 'UserName']][users_and_license['PackageLicenseId'] == e2cp[0]]
 
 

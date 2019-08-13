@@ -10,6 +10,8 @@ import scipy.stats as s
 
 pd.set_option('display.width', 330)
 pd.set_option('display.max_rows', 100)
+pd.set_option('display.max_columns', 100)
+
 
 
 class SFDC_User_Analysis(object):
@@ -76,7 +78,7 @@ class SFDC_User_Analysis(object):
 
 
     def calculate_entropy(self, probability_df):
-        """ Cancluate the entropy for the probability dataframe
+        """ Calculate the entropy for the probability dataframe
         :param probability_df: A dataframe object made of probabilities
         :return: a entropy series for dataframe by column
         """
@@ -122,7 +124,9 @@ class SFDC_User_Analysis(object):
         # print '---------------new DF---------------\n'
         # print sfdc_users[['UserId', 'Profile_Name']]
         profiles_vectorized = create_feature_vector_dataframe(sfdc_users[['UserId', 'Profile_Name']],
-                                              feature_index_column='UserId', feature_column='Profile_Name', suffix='_profile')
+                                                              feature_index_column='UserId',
+                                                              feature_column='Profile_Name',
+                                                              suffix='_profile')
         profiles_vectorized.fillna(value=0, inplace=True)
         profile_clean = pd.merge(left=sfdc_users, right=profiles_vectorized, on='UserId')
 

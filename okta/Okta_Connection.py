@@ -5,14 +5,21 @@ import json
 import requests
 from bv_authenticate.Authentication import Authentication as auth
 import pandas as pd
-import ast
 
 pd.set_option('display.width', 260)
 
+
 class Okta_Connection(object):
-    """ Okta connector that help create the okta connection and the query.
+    """ Okta connector that helps create the okta connection and the query.
     """
-    def __init__(self, primary_object='', limit='100', filter='status eq \"ACTIVE\"'):
+    def __init__(self, primary_object='', limit='100', filter='', data=None):
+        if data is None:
+            self.data = {}
+        else:
+            self.data = data
+        if filter in ['active', 'Active']:
+            filter = 'status eq \"ACTIVE\"'
+
         self.headers = auth.okta_authentication()
         self.primary_object = primary_object
         self.query = {"limit": limit,
@@ -26,8 +33,8 @@ class Okta_Connection(object):
     def get_url(self):
         return self.api_url
 
-    def set_primary_object(self, object):
-        self.primary_object = object
+    def set_primary_object(self, primary_object):
+        self.primary_object = primary_object
         self.api_url = 'https://bazaarvoice.okta.com/api/v1/' + self.primary_object
 
     def set_query(self, query):
@@ -38,12 +45,20 @@ class Okta_Connection(object):
 
     def query_okta(self, query_type='GET'):
         # Send the request
-        response = requests.request(query_type, url=self.api_url, headers=self.headers, params=self.query)
-        print response.url
-        if response.status_code == 204:
-            print response.headers
-            print query_type
-            return 'Success! -- No Content.'
+        if self.data is None:
+            response = requests.request(query_type, url=self.api_url, headers=self.headers, params=self.query)
+        else:
+            response = requests.request(query_type, url=self.api_url, headers=self.headers, params=self.query,
+                                        data=self.data)
+
+        if response.status_code == 204 or response.text == '{}':
+            try:
+                request_id = response.headers['X-Okta-Request-Id']
+                return 'Success! -- Request ID: %s' % request_id
+            except ValueError:
+                return 'Fail! -- %s' % response.headers
+        elif response.status_code != 200:
+            return 'Fail! -- %s' % response.text
         else:
             data = response.text
             # Place response in to a json object
@@ -57,7 +72,6 @@ class Okta_Connection(object):
 
 
             return okta_json
-
 
     def fetch_from_okta(self, query_type='GET'):
         """ Create the main Okta connecting object.

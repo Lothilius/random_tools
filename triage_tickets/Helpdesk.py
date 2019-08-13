@@ -15,6 +15,9 @@ pd.set_option('display.width', 160)
 class Helpdesk(Status):
     """ Extend Status class for Helpdesk.
     """
+    def __init__(self):
+        super(Helpdesk, self).__init__()
+        self.technician_groups = ''
 
     def count_tickets(self, helpdesk_tickets):
         """Count total unassigned"""
